@@ -43,8 +43,8 @@ framework/
 
 ```bash
 cd api-test/framework
-pip install -r ../../ui-test/requirements.txt   # 含 pytest / requests / PyYAML / pytest-html
-pytest                                          # 生成 report.html
+pip install -r ../requirements.txt   # pytest / requests / PyYAML / pytest-html
+pytest                               # 生成 report.html
 ```
 
 详见 [api-test/framework/03_framework.html](api-test/framework/03_framework.html)。
@@ -102,9 +102,14 @@ python run_loadtest.py      # 自动起服务 → 健康检查 → 预热路由 
 
 ## 环境要求
 
-- Python 3.13 + `pytest` / `requests` / `PyYAML` / `pytest-html`
-- UI 自动化额外需要 `selenium>=4.6`（驱动由 Selenium Manager 自动下载）与本机 Edge 或 Chrome
-- 性能测试需要 JMeter 5.x 与 JDK
+| 模块 | 依赖 |
+| --- | --- |
+| `api-test` | Python 3.x，`pip install -r api-test/requirements.txt` |
+| `ui-test` | Python 3.x + `pip install -r ui-test/requirements.txt`；驱动由 Selenium Manager 自动下载，无需手工装 msedgedriver/chromedriver；需本机有 Edge 或 Chrome |
+| `perf-test` | JMeter 5.x + JDK（`run_loadtest.py` 里的路径按本机改） |
+
+`perf-test` 依赖一个可访问的被测站点：公网演示站直接可用，也可以先跑
+`local-server.py` 起一个本地靶子。
 
 ## 说明
 
