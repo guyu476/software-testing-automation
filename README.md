@@ -13,7 +13,13 @@
 | [`ui-test/`](ui-test) | Web UI 自动化框架，Page Object 分层 | Python / Selenium 4 / pytest |
 | [`perf-test/`](perf-test) | JMeter 压测计划与一键压测脚本、结果数据 | JMeter / Python |
 | [`db-practice/`](db-practice) | MySQL 建表与查询练习 | MySQL |
-| [`docs/`](docs) | 学习过程沉淀的笔记（接口测试 / pytest / 压测 / 抓包 / 数据库） | HTML |
+| [`docs/`](docs) | 接口测试通用笔记（路线图 / 断言 / 接口关联） | HTML |
+
+各模块的操作教程就近放在模块目录里，不在 `docs/` 重复：
+[`api-test/pytest/`](api-test/pytest) 是 pytest + requests 入门，
+[`api-test/framework/03_framework.html`](api-test/framework/03_framework.html) 是框架分层讲解，
+[`perf-test/`](perf-test) 下是压测入门与录制监控，
+[`db-practice/02_tutorial.html`](db-practice/02_tutorial.html) 是数据库教程。
 
 ## 各模块说明
 
