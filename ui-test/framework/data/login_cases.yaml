@@ -1,0 +1,39 @@
+# =============================================================
+# 登录页 · UI 测试数据
+# 新增/修改用例只改这个文件，testcases 里的代码一个字都不用动。
+# =============================================================
+#
+# 字段说明：
+#   id             用例名（会显示在测试报告里）
+#   account        账号（邮箱）
+#   password       密码
+#   agree          是否勾选服务协议。故意留一条 False，用来验证「不勾协议不让提交」
+#   expect_success true=登录成功（跳走且出现「退出」）；false=留在登录页并出现错误提示
+#   expect_error   期望的错误文案（expect_success 为 false 时有意义）
+#
+# 演示账号来自站点页脚公示，密码统一 123456。
+
+demo_account:
+  account: "demo@example.com"
+  password: "123456"
+
+cases:
+  - id: 正常_演示账号登录成功
+    account: "demo@example.com"
+    password: "123456"
+    agree: true
+    expect_success: true
+
+  - id: 异常_密码错误
+    account: "demo@example.com"
+    password: "definitely-not-the-password"
+    agree: true
+    expect_success: false
+    expect_error: "账号或密码错误"
+
+  - id: 异常_未勾选服务协议
+    account: "demo@example.com"
+    password: "123456"
+    agree: false
+    expect_success: false
+    expect_error: "请先阅读并同意"

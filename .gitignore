@@ -1,0 +1,43 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- 测试产物 ----
+report.html
+*.jtl
+jmeter.log
+*.log
+results/**/sbadmin2-1.0.7/
+results/**/content/
+results/**/index.html
+
+# ---- 编辑器与系统 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- 依赖与本地配置 ----
+vendor/
+node_modules/
+.env
+*.env
+*.local
+
+# ---- 第三方软件包（不属于本仓库） ----
+installer/
+jmeter/
+Fiddler/
+*.exe
+*.msi
+*.dll
+*.zip
+*.7z

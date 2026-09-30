@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接口测试学习路径 · 从 Postman 到面试能讲清楚</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+/* ---- 页头 ---- */
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0 0 10px;color:var(--text-2);font-size:14.5px;max-width:660px}
+.header p:last-child{margin-bottom:0}
+
+/* ---- 目录 ---- */
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+/* ---- 章节 ---- */
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+h2 .n.hot{background:var(--amber)}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code{font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;}
+b,strong{font-weight:600}
+
+/* ---- 提示块 ---- */
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+
+/* ---- 表格 ---- */
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top;line-height:1.6}
+table.tbl th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px;white-space:nowrap}
+table.tbl td{color:var(--text-2)}
+table.tbl td:first-child{color:var(--text)}
+
+/* ---- 流程条 ---- */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:4px 0 22px}
+.flow .step{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:10px;padding:14px 14px 13px}
+.flow .step.first{border-color:var(--amber-line);background:var(--amber-bg)}
+.flow .step b{display:block;font-size:14px;margin-bottom:2px}
+.flow .step.first b{color:#5c3708}
+.flow .step i{display:block;font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--blue);margin-bottom:7px}
+.flow .step.first i{color:var(--amber)}
+.flow .step em{display:block;font-style:normal;font-size:12.5px;color:var(--text-2);line-height:1.55}
+
+/* ---- 状态链 ---- */
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}
+.chain .st{
+  font-size:13px;padding:5px 12px;border-radius:7px;
+  background:#f0f2f5;border:1px solid var(--line);color:var(--text);white-space:nowrap;
+}
+.chain .st.blue{background:var(--blue-bg);border-color:var(--blue-line);color:#123a63}
+.chain .st.amber{background:var(--amber-bg);border-color:var(--amber-line);color:#5c3708}
+.chain .st.green{background:var(--green-bg);border-color:var(--green-line);color:#2c5309}
+.chain .st.red{background:var(--red-bg);border-color:var(--red-line);color:#7c2020}
+.chain .ar{color:var(--text-3);font-size:13px}
+.chain .lb{font-size:12px;color:var(--text-3);padding:0 2px}
+
+/* ---- 问答 ---- */
+.qa{border:1px solid var(--line);border-radius:10px;padding:15px 18px;margin:0 0 12px;background:#fbfcfd}
+.qa .q{font-weight:600;font-size:14px;margin:0 0 7px}
+.qa .a{font-size:13.5px;color:var(--text-2);margin:0}
+.qa .a b{color:var(--text)}
+
+/* ---- 折叠 ---- */
+details{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s;}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+
+/* ---- 页脚 ---- */
+.foot{text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .flow{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="kicker">接口测试 · 零基础 → 面试能讲清楚</div>
+  <h1>接口测试学习路径（以 Postman 为工具）</h1>
+  <p>这份路径按<b>能力节点</b>组织，不按 Postman 的功能菜单组织。按菜单学，你学完只会说"我会发请求"；按能力学，你才能回答面试官真正想问的那些问题。</p>
+  <p>先把结论摆在前面：<b>你要学的不是 Postman，是接口测试。</b>Postman 只是它的载体——一个能让你发请求、看响应、写断言、批量跑的工具。没有 HTTP 基础，Postman 于你就只是一排按钮。</p>
+</div>
+
+<div class="toc">
+  <h3>目录</h3>
+  <ol>
+    <li><a href="#c0"><span class="n">0</span>先搞清楚：面试到底在考什么</a></li>
+    <li><a href="#c1"><span class="n">1</span>基础：一个请求的解剖图</a></li>
+    <li><a href="#c2"><span class="n">2</span>定位：接口测试在流程里的位置</a></li>
+    <li><a href="#c3"><span class="n">3</span>动手：Postman 从裸装到用顺</a></li>
+    <li><a href="#c4"><span class="n">4</span>断言：让请求自己判断对错（面试最重）</a></li>
+    <li><a href="#c5"><span class="n">5</span>设计：接口用例怎么想出来</a></li>
+    <li><a href="#c6"><span class="n">6</span>话术：面试怎么讲</a></li>
+    <li><a href="#ca"><span class="n">A</span>术语中英对照表</a></li>
+    <li><a href="#cb"><span class="n">B</span>Postman / Apifox / JMeter 对照</a></li>
+    <li><a href="#cc"><span class="n">C</span>面试高频 20 题清单</a></li>
+    <li><a href="#cd"><span class="n">D</span>练习环境：零成本公开 API</a></li>
+    <li><a href="#ce"><span class="n">E</span>30 天执行清单</a></li>
+  </ol>
+</div>
+
+<!-- ================= 0 ================= -->
+<section id="c0">
+  <h2><span class="n">0</span>先搞清楚：面试到底在考什么</h2>
+  <p class="sub">这一节看完，你就知道后面五讲为什么按这个顺序排。</p>
+
+  <p>先说一个可能不太合你预期的判断：<b>面试官问"你会不会接口测试"，考的完全不是你会不会用 Postman。</b>工具人人都能学，一两天的事。他真正在验证四件事：</p>
+  <ol>
+    <li><b>你知不知道一个请求从发出到回来，中间发生了什么</b> —— 方法、地址、请求头、请求体、状态码、响应体。这是所有面试题的底座。答不出这一层，后面全是背的。</li>
+    <li><b>你为什么做接口测试，而不是只做 UI 测试</b> —— 这一题区分的是"会点按钮的人"和"理解测试分层的人"。答案跟工具无关。</li>
+    <li><b>你的接口用例是从哪想出来的</b> —— 是照着接口文档一条条抄，还是会做参数组合、边界、异常、鉴权、幂等。这一步考的是测试设计能力。</li>
+    <li><b>你怎么判断这个接口测过了</b> —— 看一眼返回 200 就算过？还是写了断言校验字段值和数据类型？这一步区分"手工调用"和"测试"。</li>
+  </ol>
+
+  <div class="note">
+    <p><b>一句话方法论：</b>把接口测试当成<b>隔着网络去验证业务逻辑</b>。UI 测试是从界面上点，接口测试是绕过界面直接问后端。所以你的活儿本质没变——还是"设计用例、执行、判断对不对"，只是操作对象从按钮变成了请求。</p>
+  </div>
+
+  <h3>学 Postman 之前，要先做什么？</h3>
+  <p>直接回答你的问题。<b>你不需要为学 Postman 做任何准备工作</b>——下载、安装、打开就能点。但你要先建立三样认知，否则学了也白学：</p>
+  <table class="tbl">
+    <tr><th>先建立这个认知</th><th>不建立的后果</th><th>对应讲次</th></tr>
+    <tr><td>一个 HTTP 请求由哪几部分组成，响应由哪几部分组成</td><td>Postman 的界面你认得每一个按钮，但不知道该填什么、填错了为什么错</td><td>第 1 讲</td></tr>
+    <tr><td>接口测试在整个测试流程里，替代了哪一部分 UI 测试的工作</td><td>面试问"你为什么做接口测试"，你只能答"因为快"</td><td>第 2 讲</td></tr>
+    <tr><td>一次"测过了"的判定标准是什么</td><td>你以为看到 200 就是通过，其实返回体里全是空数据</td><td>第 4 讲</td></tr>
+  </table>
+
+  <div class="warn note">
+    <p><b>这就是为什么这份路径不从"下载 Postman"开始。</b>先把第 1、2 讲的认知打进去，第 3 讲动手的时候你才知道自己在点的是什么。反过来，如果你现在就急着装 Postman 点两下，也不会有任何损失——但第 4 讲的断言你会看不懂。</p>
+  </div>
+
+  <h3>建议的节奏</h3>
+  <table class="tbl">
+    <tr><th>讲次</th><th>内容</th><th>建议投入</th><th>面试权重</th></tr>
+    <tr><td>第 1 讲</td><td>一个请求的解剖图（HTTP 基础）</td><td>1–2 天</td><td>高</td></tr>
+    <tr><td>第 2 讲</td><td>接口测试在流程里的位置</td><td>半天</td><td>高</td></tr>
+    <tr><td>第 3 讲</td><td>Postman 实操</td><td>1 天</td><td>中</td></tr>
+    <tr><td>第 4 讲</td><td><b>断言：让请求自己判断对错</b></td><td>2 天</td><td><b>最高</b></td></tr>
+    <tr><td>第 5 讲</td><td>接口用例设计</td><td>1–2 天</td><td>高</td></tr>
+    <tr><td>第 6 讲</td><td>面试话术</td><td>1 天</td><td>高</td></tr>
+    <tr><td colspan="2">合计</td><td>约一周，每天 1–1.5 小时</td><td>—</td></tr>
+  </table>
+
+  <div class="danger note">
+    <p><b>别跳第 1 讲。</b>面试官一句"GET 和 POST 的区别是什么"，或者"你见过哪些状态码"，就能看出你是理解还是背的。第 1 讲看起来最像"理论"，但它是唯一一讲能一次性覆盖掉最多面试题的内容。</p>
+  </div>
+</section>
+
+<!-- ================= 1 ================= -->
+<section id="c1">
+  <h2><span class="n">1</span>基础：一个请求的解剖图</h2>
+  <p class="sub">这一讲是整份路径的地基。后面所有内容都是在往这张图上挂东西。</p>
+
+  <h3>1.1 一个接口，就是"一个地址 + 一套规则"</h3>
+  <p>先抛开所有术语。你在浏览器地址栏输入 <code>https://www.baidu.com/s?wd=测试</code> 按回车，这个过程本质上就是<b>发了一个请求，拿到了一段响应</b>。</p>
+  <p>把它拆开看：</p>
+  <table class="tbl">
+    <tr><th>部分</th><th>这个例子里是什么</th><th>说明</th></tr>
+    <tr><td>方法 Method</td><td><code>GET</code></td><td>你要"干什么"——是取数据还是改数据</td></tr>
+    <tr><td>协议 + 域名</td><td><code>https</code> + <code>www.baidu.com</code></td><td>去哪台机器要</td></tr>
+    <tr><td>路径 Path</td><td><code>/s</code></td><td>要这台机器上的哪个功能</td></tr>
+    <tr><td>查询参数 Query</td><td><code>?wd=测试</code></td><td>带上具体条件</td></tr>
+    <tr><td>请求头 Header</td><td>浏览器自动带的 <code>User-Agent</code>、<code>Cookie</code> 等</td><td>附加信息：我是谁、我要什么格式</td></tr>
+    <tr><td>请求体 Body</td><td>GET 通常没有</td><td>要提交给服务器的数据</td></tr>
+  </table>
+  <p>这六样拼起来，就叫做一个<b>接口请求</b>。你平时说的"接口地址"，严格来说只是其中的第 2、3 部分，"完整接口"必须带上方法和参数。</p>
+
+  <div class="note">
+    <p><b>先记住一句话：</b>Postman 的整个界面，本质上就是把这六个部分做成六个输入框让你填。<b>理解了这六个框，Postman 你就已经会一半了。</b></p>
+    <p>下面逐条讲，每一条都对应面试考点。</p>
+  </div>
+
+  <h3>1.2 请求方法：GET 和 POST 的区别</h3>
+  <p>这是接口测试第一高频题，几乎必问。但要小心——<b>很多网上流传的答案其实是错的</b>。看正确的对比：</p>
+  <table class="tbl">
+    <tr><th>对比项</th><th>GET</th><th>POST</th></tr>
+    <tr><td>语义（标准定义）</td><td>查询、获取数据，<b>不改变服务器状态</b></td><td>提交数据、创建资源，<b>会改变服务器状态</b></td></tr>
+    <tr><td>参数放哪</td><td>Query（拼在地址后面）</td><td>Body（请求体里）</td></tr>
+    <tr><td>是否幂等</td><td><b>幂等</b>：调 1 次和调 100 次，服务器状态一样</td><td><b>不幂等</b>：调 2 次可能创建 2 条订单</td></tr>
+    <tr><td>能否被缓存</td><td>可以</td><td>默认不缓存</td></tr>
+    <tr><td>常见用途</td><td>查列表、查详情、搜索</td><td>登录、下单、提交表单、上传</td></tr>
+  </table>
+
+  <div class="danger note">
+    <p><b>面试雷区：</b>说"GET 有长度限制、POST 没有"或"POST 比 GET 安全"。</p>
+    <p>长度限制是<b>浏览器和服务器的实现约定</b>，不是 HTTP 协议规定的。而安全性——两者都是明文传输（除非用 HTTPS），都能被抓包看到。<b>POST 不比 GET 安全，只是参数不在地址栏里，不容易被人随手截图。</b>正确说法是"POST 把参数放在请求体里，地址栏不暴露，更符合隐私场景，但不构成加密。"</p>
+    <p>这两句话说出来，面试官会知道你查过原始资料，不是背题。</p>
+  </div>
+
+  <p>除了这两个，还有三个你一定会遇到：</p>
+  <table class="tbl">
+    <tr><th>方法</th><th>干什么</th><th>幂等</th><th>典型场景</th></tr>
+    <tr><td><code>GET</code></td><td>查询</td><td>是</td><td>查订单列表</td></tr>
+    <tr><td><code>POST</code></td><td>新增</td><td>否</td><td>创建订单</td></tr>
+    <tr><td><code>PUT</code></td><td>全量更新</td><td>是</td><td>把整条用户信息替换掉</td></tr>
+    <tr><td><code>PATCH</code></td><td>局部更新</td><td>通常否</td><td>只改一个昵称</td></tr>
+    <tr><td><code>DELETE</code></td><td>删除</td><td>是</td><td>删除一条地址</td></tr>
+  </table>
+
+  <p><b>PUT 和 PATCH 的区别</b>（会被追问）：PUT 是"我把整条资源的新样子给你"，你只传一个字段，其他字段可能被清空；PATCH 是"我只要改这一个字段"，其他不动。<b>测 PUT 的时候必须传全量字段，这是很常见的踩坑点。</b></p>
+
+  <h3>1.3 状态码：后端给你的"一句话答复"</h3>
+  <p>状态码是三位数字，第一位代表类别。你不用背全部，但下面这些必须张口就来：</p>
+  <table class="tbl">
+    <tr><th>状态码</th><th>含义</th><th>测试看到它意味着什么</th></tr>
+    <tr><td><code>200 OK</code></td><td>成功</td><td>请求通了，<b>但不代表业务对了</b>——见第 4 讲</td></tr>
+    <tr><td><code>201 Created</code></td><td>创建成功</td><td>新增类接口的正确返回，比 200 更精确</td></tr>
+    <tr><td><code>204 No Content</code></td><td>成功但没有响应体</td><td>常见于 DELETE 成功</td></tr>
+    <tr><td><code>301 / 302</code></td><td>永久 / 临时重定向</td><td>地址变了或需要跳转，接口测试里少见</td></tr>
+    <tr><td><code>400 Bad Request</code></td><td>请求参数有问题</td><td><b>参数校验类用例应该返回这个</b>，不返回才可疑</td></tr>
+    <tr><td><code>401 Unauthorized</code></td><td>未登录 / 未认证</td><td>没带 token 或 token 无效</td></tr>
+    <tr><td><code>403 Forbidden</code></td><td>已认证但没权限</td><td>登录了，但这个角色不能干这件事</td></tr>
+    <tr><td><code>404 Not Found</code></td><td>资源不存在</td><td>路径写错，或数据确实没有</td></tr>
+    <tr><td><code>405 Method Not Allowed</code></td><td>方法不对</td><td>该用 POST 你用了 GET</td></tr>
+    <tr><td><code>429 Too Many Requests</code></td><td>请求太频繁被限流</td><td>做性能或批量脚本时常撞到</td></tr>
+    <tr><td><code>500 Internal Server Error</code></td><td>服务端崩了</td><td><b>测试要重点关注的：这是后端异常，通常是 bug</b></td></tr>
+    <tr><td><code>502 / 503 / 504</code></td><td>网关错误 / 服务不可用 / 超时</td><td>服务没起来、挂了、或响应太慢。环境问题居多，但要分辨</td></tr>
+  </table>
+
+  <div class="warn note">
+    <p><b>面试最爱追问的两组：</b></p>
+    <p><b>① 401 和 403 的区别</b> —— 401 是"你是谁我不知道"（认证问题），403 是"我知道你是谁，但你不许干这个"（授权问题）。</p>
+    <p><b>② 400 和 500 的区别</b> —— 400 是<b>调用方的错</b>（参数传得不对），500 是<b>服务端的错</b>（后端代码炸了）。这个区分很重要，因为它决定这个 bug 该提单给谁、算谁的责任。</p>
+  </div>
+
+  <h3>1.4 请求头与响应头：藏在细节里的考点</h3>
+  <p>头信息（Header）就是一堆"键: 值"。你不需要全部认识，但这几个必须知道：</p>
+  <table class="tbl">
+    <tr><th>Header</th><th>位置</th><th>作用</th><th>测试关注点</th></tr>
+    <tr><td><code>Content-Type</code></td><td>请求 / 响应</td><td>说明报文是什么格式</td><td><b>最常见的报错来源</b>，见下方说明</td></tr>
+    <tr><td><code>Authorization</code></td><td>请求</td><td>带身份凭证</td><td>登录后的接口基本上都要带</td></tr>
+    <tr><td><code>Cookie</code></td><td>请求</td><td>带会话身份</td><td>老系统靠它保持登录态</td></tr>
+    <tr><td><code>User-Agent</code></td><td>请求</td><td>说明客户端是什么</td><td>有的接口按客户端返回不同内容</td></tr>
+    <tr><td><code>Referer</code></td><td>请求</td><td>说明从哪个页面来的</td><td>少数接口做防盗链校验</td></tr>
+    <tr><td><code>Set-Cookie</code></td><td>响应</td><td>服务端要求客户端存 Cookie</td><td>登录接口返回它，后续请求才带得上</td></tr>
+  </table>
+
+  <div class="danger note">
+    <p><b>新手最常撞的坑，就是 <code>Content-Type</code> 没设对。</b>你用 Postman 发一个 POST 请求，明明参数填得没错，后端一直返回 400 或报"参数为空"——十有八九是格式没对上。</p>
+    <p>两种最常见格式要分清：</p>
+    <p><code>application/json</code> → 请求体长这样：<code>{"username":"t001","password":"123456"}</code></p>
+    <p><code>application/x-www-form-urlencoded</code> → 请求体长这样：<code>username=t001&amp;password=123456</code></p>
+    <p><b>接口文档上一定写了用哪种，测之前先看一眼。</b>这个坑你踩过一次就再也不会忘。</p>
+  </div>
+
+  <h3>1.5 请求体与响应体：真正的数据在这里</h3>
+  <p>报文格式目前主流是 JSON。<b>JSON 就是"键值对"，用大括号包起来</b>，你只要看懂下面这四件事就够了：</p>
+  <table class="tbl">
+    <tr><th>写法</th><th>叫什么</th><th>例子</th></tr>
+    <tr><td><code>"key": "值"</code></td><td>字段（字符串）</td><td><code>"username": "t001"</code></td></tr>
+    <tr><td><code>"key": 123</code></td><td>字段（数字）</td><td><code>"age": 18</code></td></tr>
+    <tr><td><code>{ }</code></td><td>对象（一个整体）</td><td><code>"user": {"id": 1, "name": "张三"}</code></td></tr>
+    <tr><td><code>[ ]</code></td><td>数组（一串）</td><td><code>"list": [{"id":1}, {"id":2}]</code></td></tr>
+  </table>
+  <p>注意<b>字符串值要加引号，数字不用</b>。这个细节在写断言的时候会经常用到——你要判断某个字段是"数字 18"还是"字符串 18"，是两个不同的断言。</p>
+
+  <p>一个真实的响应大概长这样（后面练习就会用到）：</p>
+  <table class="tbl">
+    <tr><th>部分</th><th>内容</th></tr>
+    <tr><td>状态码</td><td><code>200</code></td></tr>
+    <tr><td>响应体</td><td><code>{"id": 1, "title": "标题", "userId": 1}</code></td></tr>
+  </table>
+  <p><b>看到 200 就以为通过了，是新手最大的误区。</b>如果响应体是 <code>{"id": null, "title": ""}</code>，状态码照样是 200，但这个接口显然是坏的。这就是第 4 讲讲断言的原因。</p>
+
+  <h3>1.6 认证：怎么证明"我是我"</h3>
+  <p>登录后的接口都要带身份凭证，否则就是 401。你只要认识这三种即可：</p>
+  <table class="tbl">
+    <tr><th>方式</th><th>怎么带</th><th>特点</th></tr>
+    <tr><td>Cookie + Session</td><td>请求头 <code>Cookie: JSESSIONID=xxx</code></td><td>老系统主流。服务端存会话，客户端只存一个 ID</td></tr>
+    <tr><td>Token</td><td>请求头 <code>Authorization: Bearer xxx</code></td><td>现在主流。<b>接口测试最常打交道的就是它</b></td></tr>
+    <tr><td>签名 Sign</td><td>参数里带一个算出来的 <code>sign</code></td><td>防篡改，常见于开放平台和支付</td></tr>
+  </table>
+  <p><b>Token 是怎么来的？</b>先调登录接口 → 响应里返回一个 token 字符串 → 后续每个请求把它放进请求头。<b>Token 一般有有效期，过期了要重新登录。</b>这正好是 Postman 环境变量的用武之地（第 3 讲）。</p>
+
+  <h3>1.7 本讲的自测题</h3>
+  <details>
+    <summary>写下你对这 6 题的答案，再展开对照</summary>
+    <div class="qa">
+      <p class="q">Q1：GET 和 POST 的区别是什么？</p>
+      <p class="a">要点：从<b>语义</b>（查 vs 改）、<b>参数位置</b>（Query vs Body）、<b>幂等性</b>（幂等 vs 不幂等）、<b>缓存</b>四个维度说。<b>主动补一句"GET 有长度限制、POST 更安全都是不准确的说法"</b>，这一句能把背题的人区分开：长度是服务器实现约定，安全性上两者都要靠 HTTPS。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q2：401 和 403 有什么区别？</p>
+      <p class="a">要点：401 是认证失败（我不知道你是谁），403 是授权失败（我知道你是谁，但你没权限）。再补一句"测试时 401 查 token 有没有带或过期，403 查账号角色有没有配错"。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q3：接口返回 200，能不能说明这个接口测通过了？</p>
+      <p class="a">要点：<b>不能。</b>200 只说明 HTTP 这一层通了。还要校验响应体里的业务字段——值对不对、类型对不对、条数对不对。这就是下一讲的断言。答出这一点，说明你真的测过接口。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q4：PUT 和 PATCH 有什么区别？测 PUT 要注意什么？</p>
+      <p class="a">要点：PUT 全量更新、PATCH 局部更新。测 PUT 必须传完整字段，否则没传的字段可能被清空——这是真实会出事故的地方。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q5：接口返回 400，你会怎么查？</p>
+      <p class="a">要点：400 是调用方的错。按顺序查：<b>① 请求参数有没有少传或多传；② 参数类型对不对（字符串传了数字）；③ Content-Type 有没有设对；④ 参数格式（手机号、日期）符不符合要求。</b></p>
+    </div>
+    <div class="qa">
+      <p class="q">Q6：登录之后调别的接口返回 401，可能是什么原因？</p>
+      <p class="a">要点：① 没带 token；② token 带在错的位置（应该在 <code>Authorization</code> 头里）；③ token 过期；④ 前端格式写错（<code>Bearer</code> 后面有没有空格）。</p>
+    </div>
+  </details>
+
+  <div class="danger note">
+    <p><b>这一讲最容易踩的坑：</b>把它当"理论"跳过。第 1 讲其实是整份路径里性价比最高的一讲——面试题里的"GET/POST 区别""状态码""401 403""Content-Type"，全部在这一讲里被一次性覆盖。而且它不需要你装任何软件。</p>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2">
+  <h2><span class="n">2</span>定位：接口测试在流程里的位置</h2>
+  <p class="sub">先知道自己为什么做这件事、跟谁协作、卡在哪儿，再谈工具。</p>
+
+  <h3>2.1 测试金字塔：为什么接口测试比 UI 测试划算</h3>
+  <p>这是接口测试的"存在理由"，也是面试必考。先看这张经典的分层图：</p>
+  <div class="chain">
+    <span class="st red">UI 测试<br><span class="lb">少 · 慢 · 脆</span></span>
+    <span class="ar">↑</span>
+    <span class="st amber">接口测试<br><span class="lb">中 · 适中 · 稳</span></span>
+    <span class="ar">↑</span>
+    <span class="st green">单元测试<br><span class="lb">多 · 快 · 但开发写</span></span>
+  </div>
+  <p>越往上，越接近用户真实操作，但越慢、越不稳定、维护成本越高；越往下，越快越稳，但离业务越远。理想形状是<b>底部宽、顶部窄的金字塔</b>。</p>
+  <table class="tbl">
+    <tr><th>维度</th><th>UI 测试</th><th>接口测试</th></tr>
+    <tr><td>操作对象</td><td>页面上的按钮和输入框</td><td>直接发请求给后端</td></tr>
+    <tr><td>速度</td><td>慢，一次操作要等页面渲染</td><td>快，一个请求几百毫秒</td></tr>
+    <tr><td>稳定性</td><td>差：改个按钮位置、换个浏览器、网络抖动就可能挂</td><td>好：只依赖接口协议，界面改了不受影响</td></tr>
+    <tr><td>发现问题的时间</td><td>晚，要等前端页面做完</td><td><b>早，后端接口提测就能测</b></td></tr>
+    <tr><td>能覆盖的范围</td><td>用户能看到的一切，包括样式和交互</td><td><b>只能覆盖后端逻辑</b>，前端渲染问题测不到</td></tr>
+    <tr><td>能不能定位问题</td><td>难，只能看到现象</td><td>容易，能直接看出是参数问题还是后端逻辑问题</td></tr>
+  </table>
+
+  <div class="note">
+    <p><b>面试标准答法（背这段）：</b>"接口测试相比 UI 测试有三个优势：<b>一是介入早</b>，后端接口开发完就能测，不用等前端页面；<b>二是执行快、更稳定</b>，不受页面渲染和 UI 改动影响，适合做回归；<b>三是定位准</b>，能直接看到请求和响应，一眼判断是前端传参问题还是后端逻辑问题。所以我们的策略是<b>接口层做主要覆盖、UI 层只覆盖核心业务流程</b>，也就是测试金字塔的形状。"</p>
+  </div>
+
+  <h3>2.2 接口测试在流程里的位置</h3>
+  <p>接口测试不是"另一种测试"，它是原来那套流程里<b>插进来的一个环节</b>：</p>
+  <div class="flow">
+    <div class="step first">
+      <b>需求评审</b><i>Story</i>
+      <em>照旧介入，关注验收标准，同时看有没有接口层面的约定</em>
+    </div>
+    <div class="step">
+      <b>接口文档确认</b><i>API Doc</i>
+      <em>接口未开发前，先审文档：字段定义清不清楚、错误码有没有、边界怎么定</em>
+    </div>
+    <div class="step">
+      <b>接口测试</b><i>API Test</i>
+      <em>接口提测后立刻介入，比 UI 测试早一个阶段</em>
+    </div>
+    <div class="step">
+      <b>UI / 功能测试</b><i>UI Test</i>
+      <em>后端确认没问题了，再测界面和交互</em>
+    </div>
+  </div>
+  <p>注意第二个节点——<b>接口文档评审</b>。这是接口测试岗特有的、也是能体现价值的地方：接口文档本身就可能有歧义，"这个字段必填吗""为空返回什么""超长了怎么处理"，在开发动手之前问清楚，成本最低。</p>
+
+  <div class="note">
+    <p><b>关键认知：</b>接口测试是<b>把一部分测试工作往流程上游挪</b>的手段。没有它，测试只能等前端页面做完才能开始；有了它，后端提测当天就能发现问题，可能比原来早一周。你在这上面花的力气，本质是在<b>压缩问题暴露的时间</b>。</p>
+  </div>
+
+  <h3>2.3 接口测试能测什么、不能测什么</h3>
+  <p>这一节是"边界感"，面试官问你"接口测试能不能完全替代 UI 测试"，答不上来就说明你只是会点按钮：</p>
+  <table class="tbl">
+    <tr><th></th><th>内容</th></tr>
+    <tr><td><b>能测</b></td><td>业务逻辑正确性、参数校验（必填/类型/长度/格式）、边界值、异常处理与错误码、权限与鉴权（越权访问）、数据一致性（接口返回 vs 数据库）、幂等性、并发场景、性能（简单压测）、兼容性（不同版本的接口共存）</td></tr>
+    <tr><td><b>不能测</b></td><td>页面布局与样式、交互体验（动画、loading 状态、提示文案位置）、浏览器兼容性、前端表单校验（前端不校验也不影响接口，但用户能感知）、图片渲染、前端路由</td></tr>
+  </table>
+
+  <p>其中有两个词你要专门记住，因为它们是接口测试的"特产"，UI 测试很难做：</p>
+  <ul>
+    <li><b>越权访问</b>：拿 A 用户的 token 去查 B 用户的订单。UI 上你可能看不到这个入口，但接口层面直接就能调。这是接口测试最能出彩的地方，也是常见的安全漏洞。</li>
+    <li><b>幂等性</b>：同一个下单请求发两遍，会不会生成两笔订单。<b>UI 上你手再快也难复现，接口上连点两次就行了。</b></li>
+  </ul>
+
+  <div class="warn note">
+    <p><b>面试如果问"接口测试能替代 UI 测试吗"</b>，正确答法：<b>不能替代，是互补。</b>接口测试覆盖后端逻辑、执行快、适合回归；UI 测试覆盖用户可见的交互和样式，是最后一道验收。合理的策略是接口层覆盖大部分逻辑，UI 层只覆盖核心业务流程。</p>
+  </div>
+
+  <h3>2.4 本讲的自测题</h3>
+  <div class="qa">
+    <p class="q">Q1：你为什么做接口测试？</p>
+    <p class="a">要点：三个优势 —— <b>介入早、执行快且稳定、定位准</b>，最后收在"所以我们用测试金字塔，接口层做主要覆盖，UI 层覆盖核心流程"。不要只说"因为快"。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q2：接口测试能完全替代 UI 测试吗？</p>
+    <p class="a">要点：不能。接口测不到页面渲染、交互体验、前端校验、浏览器兼容性。二者互补：接口管逻辑，UI 管体验。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q3：什么事情是接口测试能做、UI 测试很难做的？</p>
+    <p class="a">要点：越权访问（用别人的身份访问数据）、幂等性（重复请求）、参数边界（UI 上根本输不进去的极值）、错误码校验、并发。答出任意两个并说清为什么，就算过关。</p>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3">
+  <h2><span class="n">3</span>动手：Postman 从裸装到用顺</h2>
+  <p class="sub">这一讲是"手上动作"。配合附录 D 的公开 API 一起做，边看边点。</p>
+
+  <h3>3.1 装什么、怎么装</h3>
+  <p>Postman 是免费客户端，官网直接下载 Windows 版，一路下一步即可。装完之后<b>可以跳过登录</b>（会提示你注册，直接找"Skip"或关掉窗口），本地使用完全不受影响。</p>
+  <div class="note">
+    <p><b>为什么不建议直接用网页版：</b>网页版功能受限，且跨域请求常报错。装桌面客户端。</p>
+    <p><b>如果你暂时不想装软件</b>：Apifox、Hoppscotch（网页版，免安装）都能完成这份路径里 90% 的操作。工具不是重点，见附录 B。</p>
+  </div>
+
+  <h3>3.2 界面就是第 1 讲那张图</h3>
+  <p>打开 Postman 新建一个请求，你会看到：</p>
+  <table class="tbl">
+    <tr><th>界面元素</th><th>对应第 1 讲的哪个部分</th></tr>
+    <tr><td>左上角的方法下拉框（GET）</td><td>请求方法 Method</td></tr>
+    <tr><td>旁边的地址输入框</td><td>域名 + 路径 Path</td></tr>
+    <tr><td><code>Params</code> 标签页</td><td>查询参数 Query（会自动拼到地址后面）</td></tr>
+    <tr><td><code>Authorization</code> 标签页</td><td>认证（token / 账号密码）</td></tr>
+    <tr><td><code>Headers</code> 标签页</td><td>请求头（<code>Content-Type</code> 在这里设）</td></tr>
+    <tr><td><code>Body</code> 标签页</td><td>请求体（选 raw → JSON）</td></tr>
+    <tr><td>下方响应区</td><td>状态码 + 响应体 + 响应头 + 耗时</td></tr>
+  </table>
+  <p><b>看到这张对应表，你应该意识到 Postman 没什么神秘的</b>——它只是把第 1 讲那张解剖图做成了输入框。第 1 讲理解了，这一讲就只剩熟悉位置。</p>
+
+  <h3>3.3 你的第一个请求</h3>
+  <p>用附录 D 里的公开 API 试一次。这个接口是最经典的练手对象：</p>
+  <ol>
+    <li>方法选 <code>GET</code></li>
+    <li>地址填 <code>https://jsonplaceholder.typicode.com/posts/1</code></li>
+    <li>点 <b>Send</b></li>
+    <li>看下方：状态码是不是 <code>200</code>，返回体是不是一条带 <code>id</code>、<code>title</code>、<code>body</code> 的 JSON</li>
+  </ol>
+  <p>成功之后，把方法改成 <code>POST</code>，地址还是这个，切到 <code>Body</code> → 选 <code>raw</code> → 右边格式选 <code>JSON</code>，填：<code>{"title":"test","body":"hello","userId":1}</code>，再 Send。</p>
+  <p><b>注意对比两次的状态码</b>：GET 返回 200，POST 成功创建应该返回 <code>201</code>。这就是第 1 讲状态码那一节说的"更精确的返回"。</p>
+
+  <h3>3.4 Collection：把散落的请求收进抽屉</h3>
+  <p>发过几个请求之后，你需要一个地方存放它们——就是 <b>Collection（集合）</b>。</p>
+  <p>对应到测试工作里，<b>Collection 就是你的"接口用例集"</b>。典型的组织方式是按模块分文件夹：</p>
+  <table class="tbl">
+    <tr><th>层级</th><th>例子</th><th>对应现实</th></tr>
+    <tr><td>Collection</td><td>练手项目 API</td><td>一个被测系统</td></tr>
+    <tr><td>Folder</td><td>用户模块 / 订单模块</td><td>功能模块</td></tr>
+    <tr><td>Request</td><td>登录、查用户详情、创建订单</td><td>一条接口用例</td></tr>
+    <tr><td>Request 内的多个示例</td><td>登录-成功 / 登录-密码错误 / 登录-账号不存在</td><td>同一条接口的不同用例</td></tr>
+  </table>
+  <p><b>面试可以这么说：</b>"我会按模块组织 Collection，一个接口下面挂多条用例，涵盖正常流、参数异常和权限异常。"这句话说出来，面试官就知道你不是随便点点。</p>
+
+  <h3>3.5 环境变量：接口测试的效率核心</h3>
+  <p>这是 Postman 最值得学的一个功能，因为它是<b>回归测试能跑起来的前提</b>。</p>
+  <p>问题：你本来在测试环境 <code>https://test.example.com</code> 测得好好的，现在要切到预发环境 <code>https://pre.example.com</code>。难道把 50 条请求的地址一条条改？</p>
+  <p>解法：把会变的东西抽成<b>变量</b>。</p>
+  <table class="tbl">
+    <tr><th>类型</th><th>作用范围</th><th>典型用途</th></tr>
+    <tr><td>Global</td><td>整个 Postman</td><td>不太用，容易污染</td></tr>
+    <tr><td>Environment</td><td>选中的那套环境</td><td><b>最常用</b>：区分测试/预发/生产</td></tr>
+    <tr><td>Collection</td><td>这个集合内</td><td>该集合共用的常量</td></tr>
+    <tr><td>Local</td><td>单次运行</td><td>临时值</td></tr>
+  </table>
+  <p>用法：建一个环境，里面定义 <code>baseUrl = https://jsonplaceholder.typicode.com</code>，然后把请求地址写成 <code>{{baseUrl}}/posts/1</code>。切换环境时只要在右上角换个下拉框，所有请求的地址一起变。</p>
+
+  <div class="note">
+    <p><b>哪些东西适合做成变量：</b>域名（<code>baseUrl</code>）、token、固定的测试账号、经常变动的 <code>userId</code> / <code>orderId</code>。</p>
+    <p><b>更关键的一步</b>：token 可以是<b>自动写进去的</b>——在登录请求的 <code>Tests</code> 标签里写一行脚本，把响应里的 token 存进变量，后面的请求自动带上。详见第 4 讲。</p>
+  </div>
+
+  <h3>3.6 Collection Runner：一次跑完一批用例</h3>
+  <p>一条条点 Send 叫"手工调用"。真正体现价值的是<b>批量执行</b>：点一下，整个 Collection 里几十条用例全跑完，最后给你一张结果表——多少通过、多少失败。</p>
+  <p>操作路径：Collection 上点 <code>Run</code>（或 <code>...</code> → Run collection）→ 选环境 → 设迭代次数 → Start。</p>
+  <p><b>这就是"回归测试"的雏形。</b>面试问"你们的接口回归怎么做的"，你可以答："用 Collection Runner 批量跑整个集合，配合断言自动判定通过与否，每次版本发布前跑一遍。"</p>
+
+  <h3>3.7 导入接口文档：不用手敲</h3>
+  <p>真实工作里没人手敲接口地址。接口文档（Swagger / OpenAPI 格式）可以直接导入 Postman，自动生成整个 Collection 的骨架。</p>
+  <p>公司里常见的流程是：<b>开发用 Swagger 维护接口文档 → 你导出 OpenAPI 文件 → 导入 Postman → 补上环境变量和断言 → 变成可跑的用例集。</b></p>
+
+  <h3>3.8 本讲的自测题</h3>
+  <div class="qa">
+    <p class="q">Q1：Postman 里的环境和变量有什么用？</p>
+    <p class="a">要点：把会变的部分（域名、token、测试账号、动态 ID）抽出来，<b>一次配置多处复用、切换环境不用改请求</b>。补一句"这是接口用例能从"只能手工点"变成"能批量跑"的前提"。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q2：你怎么组织你的接口用例？</p>
+    <p class="a">要点：Collection 按系统，Folder 按模块，一个请求下挂多条用例覆盖正常流、参数异常、权限异常。<b>不要说"就存在一个列表里"。</b></p>
+  </div>
+  <div class="qa">
+    <p class="q">Q3：一条条手工点，怎么变成批量回归？</p>
+    <p class="a">要点：给每条请求写断言（第 4 讲）→ 用 Collection Runner 批量执行 → 看结果报告。关键在断言——<b>没有断言，批量跑出来的结果没有意义，因为你不知道哪条过了。</b></p>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4">
+  <h2><span class="n hot">4</span>断言：让请求自己判断对错（面试最重）</h2>
+  <p class="sub">这一讲是整份路径的核心。前面三讲都是为了让你在这里能"理解"而不是"背诵"。</p>
+
+  <h3>4.1 为什么必须有断言</h3>
+  <p>先把最根本的问题问清楚：<b>你怎么知道一个接口是"通过"了？</b></p>
+  <p>新手答案：看状态码是不是 200。</p>
+  <p>正确答案：<b>200 只说明网络通了，不说明业务对了。</b>考虑这几种情况——</p>
+  <table class="tbl">
+    <tr><th>情况</th><th>状态码</th><th>实际情况</th></tr>
+    <tr><td>查订单列表，返回 <code>{"list":[]}</code></td><td>200</td><td>接口坏的，或者查错了人的数据</td></tr>
+    <tr><td>创建订单，返回 <code>{"orderId": null}</code></td><td>200</td><td>订单根本没建出来</td></tr>
+    <tr><td>查询用户，余额返回 <code>"balance": "-1"</code></td><td>200</td><td>金额算错了，是线上事故级 bug</td></tr>
+    <tr><td>返回条数只有 5 条，数据库里有 23 条</td><td>200</td><td>分页逻辑坏了</td></tr>
+    <tr><td>金额字段返回的是字符串 <code>"100"</code> 而不是数字 <code>100</code></td><td>200</td><td>类型不对，前端可能直接崩</td></tr>
+  </table>
+  <p><b>这五种情况，只看状态码全都"通过"，实际全是 bug。</b>所以"测过了"的标准不能是"状态码 200"，必须是<b>对响应内容逐项做了校验</b>。这就是断言。</p>
+
+  <div class="note">
+    <p><b>面试标准答法：</b>"我不会只看状态码。状态码只能说明 HTTP 层通了，我会在 Postman 的 Tests 里写断言——<b>校验状态码、关键业务字段的值、字段的数据类型、以及数组的条数</b>，必要时再查数据库核对数据。只有断言全过了，这条用例才算通过。"</p>
+    <p>这段话是这份路径里<b>信息量最大的一句面试话术</b>。它同时证明了：你懂 HTTP 分层的局限、你会用工具、你有测试思维、你知道怎么判定通过。</p>
+  </div>
+
+  <h3>4.2 Postman 的断言写在哪、长什么样</h3>
+  <p>断言写在请求的 <code>Tests</code> 标签页里（不是 Pre-request Script，那个是发送前跑的）。语法是基于 JavaScript 的，但你不用会 JS，记住几个固定句式就行。</p>
+  <p>一个最基础的断言长这样：</p>
+  <p><code>pm.test("状态码应该是 200", function () { pm.response.to.have.status(200); });</code></p>
+  <p>把它拆成三块看：</p>
+  <table class="tbl">
+    <tr><th>部分</th><th>含义</th></tr>
+    <tr><td><code>pm.test("名称", function(){...})</code></td><td>定义一个断言，引号里的名称就是报告里显示的那行字</td></tr>
+    <tr><td>函数体里的判断</td><td>真正要校验什么</td></tr>
+    <tr><td><code>pm.response</code></td><td>代表这次的响应对象，你的数据都从它身上取</td></tr>
+  </table>
+  <p><b>记住这个心智模型：</b>你是在写"我期望什么"，而不是"我要做什么"。写断言的过程，就是把你心里的验收标准翻译成机器能判断的语句。</p>
+
+  <h3>4.3 常用的四类断言（够用 90%）</h3>
+  <p>下面是真正会天天用到的，背下来：</p>
+  <table class="tbl">
+    <tr><th>要校验什么</th><th>写法</th></tr>
+    <tr><td>状态码</td><td><code>pm.response.to.have.status(200);</code></td></tr>
+    <tr><td>响应时间</td><td><code>pm.expect(pm.response.responseTime).to.be.below(1000);</code></td></tr>
+    <tr><td>某字段等于某值</td><td><code>pm.expect(jsonData.userId).to.eql(1);</code></td></tr>
+    <tr><td>某字段存在且不为空</td><td><code>pm.expect(jsonData.title).to.be.a("string").and.not.empty;</code></td></tr>
+    <tr><td>某字段是数字类型</td><td><code>pm.expect(jsonData.id).to.be.a("number");</code></td></tr>
+    <tr><td>数组长度</td><td><code>pm.expect(jsonData.length).to.eql(100);</code></td></tr>
+    <tr><td>包含某段文本</td><td><code>pm.expect(pm.response.text()).to.include("成功");</code></td></tr>
+  </table>
+  <p>其中 <code>jsonData</code> 是 Postman 里约定的变量名，先解析响应体再用：</p>
+  <p><code>var jsonData = pm.response.json();</code></p>
+  <p><b>这两行要连起来看</b>：第一行把响应体转成能点属性出来的对象，第二行才能写 <code>jsonData.字段名</code>。</p>
+
+  <div class="warn note">
+    <p><b>区分 <code>eql</code> 和 <code>equal</code>：</b>这是新手容易混的地方。<code>eql</code> 是宽松比较，<code>1 == "1"</code> 也认为相等；<code>equal</code> 是严格比较，类型也要一致。<b>测接口字段类型时要用严格的那个</b>，否则 <code>"100"</code> 和 <code>100</code> 分不出来，而它们对前端是两种东西。</p>
+  </div>
+
+  <h3>4.4 断言实战：一段能直接用的完整代码</h3>
+  <p>假设你在测"查询一条帖子"，地址是 <code>{{baseUrl}}/posts/1</code>，把下面整段贴进 <code>Tests</code> 标签页：</p>
+  <div class="note">
+    <p><code>var jsonData = pm.response.json();</code></p>
+    <p><code>pm.test("状态码是 200", function () { pm.response.to.have.status(200); });</code></p>
+    <p><code>pm.test("id 是数字 1", function () { pm.expect(jsonData.id).to.eql(1); });</code></p>
+    <p><code>pm.test("title 是非空字符串", function () { pm.expect(jsonData.title).to.be.a("string").and.not.empty; });</code></p>
+    <p><code>pm.test("userId 字段存在", function () { pm.expect(jsonData).to.have.property("userId"); });</code></p>
+    <p><code>pm.test("响应时间小于 1 秒", function () { pm.expect(pm.response.responseTime).to.be.below(1000); });</code></p>
+  </div>
+  <p>点 Send，切到 <b>Test Results</b> 标签页，你会看到 5 行结果，每行前面一个绿勾。<b>这就是"一条真正测过了的接口用例"。</b></p>
+  <p>现在故意把地址改成 <code>{{baseUrl}}/posts/999999</code>（不存在的 ID），再 Send——你会看到<b>有的断言变红</b>，因为 id 不等于 1 了。这一步很有价值：<b>你要亲眼看到断言能失败</b>，否则你不知道它有没有在起作用。</p>
+
+  <h3>4.5 顺手把 token 自动化：变量提取</h3>
+  <p>前面说过 token 要手工填很麻烦。用断言区里的脚本可以自动存：</p>
+  <div class="note">
+    <p><code>var jsonData = pm.response.json();</code></p>
+    <p><code>pm.environment.set("token", jsonData.token);</code></p>
+  </div>
+  <p>第一行解析响应，第二行把响应里的 token 存进环境变量。之后在别的请求的 <code>Authorization</code> 里引用 <code>{{token}}</code> 就行，<b>登录一次，全集合的请求自动带上新 token</b>。</p>
+  <p>这解决了一个真实痛点：<b>token 过期了，只要重跑一下登录请求，其他用例不用动。</b>这就是第 3 讲说的"环境变量是效率核心"的落地方式。</p>
+
+  <h3>4.6 数据驱动：同一接口跑不同参数</h3>
+  <p>如果一条接口要用 20 组参数测 20 遍，不要复制 20 个请求。做法是：</p>
+  <ol>
+    <li>把参数写成 <code>{{username}}</code> 这样的变量</li>
+    <li>准备一个 CSV 或 JSON 文件，每行一组数据</li>
+    <li>Collection Runner 里选择这个数据文件</li>
+    <li>Runner 会<b>按行迭代</b>，每行跑一次整批请求</li>
+  </ol>
+  <p>这个技术叫<b>数据驱动测试</b>。面试提到这个词就是加分项——它说明你考虑过"怎么高效地覆盖多组数据"，而不是靠体力。</p>
+
+  <h3>4.7 本讲的自测题</h3>
+  <details>
+    <summary>写下你对这 5 题的答案，再展开对照</summary>
+    <div class="qa">
+      <p class="q">Q1：接口返回 200，你怎么判断这个接口通了？</p>
+      <p class="a">要点：<b>不能只凭 200。</b>要写断言校验——状态码、关键业务字段的值、字段类型、数组条数、响应时间。必要时还要查数据库核对数据。答完补一句"状态码只代表 HTTP 层通了"。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q2：断言一般验哪些内容？</p>
+      <p class="a">要点：<b>① 状态码；② 业务字段的值是否符合预期；③ 字段的数据类型（数字还是字符串）；④ 字段是否存在、是否为空；⑤ 列表返回的条数；⑥ 响应时间。</b>按这个顺序说，逻辑清楚。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q3：登录接口返回的 token，怎么让后续请求自动带上？</p>
+      <p class="a">要点：在登录请求的 Tests 里用 <code>pm.environment.set</code> 把 token 存成环境变量，后续请求用 <code>{{token}}</code> 引用。好处是 token 过期只需重跑登录。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q4：同一条接口要测 20 组参数，你会怎么做？</p>
+      <p class="a">要点：数据驱动。参数用变量占位，准备 CSV / JSON 数据文件，用 Collection Runner 迭代执行。不要答"复制 20 个请求"。</p>
+    </div>
+    <div class="qa">
+      <p class="q">Q5：你写的接口用例，怎么判断是"通过"还是"失败"？</p>
+      <p class="a">要点：靠断言自动判定，不是靠人眼。<b>写了断言的用例，Runner 会给出通过/失败统计；没写断言的用例，批量执行结果是不可信的。</b>这句话能体现你理解自动化的前提。</p>
+    </div>
+  </details>
+
+  <div class="danger note">
+    <p><b>这一讲最容易踩的坑：</b>把断言当成"高级功能"跳过，只学怎么发请求。结果就是——你会用 Postman，但不会做接口测试。面试时"你怎么判断接口测过了"这一题会直接把你打回原形。<b>断言是接口测试和接口调用的分界线。</b></p>
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5">
+  <h2><span class="n">5</span>设计：接口用例怎么想出来</h2>
+  <p class="sub">工具会用了，接下来是真正决定水平的部分：测什么。</p>
+
+  <h3>5.1 先看接口文档，再动手</h3>
+  <p>拿到一条接口，先别急着发请求。把文档上这几项读清楚：</p>
+  <table class="tbl">
+    <tr><th>要看什么</th><th>为什么</th></tr>
+    <tr><td>接口地址与方法</td><td>决定你在 Postman 里怎么填</td></tr>
+    <tr><td>请求参数：必填还是选填、类型、长度限制</td><td><b>这直接决定你要设计哪些用例</b></td></tr>
+    <tr><td>响应字段和含义</td><td>决定你的断言写什么</td></tr>
+    <tr><td>错误码列表</td><td>决定异常用例的期望结果</td></tr>
+    <tr><td>是否需要鉴权、什么角色能调</td><td>决定权限用例</td></tr>
+  </table>
+  <div class="warn note">
+    <p><b>文档没写清楚的地方，就是你要提问的地方。</b>"这个字段必填吗""为空返回什么""超长了报什么错"——在开发动手前问清楚，比测出来打回去改便宜得多。这也是第 2 讲说的"接口文档评审"节点的价值。</p>
+  </div>
+
+  <h3>5.2 一条接口的标准用例矩阵</h3>
+  <p>这是本节的核心。拿到任何一条接口，按下面这六类去思考，基本不会漏：</p>
+  <table class="tbl">
+    <tr><th>类别</th><th>测什么</th><th>以"创建订单"接口为例</th></tr>
+    <tr><td><b>① 正常流</b></td><td>所有参数都合法，业务能走通</td><td>商品有效、库存充足、金额正确，下单成功，返回订单号</td></tr>
+    <tr><td><b>② 参数校验</b></td><td>必填、类型、长度、格式</td><td>不传商品 ID → 400；金额传 "abc" → 400；数量传 0 或负数 → 400</td></tr>
+    <tr><td><b>③ 边界值</b></td><td>刚好在边界和越过边界</td><td>数量 = 1（最小值）、= 库存数（最大值）、= 库存数 + 1（越界）</td></tr>
+    <tr><td><b>④ 业务规则</b></td><td>业务逻辑的约束条件</td><td>库存不足、商品已下架、优惠券已过期、余额不够</td></tr>
+    <tr><td><b>⑤ 权限与鉴权</b></td><td>不同身份能做什么</td><td>不带 token → 401；普通用户调管理接口 → 403；用 A 的 token 操作 B 的订单 → 应被拒绝</td></tr>
+    <tr><td><b>⑥ 异常与幂等</b></td><td>重复提交、并发、服务异常</td><td>同一请求连发两次 → 只生成一笔订单；网络超时后的处理</td></tr>
+  </table>
+
+  <div class="note">
+    <p><b>这张表就是面试题"一条接口你会怎么测"的答案。</b>很多人只会答"测正常和异常"，这两句太虚。按上面六类说出来，每类举一个具体例子，面试官立刻知道你是真的设计过用例。</p>
+  </div>
+
+  <h3>5.3 参数校验用到的两个方法</h3>
+  <p>方法本身你在测试基础里学过，这里只说怎么用到接口上：</p>
+  <table class="tbl">
+    <tr><th>方法</th><th>接口测试里的用法</th></tr>
+    <tr><td>等价类划分</td><td>把参数取值分成"有效等价类"和"无效等价类"。比如年龄 1–100 有效，那么 -1、0、101 属于无效类，取代表值即可，不用穷举</td></tr>
+    <tr><td>边界值分析</td><td><b>错误最常出在边界上。</b>年龄 1–100，必测 0、1、2、99、100、101 这几个点</td></tr>
+  </table>
+  <p>再补一个接口特有的问题：<b>参数不传</b>（字段直接没有）和<b>参数传空</b>（<code>""</code>）和<b>参数传 null</b>，是三件不同的事，后端处理逻辑经常不一样。<b>这三个都要测</b>——这是接口测试比 UI 测试更细的地方，因为 UI 上你没法制造"字段不存在"这种请求。</p>
+
+  <h3>5.4 账号与数据的准备</h3>
+  <p>接口测试有一个 UI 测试没有的麻烦：<b>你得自己准备数据。</b>没有登录态你什么都测不了，没有可用的商品 ID 你下不了单。</p>
+  <table class="tbl">
+    <tr><th>要准备什么</th><th>说明</th></tr>
+    <tr><td>测试账号（多个角色）</td><td>普通用户、管理员各一个，权限用例要用</td></tr>
+    <tr><td>有效的 token</td><td>通过调登录接口拿，用第 4 讲的方法自动存</td></tr>
+    <tr><td>基础数据</td><td>能用来下单的商品、有余额的账户</td></tr>
+    <tr><td>数据清理的考虑</td><td>下单会造脏数据，测试库要能重置</td></tr>
+  </table>
+  <div class="warn note">
+    <p><b>一个真实经验的细节：</b>涉及金额的接口，测试账号的余额最好充足，否则测到一半报"余额不足"，你分不清是 bug 还是数据没了。这种"环境准备不足导致误判"的经历，在面试里讲出来很真实。</p>
+  </div>
+
+  <h3>5.5 本讲的自测题</h3>
+  <div class="qa">
+    <p class="q">Q1：给你一条接口，你会设计哪些测试用例？</p>
+    <p class="a">要点：按 5.2 的六类说 —— <b>正常流、参数校验、边界值、业务规则、权限鉴权、异常与幂等</b>，每类举一个具体例子。这个答案的结构本身就是加分项。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q2：接口参数校验你会测什么？</p>
+    <p class="a">要点：必填不传、类型错误、长度超限、格式错误（手机号/邮箱/日期）；<b>特别补一句"参数不传、传空字符串、传 null 要分别测，后端处理常常不一样"</b>。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q3：你会怎么测权限？</p>
+    <p class="a">要点：三种 —— 不带 token（期望 401）、低权限账号访问高权限接口（期望 403）、<b>越权访问（用 A 的身份访问 B 的数据，期望被拒绝）</b>。最后这个是接口测试才能做的，要主动说出来。</p>
+  </div>
+  <div class="qa">
+    <p class="q">Q4：什么是幂等？你会怎么测？</p>
+    <p class="a">要点：同一个请求执行多次，结果应该和执行一次一样。测法：把同一个下单请求连发两次，检查是否只生成一笔订单。UI 上很难这么做，接口上很容易——这是接口测试的优势。</p>
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6">
+  <h2><span class="n">6</span>话术：面试怎么讲</h2>
+  <p class="sub">知识有了，还得能说得像做过的人。这一讲是包装，不是编造。</p>
+
+  <h3>6.1 30 秒讲清你怎么做接口测试</h3>
+  <p>被问到"你平时怎么做接口测试"时，用这条线讲，不要东一句西一句：</p>
+  <div class="note">
+    <p>"后端接口提测后我就介入，比 UI 测试早一个阶段。<b>我的流程是三步：先按接口文档和验收标准设计用例，再在 Postman 里按模块组织成 Collection，最后用 Collection Runner 批量执行并出结果。</b>"</p>
+    <p>"用例设计上，我一般覆盖六类：<b>正常流、参数校验、边界值、业务规则、权限鉴权，还有幂等和异常场景</b>。参数这块我会专门测必填缺失、类型错误、长度超限，还有<b>参数不传、传空串、传 null 三种情况</b>——后端对这三者的处理经常不一样。"</p>
+    <p>"判定通过上，<b>我不会只看状态码</b>。200 只说明 HTTP 层通了，我会在 Tests 里写断言，校验状态码、关键业务字段的值、字段类型和列表条数；涉及金额或库存的接口，我还会去数据库核对一下数据是不是真的落库了。"</p>
+  </div>
+  <p>这段话里加粗的部分，是让它听起来"像做过"的关键：<b>明确的介入时机、结构化的用例分类、对参数细节的具体认知、以及对"200 不算通过"的敏感度</b>。</p>
+
+  <h3>6.2 用 STAR 讲一个接口 Bug 案例</h3>
+  <table class="tbl">
+    <tr><th>结构</th><th>说什么</th><th>示例</th></tr>
+    <tr><td>S 情境</td><td>什么版本、什么功能</td><td>"上个版本做结算功能，我负责结算相关接口的测试"</td></tr>
+    <tr><td>T 任务</td><td>你负责什么</td><td>"我负责金额计算和优惠券叠加这两个接口"</td></tr>
+    <tr><td>A 行动</td><td><b>重点</b>：你怎么发现的、怎么定位的、怎么跟进的</td><td>"我按等价类划出 6 组金额场景批量跑，发现当优惠券面额大于订单金额时，接口返回的实付金额是负数，但状态码是 200。我先确认必现，然后把请求和响应截图、加上复现步骤写进单子，同时去数据库核对了落库金额——<b>库里的值也是负的，说明是后端计算逻辑的问题，不是前端展示问题</b>。据此指派给了结算模块的开发"</td></tr>
+    <tr><td>R 结果</td><td>最后怎么样、你学到什么</td><td>"开发当天修复。我回归通过后，把这组场景补成了固定用例，后来又加进了自动化回归集。这件事让我意识到<b>光看状态码是不够的，必须对关键字段做断言</b>"</td></tr>
+  </table>
+  <p><b>注意行动部分</b>：批量跑、确认必现、查数据库区分前后端、附请求响应——这四个细节就是"专业度"的证明，比说"我很细心"有用得多。</p>
+
+  <h3>6.3 三个千万不能说的回答</h3>
+  <table class="tbl">
+    <tr><th>不要说</th><th>为什么</th><th>改成</th></tr>
+    <tr><td>"我看到返回 200 就说明接口没问题"</td><td>暴露你不知道 HTTP 分层，也不做断言</td><td>"200 只代表 HTTP 层通了，我会对响应体里的关键字段写断言，必要时查数据库核对"</td></tr>
+    <tr><td>"接口测试就是拿 Postman 点一点"</td><td>把工具当成了方法</td><td>"Postman 是执行工具，接口测试的核心是用例设计——按正常流、参数、边界、权限、幂等这几个维度去覆盖"</td></tr>
+    <tr><td>"接口测试可以替代 UI 测试"</td><td>不懂测试分层</td><td>"两者互补。接口测后端逻辑，快且稳，适合回归；UI 测用户能看到的交互和样式。我们的策略是接口层做主要覆盖，UI 层覆盖核心流程"</td></tr>
+  </table>
+
+  <h3>6.4 如果被问到不会的</h3>
+  <p>比如"你用过 JMeter 吗""你们的接口自动化是怎么接 CI 的"。<b>不要编。</b>用这个句式：</p>
+  <div class="note">
+    <p>"这个我没实际用过。不过我知道它是解决 X 问题的，我目前的做法是 Y，思路是通的。如果有需要，我可以很快上手。"</p>
+    <p>面试官对"承认不会 + 说清理解 + 给出替代做法"的容忍度，远高于"编一个被追问两句就穿帮的答案"。</p>
+  </div>
+</section>
+
+<!-- ================= 附录 A ================= -->
+<section id="ca">
+  <h2><span class="n">A</span>术语中英对照表</h2>
+  <p class="sub">工具和文档多是英文的，这些词你迟早会看到。</p>
+  <table class="tbl">
+    <tr><th>中文</th><th>英文</th><th>说明</th></tr>
+    <tr><td>接口</td><td>API</td><td>Application Programming Interface，程序之间的约定</td></tr>
+    <tr><td>请求</td><td>Request</td><td>你发出去的东西</td></tr>
+    <tr><td>响应</td><td>Response</td><td>服务端返回的东西</td></tr>
+    <tr><td>请求方法</td><td>Method</td><td>GET / POST / PUT / PATCH / DELETE</td></tr>
+    <tr><td>请求头</td><td>Request Header</td><td>附加信息，如 Content-Type</td></tr>
+    <tr><td>请求体</td><td>Request Body</td><td>提交的数据</td></tr>
+    <tr><td>查询参数</td><td>Query Params</td><td>拼在地址后面的参数</td></tr>
+    <tr><td>路径参数</td><td>Path Params</td><td>写在路径里的参数，如 <code>/users/1</code></td></tr>
+    <tr><td>状态码</td><td>Status Code</td><td>200 / 400 / 401 / 403 / 404 / 500 等</td></tr>
+    <tr><td>响应体</td><td>Response Body</td><td>返回的数据，通常是 JSON</td></tr>
+    <tr><td>断言</td><td>Assertion</td><td>校验响应是否符合预期，接口测试的核心</td></tr>
+    <tr><td>集合</td><td>Collection</td><td>Postman 里存放一组请求的容器</td></tr>
+    <tr><td>环境变量</td><td>Environment Variable</td><td>区分环境的可变参数，如 baseUrl</td></tr>
+    <tr><td>批量执行</td><td>Collection Runner</td><td>一次性跑完整个集合的功能</td></tr>
+    <tr><td>接口文档</td><td>API Doc / Swagger</td><td>接口的说明书，含字段和错误码</td></tr>
+    <tr><td>接口规范</td><td>OpenAPI / Swagger Spec</td><td>可导入工具生成请求的标准化描述文件</td></tr>
+    <tr><td>鉴权</td><td>Authentication</td><td>证明你是谁（401 相关）</td></tr>
+    <tr><td>授权</td><td>Authorization</td><td>你能做什么（403 相关）</td></tr>
+    <tr><td>令牌</td><td>Token</td><td>身份凭证，通常放在 Authorization 头</td></tr>
+    <tr><td>签名</td><td>Sign / Signature</td><td>防篡改校验值</td></tr>
+    <tr><td>幂等</td><td>Idempotent</td><td>重复执行结果不变</td></tr>
+    <tr><td>越权</td><td>Unauthorized Access</td><td>用别人身份访问数据，接口测试重点</td></tr>
+    <tr><td>数据驱动</td><td>Data Driven</td><td>用数据文件驱动多组用例执行</td></tr>
+    <tr><td>前后置脚本</td><td>Pre-request / Tests Script</td><td>发送前、收到后执行的脚本</td></tr>
+    <tr><td>模拟服务</td><td>Mock Server</td><td>后端没做好时，先造一个假接口返回数据</td></tr>
+    <tr><td>抓包</td><td>Capture / Sniff</td><td>拦截查看实际发出的请求</td></tr>
+  </table>
+</section>
+
+<!-- ================= 附录 B ================= -->
+<section id="cb">
+  <h2><span class="n">B</span>Postman / Apifox / JMeter 对照</h2>
+  <p class="sub">国内面试常问"你用过哪些接口测试工具"，这一节让你不被工具名卡住。</p>
+  <table class="tbl">
+    <tr><th></th><th>Postman</th><th>Apifox</th><th>JMeter</th></tr>
+    <tr><td>定位</td><td>接口调试 + 接口测试</td><td>接口文档 + 调试 + 测试一体化</td><td><b>性能测试为主</b>，也能做接口测试</td></tr>
+    <tr><td>上手难度</td><td>低</td><td>低</td><td>高（概念多）</td></tr>
+    <tr><td>中文支持</td><td>英文为主</td><td>中文原生</td><td>中英都有</td></tr>
+    <tr><td>断言</td><td>JavaScript 脚本</td><td>可视化 + 脚本</td><td>各类断言组件</td></tr>
+    <tr><td>批量执行</td><td>Collection Runner</td><td>测试场景</td><td>线程组</td></tr>
+    <tr><td>自动化 / CI</td><td>Newman（命令行）</td><td>命令行工具</td><td>命令行模式，天然适合 CI</td></tr>
+    <tr><td>强项</td><td>生态成熟、资料最多、国内外通用</td><td>文档和测试打通、团队协作好、中文友好</td><td>高并发压测、性能指标</td></tr>
+    <tr><td>弱项</td><td>团队协作要付费、文档功能弱</td><td>生态相对新</td><td>写接口用例繁琐，不适合做功能验证</td></tr>
+  </table>
+  <div class="note">
+    <p><b>三者的关系（这才是你要记的）：</b>Postman 和 Apifox 是<b>同一类</b>工具，做接口功能和回归测试；JMeter 本职是<b>性能测试</b>，接口测试只是顺带能做的事。</p>
+    <p><b>面试话术：</b>"接口测试工具是壳，用例设计是核。我用 Postman 做过完整的接口功能测试和回归，换成 Apifox 或 JMeter，需要重新熟悉的只是界面和脚本写法，用例该怎么设计、断言该验什么，是一样的。"</p>
+    <p>这句话的杀伤力在于：它把面试官"你会不会用我们家的工具"这个问题，转化成了"你懂不懂接口测试"，而这恰好是你能答得更好的部分。</p>
+  </div>
+</section>
+
+<!-- ================= 附录 C ================= -->
+<section id="cc">
+  <h2><span class="n">C</span>面试高频 20 题清单</h2>
+  <p class="sub">考前对着这张表自问自答一遍，答不上来的回对应讲次。</p>
+  <table class="tbl">
+    <tr><th>#</th><th>问题</th><th>答题要点</th><th>出处</th></tr>
+    <tr><td>1</td><td>GET 和 POST 的区别？</td><td>语义 / 参数位置 / 幂等 / 缓存；主动纠正"长度限制""更安全"</td><td>§1.2</td></tr>
+    <tr><td>2</td><td>常见状态码说一下</td><td>200 201 400 401 403 404 500；401 与 403 的区别</td><td>§1.3</td></tr>
+    <tr><td>3</td><td>401 和 403 的区别？</td><td>认证 vs 授权</td><td>§1.3</td></tr>
+    <tr><td>4</td><td>400 和 500 的区别？</td><td>调用方的错 vs 服务端的错</td><td>§1.3</td></tr>
+    <tr><td>5</td><td>PUT 和 PATCH 的区别？测 PUT 注意什么？</td><td>全量 vs 局部；PUT 必须传全量字段</td><td>§1.2</td></tr>
+    <tr><td>6</td><td>Content-Type 有哪几种？设错了会怎样？</td><td>json vs form-urlencoded；设错报 400</td><td>§1.4</td></tr>
+    <tr><td>7</td><td>接口返回 200 就说明没问题吗？</td><td><b>不是</b>，要断言业务字段</td><td>§4.1</td></tr>
+    <tr><td>8</td><td>你怎么判断这条接口用例通过了？</td><td>靠断言，不靠人眼</td><td>§4.3</td></tr>
+    <tr><td>9</td><td>断言一般验哪些内容？</td><td>状态码 / 字段值 / 类型 / 条数 / 响应时间</td><td>§4.3</td></tr>
+    <tr><td>10</td><td>你为什么做接口测试？</td><td>介入早、快而稳、定位准；测试金字塔</td><td>§2.1</td></tr>
+    <tr><td>11</td><td>接口测试能替代 UI 测试吗？</td><td>不能，互补</td><td>§2.3</td></tr>
+    <tr><td>12</td><td>接口测试能测什么、不能测什么？</td><td>能测逻辑/参数/权限/幂等；不能测样式/交互/兼容性</td><td>§2.3</td></tr>
+    <tr><td>13</td><td>给你一条接口，你怎么设计用例？</td><td><b>六类矩阵</b>：正常流/参数/边界/业务/权限/幂等异常</td><td>§5.2</td></tr>
+    <tr><td>14</td><td>参数校验你会测什么？</td><td>必填/类型/长度/格式；不传、空串、null 三种</td><td>§5.3</td></tr>
+    <tr><td>15</td><td>你会怎么测权限？</td><td>401 / 403 / <b>越权访问</b></td><td>§5.5</td></tr>
+    <tr><td>16</td><td>什么是幂等？怎么测？</td><td>重复请求只产生一次结果；连发两次下单</td><td>§5.5</td></tr>
+    <tr><td>17</td><td>登录后的 token 怎么管理？</td><td>登录脚本存环境变量，后续引用 <code>{{token}}</code></td><td>§4.5</td></tr>
+    <tr><td>18</td><td>接口用例怎么做批量回归？</td><td>Collection + 断言 + Runner；或接 CI</td><td>§3.6</td></tr>
+    <tr><td>19</td><td>你用过哪些接口测试工具？</td><td>工具是壳，用例设计是核</td><td>附录 B</td></tr>
+    <tr><td>20</td><td>接口报错了，你怎么定位是前端还是后端的问题？</td><td>看请求是否发出、参数是否正确、响应内容；对照日志和数据库</td><td>§6.2</td></tr>
+  </table>
+</section>
+
+<!-- ================= 附录 D ================= -->
+<section id="cd">
+  <h2><span class="n">D</span>练习环境：零成本公开 API</h2>
+  <p class="sub">接口测试必须有个真实的被测对象。下面这些免费、免注册、随时能打开。</p>
+
+  <h3>主力选择：JSONPlaceholder</h3>
+  <p>一个假的在线 REST API，提供 posts / comments / users / todos 等资源，支持完整的 CRUD，非常适合练手。</p>
+  <table class="tbl">
+    <tr><th>用途</th><th>请求</th></tr>
+    <tr><td>查列表</td><td><code>GET https://jsonplaceholder.typicode.com/posts</code></td></tr>
+    <tr><td>查单条</td><td><code>GET https://jsonplaceholder.typicode.com/posts/1</code></td></tr>
+    <tr><td>新增</td><td><code>POST https://jsonplaceholder.typicode.com/posts</code></td></tr>
+    <tr><td>更新</td><td><code>PUT https://jsonplaceholder.typicode.com/posts/1</code></td></tr>
+    <tr><td>删除</td><td><code>DELETE https://jsonplaceholder.typicode.com/posts/1</code></td></tr>
+    <tr><td>嵌套资源</td><td><code>GET https://jsonplaceholder.typicode.com/posts/1/comments</code></td></tr>
+  </table>
+  <div class="note">
+    <p><b>注意它的局限：</b>它是模拟服务，POST / PUT / DELETE <b>不会真的改数据</b>，但会返回成功和相应的结构。<b>这完全不影响你练发送请求、设请求头、写断言、跑批量。</b>你的目标是练"测的动作和判定方法"，不是验证它的业务逻辑。</p>
+  </div>
+
+  <h3>补充选择：httpbin</h3>
+  <p>专门用来"把请求原样回显给你"，是理解请求结构的最佳工具。<b>你不知道自己的请求到底长什么样时，用它照一照。</b></p>
+  <table class="tbl">
+    <tr><th>用途</th><th>请求</th><th>你会看到</th></tr>
+    <tr><td>回显请求</td><td><code>GET https://httpbin.org/get</code></td><td>你发出去的头、参数、来源 IP</td></tr>
+    <tr><td>回显 POST</td><td><code>POST https://httpbin.org/post</code></td><td>你提交的 body 原样返回</td></tr>
+    <tr><td>指定状态码</td><td><code>GET https://httpbin.org/status/404</code></td><td>返回 404，用来练断言失败的样子</td></tr>
+    <tr><td>模拟延迟</td><td><code>GET https://httpbin.org/delay/3</code></td><td>延迟 3 秒，用来练响应时间断言</td></tr>
+    <tr><td>需要鉴权</td><td><code>GET https://httpbin.org/basic-auth/user/pass</code></td><td>用来练 Authorization 的填法</td></tr>
+  </table>
+  <p><b>重点推荐 <code>/status/404</code> 和 <code>/delay/3</code> 这两个</b>——它们能让你亲手制造"断言失败"的场面，看到红色的叉长什么样。只见过绿勾的人，不会写有效的断言。</p>
+
+  <h3>三个练习动作（配合第 3、4 讲）</h3>
+  <ol>
+    <li><b>建一个 Collection</b>，叫"练手 API"，里面分两个 folder：JSONPlaceholder 和 httpbin，把上面这些请求都存进去</li>
+    <li><b>建一个环境</b>，定义 <code>baseUrl</code>，把所有请求的地址改成 <code>{{baseUrl}}</code> 形式</li>
+    <li><b>给每条请求写断言</b>，然后打开 Runner 批量跑一遍，看结果报告里有多少绿勾。跑通之后，故意改坏一条断言，再跑一次，看红色的样子</li>
+  </ol>
+
+  <div class="ok note">
+    <p><b>本讲的完成标准：</b>不看任何资料，能在 30 分钟内完成三件事——① 用 Postman 发一个带 JSON 请求体的 POST 请求并让状态码返回 201；② 给一条 GET 请求写出至少 4 条断言（状态码、字段值、字段类型、响应时间）；③ 用 Collection Runner 批量跑完一个包含 5 条请求的集合，并说出哪几条失败、为什么失败。</p>
+  </div>
+</section>
+
+<!-- ================= 附录 E ================= -->
+<section id="ce">
+  <h2><span class="n">E</span>30 天执行清单</h2>
+  <p class="sub">每天 45–60 分钟。把上面六讲拆成可打勾的动作。</p>
+
+  <h3>第 1 周：打地基（不装软件）</h3>
+  <table class="tbl">
+    <tr><th>天</th><th>做什么</th><th>自检</th></tr>
+    <tr><td>D1</td><td>读第 1 讲 §1.1–1.2</td><td>能说清一个请求由哪几部分组成</td></tr>
+    <tr><td>D2</td><td>§1.3 状态码</td><td>能默写 200/201/400/401/403/404/500 的含义</td></tr>
+    <tr><td>D3</td><td>§1.4–1.5 头信息与 JSON</td><td>能说出 json 和 form 两种格式的写法差异</td></tr>
+    <tr><td>D4</td><td>§1.6 认证 + 章节自测 6 题</td><td>6 题能口述答完</td></tr>
+    <tr><td>D5</td><td>读第 2 讲，抄一遍 §2.1 的面试答法</td><td>能背出接口测试的三个优势</td></tr>
+    <tr><td>D6–D7</td><td>复习 + 附录 C 的 1–12 题自问自答</td><td>12 题里答得上 10 题</td></tr>
+  </table>
+
+  <h3>第 2 周：上手工具</h3>
+  <table class="tbl">
+    <tr><th>天</th><th>做什么</th><th>自检</th></tr>
+    <tr><td>D8</td><td>装 Postman，发通第一个 GET 请求（附录 D）</td><td>能看到 200 和响应体</td></tr>
+    <tr><td>D9</td><td>发 POST 请求，观察 201；改坏参数观察 400</td><td>亲手见过 3 种状态码</td></tr>
+    <tr><td>D10</td><td>建 Collection 和 folder，把请求归档</td><td>结构是「系统 → 模块 → 请求」</td></tr>
+    <tr><td>D11</td><td>建环境变量，把地址改成 <code>{{baseUrl}}</code></td><td>切换环境时请求地址跟着变</td></tr>
+    <tr><td>D12</td><td>读第 4 讲 §4.1–4.3</td><td>能说出"200 不等于通过"的三种反例</td></tr>
+    <tr><td>D13</td><td>给一条请求写 5 条断言</td><td>Test Results 里 5 个绿勾</td></tr>
+    <tr><td>D14</td><td>用 httpbin 的 <code>/status/404</code> 制造断言失败</td><td>见过红叉，知道怎么排查</td></tr>
+  </table>
+
+  <h3>第 3 周：做深</h3>
+  <table class="tbl">
+    <tr><th>天</th><th>做什么</th><th>自检</th></tr>
+    <tr><td>D15</td><td>§4.5 token 存环境变量</td><td>能说清"为什么要自动化存 token"</td></tr>
+    <tr><td>D16</td><td>用 Runner 批量跑整个 Collection</td><td>能读出报告里哪条失败</td></tr>
+    <tr><td>D17</td><td>§4.6 数据驱动，准备一个 CSV 跑 3 组数据</td><td>Runner 迭代了 3 次</td></tr>
+    <tr><td>D18–19</td><td>读第 5 讲，拿任意一条接口按六类矩阵写出用例清单</td><td>写出至少 15 条，六类都覆盖到</td></tr>
+    <tr><td>D20</td><td>复习 §5.3 参数校验，补齐"不传/空串/null"三种</td><td>能解释三者为什么要分开测</td></tr>
+    <tr><td>D21</td><td>尝试用浏览器 F12 抓一个真实网站的接口</td><td>能看懂 Network 里的请求</td></tr>
+  </table>
+
+  <h3>第 4 周：转成面试能力</h3>
+  <table class="tbl">
+    <tr><th>天</th><th>做什么</th><th>自检</th></tr>
+    <tr><td>D22–23</td><td>读第 6 讲，把 §6.1 那段话改成你自己的版本</td><td>能连续讲 60 秒不打结</td></tr>
+    <tr><td>D24–25</td><td>准备 STAR 案例（可以就用你练手时踩的坑）</td><td>四段结构完整，行动部分有细节</td></tr>
+    <tr><td>D26–28</td><td>附录 C 的 20 题全套自问自答，录音听一遍</td><td>20 题里能答上 17 题</td></tr>
+    <tr><td>D29–30</td><td>对着附录 D 的完成标准做一次完整演示</td><td>30 分钟内独立完成三项</td></tr>
+  </table>
+
+  <div class="ok note">
+    <p><b>执行到最后的验收标准：</b>给你一条从没见过的接口和它的文档，你能在 30 分钟内——① 整理出覆盖六类的用例清单；② 在 Postman 里建好请求、写好断言；③ 说出这条接口有哪些风险点。做到这三件事，接口测试这一块你就已经能拿去面试了。</p>
+  </div>
+</section>
+
+<div class="foot">
+  配套文件放在 <code>api-test/</code> 目录下，与 <code>db-practice/</code>、<code>jira/</code> 同一套版式。<br>
+  下一份会随第 1 讲一起讲，边讲边更新这里。
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="T52sLjS4qMr0iT4RJiMp1o">
+<head data-page-node-id="SSOLgYxl9HanCFYBIH4bDN">
+<meta charset="UTF-8" data-page-node-id="KM0Sf8uELuMFIrPW7X5SQd">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="QEcbIT7mKUogDp4SmBJJLn">
+<title>SQL 入门边讲边练 · 学生选课成绩库</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" data-page-node-id="MvyjnWf7k4b1EJLBCAJ5He">
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+/* ---- 页头 ---- */
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+/* ---- 目录 ---- */
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+/* ---- 章节 ---- */
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+/* ---- 代码块 ---- */
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+
+/* ---- 提示块 ---- */
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+
+/* ---- 预期结果 ---- */
+.result{margin:0 0 16px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.result .rh{
+  background:#f8f9fb;padding:7px 15px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);border-bottom:1px solid var(--line);
+}
+.result table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.result th,.result td{padding:6px 15px;text-align:left;border-bottom:1px solid #eef0f3}
+.result th{background:#fbfcfd;font-weight:500;color:var(--text-2);font-size:11.5px}
+.result tr:last-child td{border-bottom:none}
+.result td{color:var(--text-2)}
+.result .null{color:#b0b6bd;font-style:italic}
+
+/* ---- 练习 ---- */
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details pre{margin-bottom:12px}
+.hint{font-size:13px;color:var(--text-3);margin:0 0 10px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+/* ---- 页脚 ---- */
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+}
+</style>
+</head>
+<body data-page-node-id="cOKsRHqOJLCmtwYKbyNaxR">
+<div class="wrap" data-page-node-id="JF2v7K4d7OT89mOtuu7VRS">
+
+<div class="header" data-page-node-id="VvvnLOTU0qNi92UDjdv6J7">
+  <div class="kicker" data-page-node-id="3Ts5WoqRWkC1JDsvJe5fVy">SQL 入门 · 边讲边练</div>
+  <h1 data-page-node-id="RCgiZqt9r5qUoAoEXVRZQf">数据库查询与增删改</h1>
+  <p data-page-node-id="RlEc0FlCUdqBD8AGR16bIW">用「学生选课成绩」三张表，把最常用的 SQL 从零讲到能自己写。每一节都是：先讲语法 → 再给能直接跑的示例 → 最后留练习。练习答案折起来了，先自己做，做完再对。</p>
+</div>
+
+<div class="toc" data-page-node-id="EEwv1ofSEAr69MvqKm3ZdB">
+  <h3 data-page-node-id="NRTePeDAZs8BmpcqWbsLD0">目录</h3>
+  <ol data-page-node-id="wAX74dTYcBBYV2qqETCWJP">
+    <li data-page-node-id="2PMXZo11lqdltvbHO3h1cZ"><a href="#c0" data-page-node-id="1xhA8ggaVxL9Rb2DpStniX"><span class="n" data-page-node-id="5JOAHemoEKIltxneqvQjYc">0</span>开始之前：三条铁律</a></li>
+    <li data-page-node-id="QaxqPWVv4bsou9jC7Gjbum"><a href="#c1" data-page-node-id="lH1hzjVApTY4RM7e1yGqH9"><span class="n" data-page-node-id="FBuzWurlRIxoqx3pnnY2gU">1</span>SELECT：我要哪几列</a></li>
+    <li data-page-node-id="IfcU20p3S6bRTD4nyoZHVK"><a href="#c2" data-page-node-id="fd0pd4DkjIH8IcVAj5mnzY"><span class="n" data-page-node-id="OgxnPCluAjEuW5XXyYYrx6">2</span>WHERE：筛出我要的行</a></li>
+    <li data-page-node-id="PoZzXFOvVQxmNxUb9Py6cF"><a href="#c3" data-page-node-id="td74NdxIIDTFDKyr7OBcQb"><span class="n" data-page-node-id="262E3KvZDf4atTq4BV2vHN">3</span>ORDER BY 与 LIMIT</a></li>
+    <li data-page-node-id="ADZHC7vTcnNpNxhrK5KwPy"><a href="#c4" data-page-node-id="vKyVFlcsCjqRkCbNUihojY"><span class="n" data-page-node-id="pZ1p04ylW9TBYCadgVtVMD">4</span>聚合函数与 GROUP BY</a></li>
+    <li data-page-node-id="trFVNSs7pysRpXEiC2cu5x"><a href="#c5" data-page-node-id="THyxN900cWvlz0DHPj3L6t"><span class="n" data-page-node-id="n0xDzN4i6G04aUY4BnOR4M">5</span>JOIN：把分开的表拼起来</a></li>
+    <li data-page-node-id="UaOCpqLXmAa03TqtfJthtW"><a href="#c6" data-page-node-id="uSBEPzyOR0IgJ3COASlRc1"><span class="n" data-page-node-id="pjJd4hb4TyAFkwJuqIS9hU">6</span>INSERT：新增数据</a></li>
+    <li data-page-node-id="J6yp7bQMr9gIFTMFA4I1DS"><a href="#c7" data-page-node-id="o4DZZAYY0T4aXMagnj59qv"><span class="n" data-page-node-id="CjZiz7NtitpQIiGWRJnxXF">7</span>UPDATE：改数据</a></li>
+    <li data-page-node-id="4j8V4aazsqfaVGqeHFogaJ"><a href="#c8" data-page-node-id="mAzNccN1d3ng1ewNkt1lI2"><span class="n" data-page-node-id="ZnMGQ6njHPqw0gC7frdhB8">8</span>DELETE：删数据</a></li>
+    <li data-page-node-id="HtFbJCxbqve0hdO0SNKYQn"><a href="#c9" data-page-node-id="nDgm5AX2TculCsvUxVUf1g"><span class="n" data-page-node-id="tSCJvRGsVQXtxtucPnNttv">9</span>实战：测试岗的数据题</a></li>
+    <li data-page-node-id="pvEUww4Xw39EFcBA9pS4Ah"><a href="#cx" data-page-node-id="BtCYofrHvkbQ2SHv2q1Ju9"><span class="n" data-page-node-id="1L7nZBGOHGsZz96DoqWAJG">附</span>速查表</a></li>
+  </ol>
+</div>
+
+<!-- ================= 0 ================= -->
+<section id="c0" data-page-node-id="uvkhKGgRYNoldAi84i8uH9">
+  <h2 data-page-node-id="UdlNGFGRTLb9d30E20Ipvi"><span class="n" data-page-node-id="rysbDGz3vlhbDhzRN9lb80">0</span>开始之前：三条铁律</h2>
+  <p class="sub" data-page-node-id="hQBmaFTgD5SstegmdMDbaY">先把这节看完，能省你后面很多次"数据被我搞没了"。</p>
+
+  <h3 data-page-node-id="fODkipGqCagvaRTbqhPgt2">铁律一：先查后改，先查后删</h3>
+  <p data-page-node-id="TT1D9ydtmD2Lt8CYHLuIa4">任何 <code class="inline" data-page-node-id="tkqGMgKFcrCU2rLRLexYMw">UPDATE</code> 和 <code class="inline" data-page-node-id="CYVKK6KeYDFUxic6beFIH5">DELETE</code>，<b data-page-node-id="jJyoy6NRbsWsJpCb77RiSj">都先把 WHERE 条件放到 SELECT 里跑一遍</b>。看看查出来的行是不是你想动的那几行。</p>
+  <pre data-page-node-id="bTKPSYIf7gkd1XC7X8paFX"><code class="language-sql" data-page-node-id="2ykQHxnpUuuwxSm6Y0l1HX">-- 第一步：先看清楚要动谁
+SELECT * FROM scores WHERE student_id = 1010;
+
+-- 第二步：确认无误，再把 SELECT * 换成 UPDATE / DELETE
+UPDATE scores SET score = 90 WHERE student_id = 1010;</code></pre>
+  <div class="note" data-page-node-id="nk5VY6tgF8EQcK6uE51cX6">
+    <p data-page-node-id="FpjXW5hBLvVmuKg2QPKZEC"><b data-page-node-id="RgDAseYdgTjfvTw5wwH199">为什么这么强调？</b>因为 <code class="inline" data-page-node-id="gFm7SaamGUBThQCYAkcsqC">UPDATE scores SET score = 0;</code> 这条语句<b data-page-node-id="zztlrB8v92uhdLXFHSs0j4">语法完全正确、不会报错</b>，但会把全表 47 条成绩全部改成 0。数据库不会问你"你确定吗"。忘了写 WHERE 是新人最高频的事故。</p>
+  </div>
+
+  <h3 data-page-node-id="8ezjIHegGj4k6GYrR22GtD">铁律二：数据库的数据是有类型的</h3>
+  <p data-page-node-id="MT0tSWDRnCM8FVAXvEn7XP">数字就是数字，文字就是文字，写反了要么报错、要么查不到。</p>
+  <pre data-page-node-id="UibtPR2oDDfBxEJOTIYbfg"><code class="language-sql" data-page-node-id="Des9pWgQrbbXkOYDJP9LIS">SELECT * FROM scores WHERE score &gt; 90;        -- 对：score 是数字类型
+SELECT * FROM scores WHERE score &gt; '90';      -- 能跑，但依赖数据库帮你隐式转换，别这么写</code></pre>
+
+  <h3 data-page-node-id="b82pZ5Iyo3R695DHmcEMWR">铁律三：NULL 不是 0，也不是空字符串</h3>
+  <p data-page-node-id="EgxwxgjVsq1nbog7fIG9fM"><code class="inline" data-page-node-id="j989rr4I6dX1O3aYjcMLnc">NULL</code> 的意思是"这里没有值"，比如吴涛的数学成绩，因为他<b data-page-node-id="CBdxh05SfuzuFiPnmRvZwt">缺考了</b>，不是考了 0 分。</p>
+  <pre data-page-node-id="6HDK2bcAzanFce6Em6Wtot"><code class="language-sql" data-page-node-id="LbAdISD37XYBUvJOQGtO7h">-- 错！查不出任何数据。注意：它不报错，只是安静地返回 0 行
+SELECT * FROM scores WHERE score = NULL;
+
+-- 对，这才是"没成绩"的写法
+SELECT * FROM scores WHERE score IS NULL;
+
+-- 有成绩的
+SELECT * FROM scores WHERE score IS NOT NULL;</code></pre>
+  <div class="note" data-page-node-id="GBGmJGGBFWpSWFB7LvKFxF">
+    <p data-page-node-id="hKg4J5CZheJK0iMx1hvE7c">这是初学者最容易踩的坑，没有之一。记住：<b data-page-node-id="EwfZf5JEGeyq1gyIHWiF3Z">和 NULL 比较只能用 IS NULL / IS NOT NULL，不能用 = 或 !=</b>。</p>
+    <p><b>最危险的地方在于：写 <code class="inline">= NULL</code> 不会报错。</b>它会正常运行、安静地返回 0 行，看起来就像"库里确实没这样的数据"。如果你不知道这个坑，就会误以为"真没这条记录"，然后往完全错误的方向排查半天。上面三条语句都跑一遍、对比返回的行数，你会记得很牢。</p>
+  </div>
+
+  <h3 data-page-node-id="LDLwxhwI7lopk4xMYRT9TF">在 Navicat 里怎么跑</h3>
+  <p>教程里所有的 SQL 都是<b>写完整、可以直接复制去跑的</b>，以分号 <code class="inline">;</code> 结尾就是一条完整语句。</p>
+  <div class="warn note">
+    <p><b>如果运行时报 1064 语法错误</b>，八成是因为只粘了后半截。最常见的就是漏掉开头的 <code class="inline">SELECT ... FROM ...</code>，只把 <code class="inline">WHERE ...</code> 那一段粘了过去——单独一个 WHERE 不是完整语句，数据库读不懂。<b>复制时从 SELECT 开头选起。</b></p>
+  </div>
+  <ol data-page-node-id="2hxjx4m4WFxRlzV95I68nB">
+    <li data-page-node-id="fZ4xnqeHAw6Xi8KlxHlTc1">左侧双击展开 <code class="inline" data-page-node-id="GiirTuVwlz48ihHgBYGpL3">school</code> 库 → 右键 → <b data-page-node-id="DQWvkTsqxVC4p1hNz75LEe">新建查询</b></li>
+    <li data-page-node-id="K25DEXsBfG0hfPpW61TcP6">把教程里的 SQL 粘进去</li>
+    <li data-page-node-id="Q61FMIwNRrt3LfmAxY5mX2">点工具栏的 <b data-page-node-id="P2xfOiGAUEZAY01eWaFAmJ">运行</b>（或按 Ctrl+R / F8），结果出现在下方</li>
+    <li data-page-node-id="ou67Sp68uORF7N0uGoRK7x">想只跑其中一条？用鼠标把那条语句选中，再点运行，就只执行选中的部分</li>
+  </ol>
+</section>
+
+<!-- ================= 1 ================= -->
+<section id="c1" data-page-node-id="B48M7xOMmkMQdrznTZ9Ouf">
+  <h2 data-page-node-id="yUVRcnyn0V0s9jLtexiqwx"><span class="n" data-page-node-id="UNBlHjNyfeoi51YBS2LRje">1</span>SELECT：我要哪几列</h2>
+  <p class="sub" data-page-node-id="kGbGS25T6hFNf4z2eMC1A6">查询的起点。先搞清楚"取哪些列、从哪张表取"。</p>
+
+  <h3 data-page-node-id="UpbXiwJ9wIiC0bJuDfIW6b">语法</h3>
+  <pre data-page-node-id="IYNNgrESx1e55YIcCpZE9d"><code class="language-sql" data-page-node-id="FD9rEHNyF3XOA6CU0a4WIv">SELECT 列1, 列2, 列3
+FROM 表名;</code></pre>
+  <p data-page-node-id="xWlUdaKDwurAyrIE78lh6D">就这两个关键字。<code class="inline" data-page-node-id="WOXbUJHMFGl8Hk9iIxcEt6">SELECT</code> 后面写你要哪些列，<code class="inline" data-page-node-id="DAX5PYwtS39jlwh2jnGipO">FROM</code> 后面写从哪张表。</p>
+
+  <h3 data-page-node-id="Xp033rEFGtMiKcNPsgAlJy">示例一：查全部列</h3>
+  <div class="code-label" data-page-node-id="IpG1fMPJaAcoKArYYJLYRz">SQL</div>
+  <pre data-page-node-id="sydLvogtvw6CyjOEKEfZCe"><code class="language-sql" data-page-node-id="L3UN3yxoeRTZ3wWsoBEvT2">SELECT * FROM students;</code></pre>
+  <p data-page-node-id="B9jN2VU3oiNl8FeVd4eZWS"><code class="inline" data-page-node-id="PdIF0XlGqKpJ7JJTaNwjuK">*</code> 是通配符，代表"所有列"。自己看数据的时候方便，但<b data-page-node-id="ZiNGUb9vQRPVDD1LlTGxFE">正式写查询时别用</b>——你只要 3 列却拖出 6 列，既慢又乱。</p>
+  <div class="result" data-page-node-id="ed8pba9EiJAhDPHJQ7uQgx">
+    <div class="rh" data-page-node-id="JFipC78PWNwFLJXLSDuCvf">结果（12 行，只展示前 4 行）</div>
+    <table data-page-node-id="iFCyaR1Gi5CLrg2gFZz0Sg">
+      <tr data-page-node-id="z1PLxML7nT21DvESG36SeG"><th data-page-node-id="OO63ftP4ECteiupjxhnAJ7">student_id</th><th data-page-node-id="aGBhiaQbLoSsk1UREV03ak">name</th><th data-page-node-id="LQpYKML4mcZOe8JjkNcC3d">gender</th><th data-page-node-id="3C60s802lUSk4ZnBiOrwa6">birth_date</th><th data-page-node-id="5EyTO1O6BGNShC4HgJUjhI">class_name</th><th data-page-node-id="7GSSQjaXQ3RJnyBRItG7oQ">phone</th></tr>
+      <tr data-page-node-id="pCtrGaQ0HJ973aryKGnBkW"><td data-page-node-id="DIlyvpO8XNljk8UPB0AEOO">1001</td><td data-page-node-id="HuH9x96idFajjXlWq3RaXQ">张伟</td><td data-page-node-id="yMcfHQgCbuzJkuywyM6vvt">男</td><td data-page-node-id="YgxKDVfaXARsL31T12tF7u">2006-03-12</td><td data-page-node-id="0XHJWj7e1u0HT1ugUq3PPL">一班</td><td data-page-node-id="nNVVTTIcUxdjxJRx4IikJm">13800001111</td></tr>
+      <tr data-page-node-id="GvVc2EBpgO95p51qsCdbxB"><td data-page-node-id="PVt8HQ1kx0FFXrlto78bp0">1002</td><td data-page-node-id="1jGm5THuNyqWhiL5yL3vN2">王芳</td><td data-page-node-id="1RhJHu6FbxaGL8DAwiz3HX">女</td><td data-page-node-id="Pq1klz3kP5lBPz99DeXWwT">2006-05-20</td><td data-page-node-id="wra8cTXgzgPKEUCxwTmoHU">一班</td><td data-page-node-id="wPsHI49IJgPD4zBY4RCAQD">13800002222</td></tr>
+      <tr data-page-node-id="bfB0ZI6jF0cqMT9vzDrwoj"><td data-page-node-id="i9o9FveqF1KDdgvoDuL4Lp">1003</td><td data-page-node-id="nfOcmoaHPN2M9kg7fwyn0I">李强</td><td data-page-node-id="QZS1vXvx7ViZS5RiAXhZI0">男</td><td data-page-node-id="f5N2kbfBCnC7sJAFwrgyb5">2006-01-08</td><td data-page-node-id="NCsTQQJ8UL5vgAUYjbduGp">一班</td><td data-page-node-id="qA5D3sCvIG3KuCBfXNivIH">13800003333</td></tr>
+      <tr data-page-node-id="mj2T7fTMgrmH6lOHilafa6"><td data-page-node-id="9yeEwHqEJqQ8pz6sLACA1y">1004</td><td data-page-node-id="c2bMzjIh1gSYOZ5ihwIFcV">刘敏</td><td data-page-node-id="Lv0xbzVo6MznwqyY1CEbQi">女</td><td data-page-node-id="by7Eesu5ZVdQA0munGAT0n">2006-07-15</td><td data-page-node-id="lqhCJ7EdVuLk7HW5qq0jto">二班</td><td data-page-node-id="2d8ChsMtQQigGE4DDckxBK">13800004444</td></tr>
+    </table>
+  </div>
+
+  <h3 data-page-node-id="aegZQQlmcbQ0krEH0FMwCc">示例二：只要某几列</h3>
+  <pre data-page-node-id="YGq961yCPEcv4dnccKCLwW"><code class="language-sql" data-page-node-id="q7d7zpkBKckPBGEEVEFrR3">SELECT student_id, name, class_name
+FROM students;</code></pre>
+  <p data-page-node-id="e2CJKrVw3MPBJAgvR1XuzV">列名用逗号隔开，<b data-page-node-id="sYKrZhEatibJFynJpUGBA4">最后那个列名后面不要加逗号</b>——这是新手最常见的语法错误。</p>
+
+  <h3 data-page-node-id="p1lHMjJCDXThYzuVDa8AKk">示例三：给列起别名 AS</h3>
+  <pre data-page-node-id="RL85CoYKxzwnnDwhBaQInF"><code class="language-sql" data-page-node-id="9XGhhIxWSICv62uPHQRFRw">SELECT
+    student_id  AS 学号,
+    name        AS 姓名,
+    class_name  AS 班级
+FROM students;</code></pre>
+  <div class="result" data-page-node-id="PaGWPiWwJxDaADh1Lx5rVg">
+    <div class="rh" data-page-node-id="HYPEWLLlDbjuWLs0YdaY4T">结果</div>
+    <table data-page-node-id="hNvXTc0zDwCAvrlkDgyyAK">
+      <tr data-page-node-id="rts1YX7DYKgsSLDDUhdUcO"><th data-page-node-id="ByPDbuj9CIK1Gp6P3mJa6J">学号</th><th data-page-node-id="Ab4lHdsKpTrl1uUfbj6tEt">姓名</th><th data-page-node-id="z00hthtnDYQlWZuEsB1R9N">班级</th></tr>
+      <tr data-page-node-id="oeruS8pDsG9ghOSsBrn5Qp"><td data-page-node-id="4FpNujRibf8A6w9NdCxX9l">1001</td><td data-page-node-id="Z6b3bdWZSDp7Nh9muD9AXM">张伟</td><td data-page-node-id="BR2oz0c8blbl7WtLsP2o5y">一班</td></tr>
+      <tr data-page-node-id="0FpYDEgAIBxJj7ykwwYfNg"><td data-page-node-id="E89L0A0rMfhlZXk9uebO3F">1002</td><td data-page-node-id="h5ebGZbPr3fmM9caRFnzxb">王芳</td><td data-page-node-id="2GL8q69OZKbW9ounCWHLsK">一班</td></tr>
+    </table>
+  </div>
+  <p data-page-node-id="O6tigFtJpIXFyRDMDwt4Ck"><code class="inline" data-page-node-id="2g5reHNu7DmIiiHfWGNFO4">AS</code> 只是给列改个显示名字，<b data-page-node-id="051SYnK3pmmt6uYrteoXFj">不会改数据库里的真实字段名</b>。<code class="inline" data-page-node-id="fWiIjLyIMNxQKHdxNl5uac">AS</code> 其实可以省略不写（<code class="inline" data-page-node-id="0auRmFbCDUhr2ZEmbc0nwc">SELECT name 姓名</code> 也行），但建议写上，可读性好。</p>
+  <div class="note" data-page-node-id="tilBXsSEBtCWsK5alXAvk8">
+    <p data-page-node-id="HQDbVMMRFNEQOUoyzH9ydL"><b data-page-node-id="zGCiOswqhcrEeKCd7Uvoxx">顺手学个习惯：</b>SQL 关键字用大写（SELECT / FROM / WHERE），表名列名用小写。数据库本身不区分大小写，这纯粹是给人看的，方便一眼分清"哪些是语法、哪些是我自己的东西"。</p>
+  </div>
+
+  <div class="ex" data-page-node-id="nwTcpXOdMtfEbggTHz77he">
+    <div class="ex-h" data-page-node-id="VtoBNfj7E8HsuZDXCa697H">练习 1 · SELECT 基础</div>
+    <ol data-page-node-id="KZutVBHCmISbJfi3wdMZe1">
+      <li data-page-node-id="LUsxasSrfIA5cZBpQz8qQr">查询所有学生的<b data-page-node-id="cc8NmJf7XIOHASR38oiGep">学号和姓名</b>两列。</li>
+      <li data-page-node-id="Jh2QZxYesYs5Dm0mmeN6XL">查询 <code class="inline" data-page-node-id="vO0FH9r18pBhY2KxhTQYEg">courses</code> 表的全部内容。</li>
+      <li data-page-node-id="gIMGTamGYV6SrnPP1scUN0">查询所有学生的<b data-page-node-id="VJsCxvlqmUUiBFTRveX08H">姓名、性别、班级</b>，并把列名显示成中文的「姓名」「性别」「班级」。</li>
+      <li data-page-node-id="veQtIXvR76PaCB6H2BNdL8">查询 <code class="inline" data-page-node-id="cXlbHxStriKJGZ7B9xZGCk">scores</code> 表里的<b data-page-node-id="CgrRRSJP1R0mVJC5HuZAgD">学号、课程编号、分数</b>三列。</li>
+    </ol>
+    <details data-page-node-id="Y1q4DcO2zHchmqrC7DyAxW">
+      <summary data-page-node-id="HajXDrzfBYGB7DMDrG2kF3">对答案</summary>
+      <div class="ans-li" data-page-node-id="F7xQY7Pqib3KpTB6sy5auS">第 1 题</div>
+      <pre data-page-node-id="Hu4Ulcds9Iqr0dLmAqTJaP"><code class="language-sql" data-page-node-id="moGYWOGBfcQ912mTzya0ex">SELECT student_id, name FROM students;</code></pre>
+      <div class="ans-li" data-page-node-id="7DGyt7bDCOjgFrbCprczx1">第 2 题</div>
+      <pre data-page-node-id="pUWXJJmdc7mMocqcCtfVsD"><code class="language-sql" data-page-node-id="ph3DmBCOejI3wdGoyXifep">SELECT * FROM courses;</code></pre>
+      <p class="hint" data-page-node-id="ampKuDqeaQkivBHUht9Fmu">应该返回 6 行（语文、数学、英语、物理、化学、生物）。</p>
+      <div class="ans-li" data-page-node-id="Egqu6yR6UefKHGLYRVkFYT">第 3 题</div>
+      <pre data-page-node-id="kJxKU89IjL9cSaceqEaQkQ"><code class="language-sql" data-page-node-id="5gPa5pShq8RQPffjDmsGIL">SELECT name AS 姓名, gender AS 性别, class_name AS 班级 FROM students;</code></pre>
+      <div class="ans-li" data-page-node-id="XlsPLky3wDl1e0SIKh09BK">第 4 题</div>
+      <pre data-page-node-id="aoOzx5wsDXdywCnEsWgAod"><code class="language-sql" data-page-node-id="MElWdkk8zN7W7uCpZ3jfGl">SELECT student_id, course_id, score FROM scores;</code></pre>
+      <p class="hint" data-page-node-id="VXNMPYytMhCPzHDQjvab9t">应该返回 47 行。你数了吗？如果数出来不是 47，翻回去看第 0 节的脚本有没有完整跑完。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2" data-page-node-id="gKGbbEEEG64irWrFHCp5gH">
+  <h2 data-page-node-id="FliYCmAFeS1jAdQH7RdvrV"><span class="n" data-page-node-id="bOxbAQHB1BLjaZ5f79cuNC">2</span>WHERE：筛出我要的行</h2>
+  <p class="sub" data-page-node-id="dT6YpnhSfFTOSS1PWeU3vn">实际工作里 90% 的查询都带条件。这节是重点，慢慢看。</p>
+
+  <h3 data-page-node-id="o1pnWYDCGOiBNmPH8MyfGP">基础比较运算</h3>
+  <pre data-page-node-id="hZiw3XAN32Iuky1Ghi2OY1"><code class="language-sql" data-page-node-id="uAAvzKGWTxtLlUIoKEP3F5">SELECT * FROM scores WHERE score &gt; 90;      -- 大于
+SELECT * FROM scores WHERE score &gt;= 90;     -- 大于等于
+SELECT * FROM scores WHERE score &lt; 60;      -- 小于（不及格）
+SELECT * FROM scores WHERE score != 60;     -- 不等于，也可以写 &lt;&gt;
+SELECT * FROM students WHERE class_name = '一班';   -- 文字要用单引号</code></pre>
+  <div class="warn note" data-page-node-id="fCoYToy7fMbTc9Sf8T3VCk">
+    <p data-page-node-id="bFfNecJcDkqpKgyJHSE6iZ"><b data-page-node-id="VxBICYXfwhRdwiiOP5EmcS">文字必须加单引号。</b>写 <code class="inline" data-page-node-id="Os7pD0R1B0d7cXnXvcDm7Q">WHERE class_name = 一班</code> 数据库会以为你在拿它跟一个叫"一班"的<b data-page-node-id="3GA8h4tFHhxzWhlKN1rip9">列</b>比较，直接报错 <code class="inline" data-page-node-id="68OEjj2yxfVhCZVGVFM1WL">Unknown column</code>。这里用的是英文单引号 <code class="inline" data-page-node-id="t22nffdih0uSbwtGa7AMPB">'</code>，不是中文的 <code class="inline" data-page-node-id="KDeYrOiocEkV2cAVrZhNbw">‘</code>，也不是双引号。</p>
+  </div>
+
+  <h3 data-page-node-id="GSYzoPMH53IpELwQ4FUgYh">AND / OR：多个条件</h3>
+  <pre data-page-node-id="oGOEYM3xAgfI2LpwiKeNZQ"><code class="language-sql" data-page-node-id="BxONwbdH9Vzm2jpizkpk7v">-- 男生 并且 在二班
+SELECT * FROM students WHERE gender = '男' AND class_name = '二班';
+
+-- 一班 或者 二班
+SELECT * FROM students WHERE class_name = '一班' OR class_name = '二班';
+
+-- 混合：一班的女同学
+SELECT * FROM students WHERE class_name = '一班' AND gender = '女';</code></pre>
+  <div class="note" data-page-node-id="Os1sLqYl6cnIp6xky3I4uK">
+    <p data-page-node-id="9EOUqxdink59oR1QgsmRQQ"><b data-page-node-id="uCAvl8cOvhE4OcJGZaI7Tc">AND 和 OR 混用时一定要加括号。</b>因为 AND 的优先级比 OR 高，<code class="inline" data-page-node-id="XcxVvMA1VFSdkeZCJSScYB">A OR B AND C</code> 会先算 <code class="inline" data-page-node-id="aPJeVTsAZ31ePIPfIlPS0O">B AND C</code>，结果可能跟你想的完全不同。</p>
+    <pre style="margin:10px 0 0" data-page-node-id="2vqAoqVEkEBCF8Q4hQZSRT"><code class="language-sql" data-page-node-id="OYEBzAcVSZ5hIY2IvpVJrK">-- 想表达：(一班或二班) 的男生
+WHERE (class_name = '一班' OR class_name = '二班') AND gender = '男'</code></pre>
+  </div>
+
+  <h3 data-page-node-id="DftjrtAhck7Jz9XFjSHbVu">IN：在某个范围里挑</h3>
+  <p data-page-node-id="R0NokBdDh49hf3XlaJaVYA">条件里有好几个"或"的时候，用 <code class="inline" data-page-node-id="tnTkK2GBYYQL08JPlpN84E">IN</code> 比一堆 OR 清爽得多。</p>
+  <pre data-page-node-id="3TCGAA7PI376b9rdhGtoD8"><code class="language-sql" data-page-node-id="tJLStFrtb2f0C4ghPufdE1">-- 这两个写法结果完全一样
+SELECT * FROM students WHERE class_name = '一班' OR class_name = '二班' OR class_name = '三班';
+
+SELECT * FROM students WHERE class_name IN ('一班', '二班', '三班');
+
+-- 反过来：不在这些班级里的
+SELECT * FROM students WHERE class_name NOT IN ('一班', '二班');</code></pre>
+
+  <h3 data-page-node-id="YPlvUGSWz6jDY4LUbjOlrR">BETWEEN：在区间里（含两端）</h3>
+  <pre data-page-node-id="wCaeOc8RqYup2O2oRr3lM4"><code class="language-sql" data-page-node-id="VVEukABGGJ4RIElFOUePAT">-- 60 到 80 分之间，包含 60 和 80
+SELECT * FROM scores WHERE score BETWEEN 60 AND 80;
+
+-- 等价于
+SELECT * FROM scores WHERE score &gt;= 60 AND score &lt;= 80;
+
+-- 日期也能这么筛
+SELECT * FROM scores WHERE exam_date BETWEEN '2026-06-16' AND '2026-06-18';</code></pre>
+  <div class="warn note" data-page-node-id="7XciMUacvyMsA28hmFyRSg">
+    <p data-page-node-id="krPThBspFN1b88qawZrizw"><b data-page-node-id="Lxceh2UeSO1S20impltfII">BETWEEN 是闭区间</b>，两端都包含。很多人下意识以为不含右端，写出来的条件就差了那么一条数据。</p>
+  </div>
+
+  <h3 data-page-node-id="mSRO6h5obJtZpeKah48YGy">LIKE：模糊匹配</h3>
+  <p data-page-node-id="8zPb1hBDV6lg8BdEw9Fzbv">记不住完整内容时用。<code class="inline" data-page-node-id="ZTvnTPwzuFsciyVGAR24ZX">%</code> 代表"任意多个字符"，<code class="inline" data-page-node-id="GvMADF6YhB9kbx2HBWcIv0">_</code> 代表"任意一个字符"。</p>
+  <pre data-page-node-id="KQcbwMdttbOX7irLZcuYkP"><code class="language-sql" data-page-node-id="btIivGa6GEq9RfxoBAdIEM">SELECT * FROM students WHERE name LIKE '张%';      -- 姓张的
+SELECT * FROM students WHERE name LIKE '%伟';      -- 名字以"伟"结尾
+SELECT * FROM students WHERE name LIKE '%小%';     -- 名字里带"小"
+SELECT * FROM students WHERE phone LIKE '138%';    -- 手机号 138 开头</code></pre>
+  <div class="note" data-page-node-id="iSzKim0msKjqVEGAR20Ro6">
+    <p data-page-node-id="ZUE0AvjbH3PtngZIKDxoJT"><code class="inline" data-page-node-id="dHEEajfaB83wTqXGrBNjyE">%</code> 放在开头（<code class="inline" data-page-node-id="Z5xnY2vfFHjWuL021hjtXa">'%伟'</code>）会导致索引失效、全表扫描。数据量大时会明显变慢。自己练习无所谓，工作中要留意。</p>
+  </div>
+
+  <h3 data-page-node-id="AkdCMjgcO2T7MIBluMhqCI">IS NULL：找"没有值"的</h3>
+  <pre data-page-node-id="DfaAmSCRBRc5qI4zSjp5DT"><code class="language-sql" data-page-node-id="um8ZSjYb3EtZMRPWBUJtFB">-- 没留电话的学生
+SELECT * FROM students WHERE phone IS NULL;
+
+-- 缺考的记录
+SELECT * FROM scores WHERE score IS NULL;
+
+-- 留了电话的（IS NULL 的反面）
+SELECT * FROM students WHERE phone IS NOT NULL;</code></pre>
+  <p data-page-node-id="HwEabLry5GporZHrilkood">在你的数据里，<code class="inline" data-page-node-id="ZuJ0HvXJDXLKuOrNBUz904">students</code> 表里 1010 吴涛的电话是空的；<code class="inline" data-page-node-id="nFkJdrKVmoF2R3xaZaEygX">scores</code> 表里吴涛的数学成绩是空的（缺考）。</p>
+
+  <div class="ex" data-page-node-id="1yPPiyD29xxy67qye9WTUn">
+    <div class="ex-h" data-page-node-id="tAgmhEujotyCtPtTbvyJcA">练习 2 · WHERE 条件筛选</div>
+    <ol data-page-node-id="4YSo7Wd6PPsL4YcJgpps4N">
+      <li data-page-node-id="0eBarfWQtMHXoA1fU8sj7y">查询三班的所有学生。</li>
+      <li data-page-node-id="N1DwvZAzE1yJ7sr2nVdCVg">查询分数大于 90 的所有成绩记录。</li>
+      <li data-page-node-id="U4ystCRIkKKmW0FWrxT7yg">查询<b data-page-node-id="HEtwsqAIt4vFhFmxGWZtbe">男生</b>里在<b data-page-node-id="VEqRm76FqQxc1lbLgW3RGo">二班</b>的学生。</li>
+      <li data-page-node-id="UeDQBIQHjttCiU6H9wVp2G">查询分数在 <b data-page-node-id="lfQ6qy1C1kIwbIQHBdjiA4">60 到 80 之间</b>的成绩。</li>
+      <li data-page-node-id="G8FxE5J7csZwnCtP3cLCbT">查询所有姓「张」的学生。</li>
+      <li data-page-node-id="wpmOONNW7M7tbr4YQqaYpD">查询<b data-page-node-id="mOdHSpBEyCIhL0Rw0nF2Op">没填电话</b>的学生。</li>
+      <li data-page-node-id="XuRU1g8GxxfmmuJzbEfG24">查询<b data-page-node-id="fciHR2PIKuHYVFNdwkygiN">语文（C01）或数学（C02）</b>的成绩记录。</li>
+      <li data-page-node-id="tfZxXa5VwAqz1BqcWuOLF0">查询<b data-page-node-id="twHAHp6nt8cb33BzyPp8yl">不及格</b>（分数 &lt; 60）的成绩，并按分数从小到大排一下。</li>
+      <li data-page-node-id="VD2EvAv0nRlJDmn1m7JFxs">查询 <code class="inline" data-page-node-id="g8xDXycBLEqoErXyxKm8rh">class_name</code> 是「一班」或「二班」的<b data-page-node-id="KlUJSYPrr3hVwDae3RGZCn">女同学</b>。<span class="hint" data-page-node-id="VV6qTbMCgnEBVfwkDdAW13">（提示：括号）</span></li>
+    </ol>
+    <details data-page-node-id="2aQq7I0sitWbx3bmHnt7W1">
+      <summary data-page-node-id="XfFkR2X9h6HgQv3COVcsbS">对答案</summary>
+      <div class="ans-li" data-page-node-id="mgMBOL25OtPk30ESU6Z4Le">1. 三班的学生</div>
+      <pre data-page-node-id="eEvPyN9SlJFZHcVSAZw0tj"><code class="language-sql" data-page-node-id="yPEOE7BADMLw8AdsPiz1p0">SELECT * FROM students WHERE class_name = '三班';</code></pre>
+      <p class="hint" data-page-node-id="6kI7os0AymuNU2BKEXG5Zq">3 行：赵丽（1007）、黄鹏（1008）、周婷（1009）。</p>
+      <div class="ans-li" data-page-node-id="oLSPRjT8RqFAtE69p3jjyq">2. 分数大于 90</div>
+      <pre data-page-node-id="Ze6LTO9JrsYclRHGkDccyO"><code class="language-sql" data-page-node-id="Uuoap0i3xO4VWUoWqfamOD">SELECT * FROM scores WHERE score &gt; 90;</code></pre>
+      <div class="ans-li" data-page-node-id="zbXUqmNzsGEALjfKQfB4VI">3. 二班的男生</div>
+      <pre data-page-node-id="c1eWCxEUYA3ZdVd0tWyrM9"><code class="language-sql" data-page-node-id="K6SWB8kKnfGDFBOq382BtT">SELECT * FROM students WHERE gender = '男' AND class_name = '二班';</code></pre>
+      <p class="hint" data-page-node-id="CozBGXKPGVM8nOPUuE1A8U">只有杨磊（1006）一个人。</p>
+      <div class="ans-li" data-page-node-id="9XlF0d7C8bvmYoNPZWGLRn">4. 60 到 80 分</div>
+      <pre data-page-node-id="eto02qf4hgpXnZc6ezwhWD"><code class="language-sql" data-page-node-id="ayMo3tKgCJhbTAq5KV5sRf">SELECT * FROM scores WHERE score BETWEEN 60 AND 80;</code></pre>
+      <div class="ans-li" data-page-node-id="FJokVvsD8kZQmQdDt6BCoY">5. 姓张的</div>
+      <pre data-page-node-id="fMIcMT53vac6s7rtrWzs3A"><code class="language-sql" data-page-node-id="4SRTSYelMZgVjKGsxOjQuF">SELECT * FROM students WHERE name LIKE '张%';</code></pre>
+      <p class="hint" data-page-node-id="qiPXVzycBCxoF92iX9Ihvf">2 行——1001 和 1011 都叫张伟，但<b data-page-node-id="w6orz9plo9AYTU5bdDXqF2">学号不同、班级不同</b>。这是刻意的：查人的时候永远靠 ID，别靠姓名。</p>
+      <div class="ans-li" data-page-node-id="1bsmYUC4nQ4GXGmRqjImmm">6. 没填电话的</div>
+      <pre data-page-node-id="wqBgVN5jPwgK3dV5c6ZpPJ"><code class="language-sql" data-page-node-id="j0UWU7Pv4PbCieFCVdRUEt">SELECT * FROM students WHERE phone IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="qJOXu7HH6vJ3xVxGRMZJf7">1 行，吴涛（1010）。</p>
+      <div class="ans-li" data-page-node-id="rh0U3wcLtrDBGWb1u9hnsR">7. 语文或数学的成绩</div>
+      <pre data-page-node-id="gZUqqqKRESA5pYFUzip5Ao"><code class="language-sql" data-page-node-id="Z2cT0K2sjoRtHpfv3s03ZD">SELECT * FROM scores WHERE course_id IN ('C01', 'C02');</code></pre>
+      <p class="hint" data-page-node-id="KMh54wP22HzNzRMQOdtTrH">用 OR 写也对：<code class="inline" data-page-node-id="CoFIL4fEWEikB3PZ9zYvTn">WHERE course_id = 'C01' OR course_id = 'C02'</code>。两条路都得会，因为看别人的 SQL 时会遇到。</p>
+      <div class="ans-li" data-page-node-id="578DQQ2k7bq1rkCsMAXCZl">8. 不及格的成绩</div>
+      <pre data-page-node-id="jGpyOkLB33mPxftY3VCo6G"><code class="language-sql" data-page-node-id="MAWqf2eMNk8SYsoGbvZlD0">SELECT * FROM scores WHERE score &lt; 60 ORDER BY score;</code></pre>
+      <p class="hint" data-page-node-id="CG44CWdNveUO2NBgnNV15A">注意用 <code class="inline" data-page-node-id="6cIpfiBHSzvWHyAFARMnpU">&lt;</code> 不包含 60 分；如果你的及格线是"60 分以下算挂"，那 60 分本身要算及格，这里是对的。先把结果记下来，第 3 节会讲 ORDER BY。</p>
+      <div class="ans-li" data-page-node-id="47t6TPmZAjiSDmCoV2Hogl">9. 一班二班的女同学</div>
+      <pre data-page-node-id="9BUVY3YwGfULgcoZxZJC1g"><code class="language-sql" data-page-node-id="EBhtI8dhgTxXgZwbcy9CfX">SELECT * FROM students
+WHERE (class_name = '一班' OR class_name = '二班') AND gender = '女';
+
+-- 或者更清爽
+SELECT * FROM students
+WHERE class_name IN ('一班', '二班') AND gender = '女';</code></pre>
+      <p class="hint" data-page-node-id="IIwgAfeYN7AQV9RF1tldPn">应该查出 3 行：王芳、刘敏、陈静。<b data-page-node-id="T3JZZYh8ZypmT049Jh45ec">如果你查出来 6 行</b>，说明括号丢了，条件变成了"一班的所有人 或 二班的女同学"。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3" data-page-node-id="6W0UYOz0zkBcCHlmJGgvmw">
+  <h2 data-page-node-id="QPHv9Sj3YSJPcYP1Cd4pUa"><span class="n" data-page-node-id="ie8rTuairfFBcBu27OwCb8">3</span>ORDER BY 与 LIMIT</h2>
+  <p class="sub" data-page-node-id="2yfjLExvFd7C5kTfz5Uw3N">排序、取前几名、翻页。排行榜类的需求全靠这两个。</p>
+
+  <h3 data-page-node-id="utkROpFX7QLaNJonE2jywB">ORDER BY：排序</h3>
+  <pre data-page-node-id="SsnB0m4eFCfB8S2ywdb0bD"><code class="language-sql" data-page-node-id="brE3ZgGwSd3Pa81s24o6Hi">-- 按分数从高到低（降序 DESC）
+SELECT * FROM scores ORDER BY score DESC;
+
+-- 按分数从低到高（升序 ASC，默认就是这个）
+SELECT * FROM scores ORDER BY score ASC;
+SELECT * FROM scores ORDER BY score;      -- 不写 ASC 也一样
+
+-- 按班级排序，同班内再按学号排
+SELECT * FROM students ORDER BY class_name ASC, student_id ASC;</code></pre>
+  <p data-page-node-id="JoyrzEWBf2WoCI7Qzbu5gn">多个排序字段用逗号隔开，<b data-page-node-id="VbK8uUTm6sjsFX2KA0fnOM">先按第一个排，第一个相同了才看第二个</b>。</p>
+
+  <h3 data-page-node-id="IfCr0LGyV3A3wJzwmWuqoc">NULL 排在哪？</h3>
+  <pre data-page-node-id="1VcqYQTuwO9G8R9GkKqv7a"><code class="language-sql" data-page-node-id="xtW29mDDDgPOKON1RCGR2Y">SELECT * FROM scores ORDER BY score DESC;</code></pre>
+  <div class="result" data-page-node-id="znvCuGfrgL9jphauCFWwTQ">
+    <div class="rh" data-page-node-id="g5GMwOCBTsfxtGagXvAvsJ">结果（47 行，摘开头和结尾）</div>
+    <table data-page-node-id="haucmF5HiF9eBqDGXvN5bY">
+      <tr data-page-node-id="wPqbFv7lEn5tW7ysiuRxLw"><th data-page-node-id="e7SNYcQvKURZJ3znanKZ8I">id</th><th data-page-node-id="NQCP1cxBJAgdJCXeMImVA6">student_id</th><th data-page-node-id="ZVy6BN1kr76lnAdaMIHF6D">course_id</th><th data-page-node-id="7ybxbKySEBGhR9kRxQNTNr">score</th></tr>
+      <tr data-page-node-id="L3o4Y3dEqU5N35gCLLhLJU"><td data-page-node-id="GF3tPTBEXeasUFNrmjFLCh">39</td><td data-page-node-id="363Jx8COatLP6LDxzWvAqN">1009</td><td data-page-node-id="5B10LQkaHEgER26uUR881h">C02</td><td data-page-node-id="EWWwD5HqYvBynVT3Xh0IXc">98.0</td></tr>
+      <tr data-page-node-id="I77FoY1VVHcEeZm9uCjwxk"><td data-page-node-id="rolw6jStZEbyfXKPAOzz6C">41</td><td data-page-node-id="EJ6raYuGzF5wM2JnH0iYbc">1009</td><td data-page-node-id="oJu4qx8zpQaWGwlFMby8Vn">C03</td><td data-page-node-id="OhZENYCciXeYTSiREX2odF">94.5</td></tr>
+      <tr data-page-node-id="7emvTSJdJcMmdx1ySNV0OR"><td data-page-node-id="gGBKHGG908zYDpVp3aVnqK">…</td><td data-page-node-id="2hCGmIJAk33oRisMXxZQ8I">…</td><td data-page-node-id="uQNFDYdkyQEy5SmeNuASFJ">…</td><td data-page-node-id="UZy7xkQwuIJuerkyOinn4P">…</td></tr>
+      <tr data-page-node-id="zsmvpM5VtaaxhuvEbHA86g"><td data-page-node-id="CklsMmwoxHnvZMtUeh56Z3">29</td><td data-page-node-id="EOwLHl69kPZsesPRDjGEpL">1006</td><td data-page-node-id="5IuwLQVhH1gGl3EaC1SfU1">C03</td><td data-page-node-id="aKAvJHQZW2yO9U48eaYq3c">48.0</td></tr>
+      <tr data-page-node-id="ehtHblPlOJpqwRqyKwAcfM"><td data-page-node-id="2FWY8zFHLY5CT2ZQD6tafd">43</td><td data-page-node-id="zpTHWLrZYZCxGzIr2sWIeu">1010</td><td data-page-node-id="Qye6uwznJhhz8vnGEzawIn">C02</td><td class="null" data-page-node-id="m5sEjGs3O8c9pONX27vO74">NULL</td></tr>
+    </table>
+  </div>
+  <p data-page-node-id="xcnwhgnUI16SdlBBOnQNNT">MySQL 里 <code class="inline" data-page-node-id="3fL0yJqrpt70PPing4aRGF">NULL</code> 被当成最小值，所以<b data-page-node-id="N5CT6D2D7HKq4tkVnhPaOO">升序时排最前，降序时排最后</b>。想让它去别的位置，得单独控制（进阶，先不管）。</p>
+
+  <h3 data-page-node-id="tCoj1VUU4HBtCQGqdM5EQ9">LIMIT：只取前几条</h3>
+  <pre data-page-node-id="9Wv2RbuG0cyQFzvJDTH0PQ"><code class="language-sql" data-page-node-id="B13UzTU7MazSbnirGr0X32">-- 分数最高的 3 条
+SELECT * FROM scores ORDER BY score DESC LIMIT 3;
+
+-- 语法：LIMIT 从第几条开始, 取几条
+-- 翻页：第 1 页（前 5 条）
+SELECT * FROM scores ORDER BY score DESC LIMIT 0, 5;
+
+-- 第 2 页（第 6-10 条）
+SELECT * FROM scores ORDER BY score DESC LIMIT 5, 5;
+
+-- 第 3 页（第 11-15 条）
+SELECT * FROM scores ORDER BY score DESC LIMIT 10, 5;</code></pre>
+  <div class="note" data-page-node-id="CZb94hamKnX7alC0u5kefj">
+    <p data-page-node-id="UZa8ZEOUSfkWF05mmmDLYS"><b data-page-node-id="Q8wxBkf2zugFBUbgL5nFIv">注意起始位置从 0 开始数。</b><code class="inline" data-page-node-id="qxAqdD4AE07XtvBYNOTjLk">LIMIT 5, 5</code> 的意思是"跳过前 5 条，取接下来 5 条"。翻页公式：<code class="inline" data-page-node-id="FeBZUdXNyV04mOEtdNKl0g">LIMIT (页码-1) * 每页条数, 每页条数</code>。</p>
+  </div>
+  <div class="warn note" data-page-node-id="mZP07nqjbl3GLPndpDBkk0">
+    <p data-page-node-id="nnyxnH3nowzfT6K7YGy57o"><b data-page-node-id="l91TbGRqLB4Ldekyomw5Dv">LIMIT 通常要配 ORDER BY 用。</b>不排序的话，数据库返回的顺序是随机的、不保证稳定的，"取前 3 名"就失去了意义。</p>
+  </div>
+
+  <h3 data-page-node-id="7oARKQ9lHY6xKWUpJNbTJM">书写顺序（重要）</h3>
+  <pre data-page-node-id="aeHAhZtjhG8M5ZSO5XFs8W"><code class="language-sql" data-page-node-id="WMyHetPuC29cx2ZfihwWam">SELECT   列
+FROM     表
+WHERE    条件
+ORDER BY 排序
+LIMIT    条数;</code></pre>
+  <p data-page-node-id="9mdsz23jO0cE7wp0inExET">这个顺序是<b data-page-node-id="Somtt7zb1krBukyioTz0Xu">固定死的</b>，不能调换。WHERE 必须在 ORDER BY 前面，ORDER BY 必须在 LIMIT 前面。写反了直接语法报错。</p>
+
+  <div class="ex" data-page-node-id="ydhUVnWQ9PkXB86iIlEZ0S">
+    <div class="ex-h" data-page-node-id="694HaoQyp5zOLiUPlsb0XI">练习 3 · 排序与分页</div>
+    <ol data-page-node-id="QlzsIBGFf2hkzLSO6j8rCW">
+      <li data-page-node-id="9cx1p39fEXvA3SADe98UFA">把所有成绩按分数<b data-page-node-id="wiLAtGYHENAlDypMCA1La9">从高到低</b>排列。</li>
+      <li data-page-node-id="bYDwQ1sgrny3APzQNkvJjw">把学生按<b data-page-node-id="TZCfFDMLUotlXUPoIT8K6C">班级升序</b>排列，同班内按<b data-page-node-id="A1UfmXTPhLgM51q0SF1jYt">学号升序</b>排列。</li>
+      <li data-page-node-id="ZA2SvAnS2o5pfQKjSWwHoA">查出分数<b data-page-node-id="W5M6I4yTtZi1rlkO3NpryH">最高的 3 条</b>成绩记录。</li>
+      <li data-page-node-id="DMPeAbMp7nYOhGYw3Rs93T">查出成绩<b data-page-node-id="nRdCiTqmnJA4EPYZYluBJa">排名第 4 到第 6</b> 的记录（用 LIMIT 的第二种写法）。</li>
+      <li data-page-node-id="QRzPVGG2rIBtHpvaIrTOJG">查出<b data-page-node-id="Bm4HelMaopUIzApTkgjZl8">三班</b>的学生，按<b data-page-node-id="Vjn19eh1RyuVQOuvebF134">出生日期从早到晚</b>排列。</li>
+      <li data-page-node-id="DfDasOIdPH3BY6o8UCpSTr">查出分数最低的那条记录是谁的、哪一科。</li>
+    </ol>
+    <details data-page-node-id="pEvQhqRPGGBtMBBDhfcKuZ">
+      <summary data-page-node-id="HUI0NFaiH2vmYYonhepEk3">对答案</summary>
+      <div class="ans-li" data-page-node-id="4G8W5ItC3RnBKI9QxXuF91">1. 分数降序</div>
+      <pre data-page-node-id="5YgkybrcfHfNguej1CCezP"><code class="language-sql" data-page-node-id="FCZLXQgCbU9867ii1Q2xYy">SELECT * FROM scores ORDER BY score DESC;</code></pre>
+      <div class="ans-li" data-page-node-id="R6TTAfR1ovZhvNWp2iLFF1">2. 班级 + 学号</div>
+      <pre data-page-node-id="ElGBkH8Q2lejatIkjESyIS"><code class="language-sql" data-page-node-id="vxKYEUaFVheBkwGd96PLR1">SELECT * FROM students ORDER BY class_name, student_id;</code></pre>
+      <p class="hint" data-page-node-id="pIjHTGzQ8bVJJt0p1kVpP6">一班排完才排二班。注意班级是按中文排序的，结果顺序是"一班、三班、二班、四班"还是"一班、二班、三班、四班"？跑跑看——中文排序取决于字符集，这一点跟你想的可能不一样。</p>
+      <div class="ans-li" data-page-node-id="VMtE6cwzFfD4S9cDBgAHUf">3. 最高 3 条</div>
+      <pre data-page-node-id="SbjNdNTZfrsiC9QW84FVsv"><code class="language-sql" data-page-node-id="JEp3P5cXUrTNyqiAhysR0H">SELECT * FROM scores ORDER BY score DESC LIMIT 3;</code></pre>
+      <p class="hint" data-page-node-id="YMe0iSG1IGunw0Ml7qB3Xw">98.0（周婷·数学）、97.0（周婷·生物）、96.0（周婷·语文）。周婷霸榜了。</p>
+      <div class="ans-li" data-page-node-id="MLJRGjJlpW0JGvgcLVGFoi">4. 第 4 到第 6 名</div>
+      <pre data-page-node-id="dUfHxBImOBXc5gcu3oUrcu"><code class="language-sql" data-page-node-id="yF6ZRBDrFYcchGISoohknz">SELECT * FROM scores ORDER BY score DESC LIMIT 3, 3;</code></pre>
+      <p class="hint" data-page-node-id="BEEZYgFFOAhKlv9AyDICos">跳过前 3 条，取 3 条。<code class="inline" data-page-node-id="53YVmkQblxEzROLe6n4pve">LIMIT 3, 3</code> 第一个 3 是"跳过几条"，不是"从第 3 条开始"。</p>
+      <div class="ans-li" data-page-node-id="AKtmnn1fDxHGyxAIiblQ2H">5. 三班按年龄</div>
+      <pre data-page-node-id="5JQQzl4H03xZEgH5px6VVv"><code class="language-sql" data-page-node-id="ecWF9D96ZC5XTbDxzjmRzV">SELECT * FROM students WHERE class_name = '三班' ORDER BY birth_date;</code></pre>
+      <p class="hint" data-page-node-id="ZD7CPyQjQMDLJalhudxRri">出生日期越早 = 年龄越大，所以升序就是"大的在前"。</p>
+      <div class="ans-li" data-page-node-id="88wLQ3I8VGwUi7qSMrUkru">6. 最低分那条</div>
+      <pre data-page-node-id="ES18ByGzdRhPmMF47Zn9Sr"><code class="language-sql" data-page-node-id="DX8nvPWMClk0PDJArY6iWk">SELECT * FROM scores ORDER BY score LIMIT 1;</code></pre>
+      <p class="hint" data-page-node-id="YPBTjf7ECng3MfoMCY7xwC">升序排第一条。注意：<b data-page-node-id="qdg9vLsGHghXtRlVGlpDOX">升序时 NULL 会跑到最前面</b>，所以这条查出来的"最低分"其实是那条缺考的 NULL 记录（id=43，吴涛的数学）。如果想排除缺考，要加 <code class="inline" data-page-node-id="NlAXSWk2KHjA3tI0UQssZv">WHERE score IS NOT NULL</code>。这个小坑自己撞一次比看十遍都记得牢。</p>
+      <pre data-page-node-id="du2mN7GRnJ38KFt6DGC425"><code class="language-sql" data-page-node-id="WbbAe1eausKi6tsN7YdOxf">SELECT * FROM scores WHERE score IS NOT NULL ORDER BY score LIMIT 1;</code></pre>
+      <p class="hint" data-page-node-id="dpgs8yBBhFZjUk3FIqy8RD">这样才是真正的"最低分"：48.0，杨磊的英语。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4" data-page-node-id="FFSKfqyux2YvZfBtBejvJ2">
+  <h2 data-page-node-id="rPmo2TakFe9Gija6kUlF6y"><span class="n" data-page-node-id="h8YTir6ZIhcAZsOGQbD7MM">4</span>聚合函数与 GROUP BY</h2>
+  <p class="sub" data-page-node-id="CTrKnXs8pmvBkIxrBiSbeC">从"看每一行"升级到"看整体"。统计、报表、看板都靠它。</p>
+
+  <h3 data-page-node-id="FDtCxCAogzA3vvXpL9u3AQ">五个必会的聚合函数</h3>
+  <pre data-page-node-id="rxO3cGZIhuWKM1eJaDGG7w"><code class="language-sql" data-page-node-id="FsGgF11XFuDBwYwNnyf9hz">SELECT COUNT(*)    FROM students;   -- 数有多少行 → 12
+SELECT SUM(score)  FROM scores;     -- 求和
+SELECT AVG(score)  FROM scores;     -- 平均分
+SELECT MAX(score)  FROM scores;     -- 最高分
+SELECT MIN(score)  FROM scores;     -- 最低分</code></pre>
+  <p data-page-node-id="7RwufMxAu4fS2FEHN6Sq3V">聚合函数是"把多行揉成一个数"。注意 <code class="inline" data-page-node-id="Ge6TFBj36tn8lS9uVHKG0B">AVG</code> 和 <code class="inline" data-page-node-id="CH9YQEnHtcpV3aBm6cZnnW">COUNT</code> <b data-page-node-id="HrDQF7fXmrEtnaTXtDmxPv">会自动忽略 NULL</b>：</p>
+  <pre data-page-node-id="E85fg0NPlBcTZSkXKhHOqD"><code class="language-sql" data-page-node-id="h6WMC3wqQ5XAzIAYesaMpM">SELECT COUNT(*)        FROM scores;  -- 47，数的是"有多少行"
+SELECT COUNT(score)    FROM scores;  -- 46，数的是"有多少个非 NULL 的分数"
+SELECT AVG(score)      FROM scores;  -- 除的是 46，不是 47
+
+-- 想知道差了多少行（谁没成绩）
+SELECT COUNT(*) - COUNT(score) AS 缺考条数 FROM scores;</code></pre>
+  <div class="note" data-page-node-id="rtfAr8UWglPANTpUHubxWR">
+    <p data-page-node-id="Rlp8IGhLAtOIGa19GevmDA"><code class="inline" data-page-node-id="bKre59je1T5fOGcwOOKmaT">COUNT(*)</code> 和 <code class="inline" data-page-node-id="UcL3DyikxDSlvqNrGBrd2I">COUNT(列名)</code> 的区别是面试常考题，也是理解 NULL 的关键。<code class="inline" data-page-node-id="cjCDXmgrfIkHq6ueP2QnzH">COUNT(*)</code> 数行数，<code class="inline" data-page-node-id="3cCipCtaQdsEF6jDO9AoBy">COUNT(列名)</code> 只数该列非 NULL 的。</p>
+  </div>
+
+  <h3 data-page-node-id="HXjD6Plx9jluybx0Yc18YN">GROUP BY：先分组，再统计</h3>
+  <p data-page-node-id="cs6RwIPz1sCXjZFvNsqAMo">"每门课的平均分""每个班有多少人"——这类需求就是 GROUP BY。</p>
+  <pre data-page-node-id="wtnRt9NN9VVTE9LotdfpG0"><code class="language-sql" data-page-node-id="wOrpRIz9lBE0lDOZMkZtpg">-- 每个班有多少人
+SELECT class_name, COUNT(*) AS 人数
+FROM students
+GROUP BY class_name;</code></pre>
+  <div class="result" data-page-node-id="ujOR2gOzYkRkmbKp7aytoF">
+    <div class="rh" data-page-node-id="c4EKieZ9s4kFWvkTXHMzpL">结果</div>
+    <table data-page-node-id="GqJZpIxWy2oOopkUt9fndf">
+      <tr data-page-node-id="1DhvruaqWAzKnzTedX6Rmo"><th data-page-node-id="chdHHjNBHRpGPby1u9IICE">class_name</th><th data-page-node-id="OWuBYKPWiXkZa3pQtE3qBR">人数</th></tr>
+      <tr data-page-node-id="A6wMDipdp5SCsDC2vSvP1p"><td data-page-node-id="da4DuzMas3rj1OGou2lHSt">一班</td><td data-page-node-id="jVo8O5GOctDrBUgya6iAYM">3</td></tr>
+      <tr data-page-node-id="SkiwDBt8PmqnZ8rmDGkF4F"><td data-page-node-id="mRq3y6wn2AdqdeWRtLvWKg">二班</td><td data-page-node-id="2loO1WnuKv83a2HLdZkMqw">3</td></tr>
+      <tr data-page-node-id="3UxKaz0DBIz14F6e2bdg9H"><td data-page-node-id="MLpOejzlxCygBIGeStUzX0">三班</td><td data-page-node-id="ZWyHneWidZtqAETgGfrjlL">3</td></tr>
+      <tr data-page-node-id="1meMCSpBhHCix0ZZ57tou2"><td data-page-node-id="VCUscNAR8G0Rol3HuL9JuA">四班</td><td data-page-node-id="GYrIH10xkErcicTomaIlMG">3</td></tr>
+    </table>
+  </div>
+  <p data-page-node-id="CPvOeekmN1EphD7YpPsxUE"><b data-page-node-id="mNuYR20jGIN6idx6AWsaR5">怎么理解 GROUP BY：</b>数据库先按 <code class="inline" data-page-node-id="WTAusqEB1BQD8wLgg6Z635">class_name</code> 把 12 行<b data-page-node-id="EaVKV9EX69nD7k41ziILIq">分成几堆</b>，然后对每一堆单独算一次 <code class="inline" data-page-node-id="EPGCGBfajCWuc3UFq87tGP">COUNT(*)</code>，最后每堆输出一行。</p>
+
+  <pre data-page-node-id="gXcXcySAGSG07pHHvIxHx7"><code class="language-sql" data-page-node-id="uTzS0dUKmGMPW0HYoWouBD">-- 每门课程的平均分、最高分、选课人数
+SELECT
+    course_id,
+    COUNT(*)      AS 考试人次,
+    ROUND(AVG(score), 1) AS 平均分,
+    MAX(score)    AS 最高分,
+    MIN(score)    AS 最低分
+FROM scores
+GROUP BY course_id;</code></pre>
+  <p data-page-node-id="km7LIetDbPJYrJpBFYEBgI"><code class="inline" data-page-node-id="DAKn2Ud2srojrXlGqdZAgJ">ROUND(值, 小数位数)</code> 用来保留小数，不然平均分会是一长串。</p>
+
+  <h3 data-page-node-id="HGgxgQ7E5EY2vwZS0OEd5c">一条必须记住的规则</h3>
+  <div class="danger note" data-page-node-id="hhnHXDzxswCraWrewx7KFK">
+    <p data-page-node-id="GPQf8XX49EAAckIou0KnAV"><b data-page-node-id="qeMr2aojUsszHWlxEUgvLB">SELECT 里出现的列，要么在 GROUP BY 里，要么被聚合函数包着。</b></p>
+    <pre style="margin:10px 0 0" data-page-node-id="IEFmRbGhcycn1kfOAKmcLC"><code class="language-sql" data-page-node-id="wCaEuSZ5jHFqs06GkdIKqU">-- 错：name 既没分组也没聚合，数据库不知道该给你哪一行
+SELECT class_name, name, COUNT(*) FROM students GROUP BY class_name;
+
+-- 对
+SELECT class_name, COUNT(*) FROM students GROUP BY class_name;</code></pre>
+    <p style="margin-top:10px" data-page-node-id="xCqcQFydnY4JA2nccirEnJ">MySQL 在宽松模式下可能不报错，会随便挑一行给你，但那个结果<b data-page-node-id="CUvQbJcIzi18P66i19ZPqy">毫无意义</b>。写 SQL 时养成这个习惯：先想清楚"我要按什么分组"，再想"每组要算什么"。</p>
+  </div>
+
+  <h3 data-page-node-id="arxG3722ULWJBnkp2dcJYS">HAVING：给分组结果筛条件</h3>
+  <p data-page-node-id="hLF2cBq9ZN0JhUrXAvTl0P"><code class="inline" data-page-node-id="fcpqiKCSibpouoq8z4YwMI">WHERE</code> 筛的是<b data-page-node-id="CaloLNwvFh6QyUN89GXMIM">每一行</b>，<code class="inline" data-page-node-id="gcip0ipgP3DgcOAPsBWdEH">HAVING</code> 筛的是<b data-page-node-id="hKRSBw4lH8HMcvBqfsD8YO">分完组之后的每一堆</b>。</p>
+  <pre data-page-node-id="gLsS3BlCAWFnEyTD9xu7n6"><code class="language-sql" data-page-node-id="6KPHig59mvZGvQE1R1jOhh">-- 平均分高于 85 的课程
+SELECT course_id, ROUND(AVG(score), 1) AS 平均分
+FROM scores
+GROUP BY course_id
+HAVING AVG(score) &gt; 85;</code></pre>
+  <div class="note" data-page-node-id="qfbyo7M6VMIeAE5SD1JdTT">
+    <p data-page-node-id="EZINcQuJFJ4NhBH6NFICGO"><b data-page-node-id="pE2iQD74ZwccW50jN9wRWr">WHERE 和 HAVING 的分工：</b></p>
+    <p data-page-node-id="7y72RBjKyEFp7qiOuE8OxE"><code class="inline" data-page-node-id="TDMG8qAxiV5HuP2BC02kv9">WHERE score IS NOT NULL</code> → 先剔掉缺考的行，再分组算平均。<br data-page-node-id="YHF8cdzJ0FwS4x2R4hSjJa">
+    <code class="inline" data-page-node-id="IUimOHryueRGs7q9KaIAqT">HAVING AVG(score) &gt; 85</code> → 先分组算完平均，再把平均分不达标的那组扔掉。</p>
+    <p data-page-node-id="R2xZtK3jLVgiD61j6dd9Iy">顺序是 <b data-page-node-id="UjrXfGr8LezDxEDwAxkqF1">WHERE → GROUP BY → HAVING → ORDER BY → LIMIT</b>。</p>
+  </div>
+  <pre data-page-node-id="LbooqQyPKoNwnR0pc0hSw4"><code class="language-sql" data-page-node-id="X0oSSy284JkltnrcfqD7KZ">-- 组合起来：只算有成绩的记录，找出平均分高于 80 的课程，按平均分从高到低
+SELECT
+    course_id,
+    COUNT(*)             AS 人数,
+    ROUND(AVG(score), 1) AS 平均分
+FROM scores
+WHERE score IS NOT NULL
+GROUP BY course_id
+HAVING AVG(score) &gt; 80
+ORDER BY 平均分 DESC;</code></pre>
+
+  <div class="ex" data-page-node-id="Sgm2fKXXBRhQgIcbJwKm63">
+    <div class="ex-h" data-page-node-id="l1laGba6eS69WMUjlZV5Gu">练习 4 · 聚合与分组</div>
+    <ol data-page-node-id="YY66vECJZn9BM1emMaIJSj">
+      <li data-page-node-id="mN7FtwTV813MRwG9n2oj0P">统计学生总人数。</li>
+      <li data-page-node-id="Ji6W8KpPCQ6tRCVRKupBBk">统计成绩表里有多少条考试记录。</li>
+      <li data-page-node-id="oxolTgHhPiFuGF2B9SHikf">统计全校各科成绩的平均分、最高分、最低分。</li>
+      <li data-page-node-id="qNB1rKShCAlgZNA7NtJbdC">统计每个班<b data-page-node-id="5wVsbf89aYQNwgB3fUrVkF">男生、女生各有多少人</b>。<span class="hint" data-page-node-id="Ecmd1gaoSm4xDVHTbkR3te">（提示：按两个字段分组）</span></li>
+      <li data-page-node-id="cMVkB1MgpNSGP9c9EfPrKo">统计每门课程的<b data-page-node-id="kRoIrVBwWDKNPaE40r9q9C">选课人数</b>和<b data-page-node-id="ADTjNfeHzEz1M6AdP2on8X">平均分</b>，按平均分从高到低排。</li>
+      <li data-page-node-id="E8NfSNj1NFHKl3DOUQIHqs">找出<b data-page-node-id="yWGAczAjUFTrE5DVUNAF6e">平均分高于 85 分</b>的课程。</li>
+      <li data-page-node-id="8rEKrEm6A6uQ9erH5ruTZk">统计成绩表里<b data-page-node-id="s0JdCDRlWThqBimosDUBVR">缺考</b>的记录有几条。</li>
+    </ol>
+    <details data-page-node-id="0idjal4LjfEITcpZWb7wm3">
+      <summary data-page-node-id="er8VjcxM93sgrcKf8bQoUl">对答案</summary>
+      <div class="ans-li" data-page-node-id="v0iB0iL0oKmEZZzxKmHXaf">1. 学生总数</div>
+      <pre data-page-node-id="XTsJwCVFXkYlEvvhPaJ7ey"><code class="language-sql" data-page-node-id="aD8prD5wpdZxAhnqFEOxR2">SELECT COUNT(*) AS 学生总数 FROM students;</code></pre>
+      <p class="hint" data-page-node-id="EsFJd7FoQnZDYGQXb1AWsz">12</p>
+      <div class="ans-li" data-page-node-id="3paF29KA9YV4F0EVFG5LG1">2. 考试记录数</div>
+      <pre data-page-node-id="A1FaAlv7cC7nb64wk6wn6b"><code class="language-sql" data-page-node-id="6YMMmXMXcB2MwXAlDS0KBa">SELECT COUNT(*) AS 记录数 FROM scores;</code></pre>
+      <p class="hint" data-page-node-id="IVKtSof1drWfZkmV4oS73C">47</p>
+      <div class="ans-li" data-page-node-id="v4MKzOirrFEp7wYw7vS9rO">3. 各科统计</div>
+      <pre data-page-node-id="xh1fBEbGvEjOAywFm8LgIV"><code class="language-sql" data-page-node-id="NihXamadiEAUnxr78ruczL">SELECT
+    ROUND(AVG(score), 1) AS 平均分,
+    MAX(score)           AS 最高分,
+    MIN(score)           AS 最低分
+FROM scores;</code></pre>
+      <p class="hint" data-page-node-id="XUQcGfh3K2EPTh0uTk5Ban">这里没写 GROUP BY，因为要的是"全校一张总表"，不是"每科一行"。<b data-page-node-id="ju52WKPi1tBFvSUoQeQwUR">不要习惯性加 GROUP BY</b>——不加就是全部数据算一次。</p>
+      <div class="ans-li" data-page-node-id="4Sl4sHW2q4VDAuLc3YKks0">4. 每班男女各多少人</div>
+      <pre data-page-node-id="264qrxuT8gwUXyXYGHNzPC"><code class="language-sql" data-page-node-id="3I6VOn7gfbiiMY2xYHEJxG">SELECT class_name, gender, COUNT(*) AS 人数
+FROM students
+GROUP BY class_name, gender
+ORDER BY class_name, gender;</code></pre>
+      <p class="hint" data-page-node-id="3azGJZIwkNjKFSiiUqwStK">按两个字段分组，就是"班级 + 性别"组合起来分堆。注意：某个班里如果没有女生，那一组<b data-page-node-id="TnsN5mcjXlN3gtJXvBES67">根本不会出现</b>，不是显示 0。这是 GROUP BY 的常见困惑点。</p>
+      <div class="ans-li" data-page-node-id="mfhvY0Fja2GdKJ0L9RXoaw">5. 每门课人数与平均分</div>
+      <pre data-page-node-id="vEykZpsbwzmYp7G2xr9Rz1"><code class="language-sql" data-page-node-id="hXtXiBY0VH7hiIYKIw8q6q">SELECT
+    course_id,
+    COUNT(*)             AS 选课人数,
+    ROUND(AVG(score), 1) AS 平均分
+FROM scores
+GROUP BY course_id
+ORDER BY AVG(score) DESC;</code></pre>
+      <p class="hint" data-page-node-id="u9CTvdQ1g8gUUPFeOuTP5w">ORDER BY 后面可以直接写聚合函数，也可以写别名 <code class="inline" data-page-node-id="3YznJP6hSWggFkxj9XwexA">ORDER BY 平均分 DESC</code>。</p>
+      <div class="ans-li" data-page-node-id="FZjNFd8JJrHIoiMSNAj9Jx">6. 平均分高于 85 的课程</div>
+      <pre data-page-node-id="8WgKUrgDRT4wLMOM8GToho"><code class="language-sql" data-page-node-id="WMWvx9GDkAQFYWJd6x7PIC">SELECT course_id, ROUND(AVG(score), 1) AS 平均分
+FROM scores
+GROUP BY course_id
+HAVING AVG(score) &gt; 85;</code></pre>
+      <div class="ans-li" data-page-node-id="Px0BDsvXWFSiabIw5YYup7">7. 缺考条数</div>
+      <pre data-page-node-id="vJ0spF2MZl95eqNAr1Ub5o"><code class="language-sql" data-page-node-id="oBU7A1qNh8BVG9OQZGOpVh">SELECT COUNT(*) AS 缺考条数 FROM scores WHERE score IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="T8D9xN7qpTHrcp1t8hkCq0">1 条（吴涛的数学）。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5" data-page-node-id="nPD3TiU4lekJQH8i2L7mWw">
+  <h2 data-page-node-id="zyg06NHxiPOfgYkIcEKPiq"><span class="n" data-page-node-id="YSAQFrBi58pCJHfy5bFnVg">5</span>JOIN：把分开的表拼起来</h2>
+  <p class="sub" data-page-node-id="O2Xgm9XsKDGaFRdofFKbzC">单表查询的天花板就在这。真实工作里几乎每个查询都是多表。这节最需要动脑，也最值得。</p>
+
+  <h3 data-page-node-id="fEV57eXIh7aGrJjjN5orgm">为什么需要 JOIN</h3>
+  <p data-page-node-id="S1SyNnuBGz3hFEKe0V7WB2">看个实际问题：<b data-page-node-id="F28wmdTrooLDrnMc5y1Q4i">「查周婷的语文成绩，要显示她的名字、课程名和分数」。</b></p>
+  <p data-page-node-id="gB3qct1kFokrVWYBKEmtAi">名字在 <code class="inline" data-page-node-id="cECV7nghDMz4EWwwhoAMFL">students</code>，课程名在 <code class="inline" data-page-node-id="sASwOFee4HvP48mF6uE9n2">courses</code>，分数在 <code class="inline" data-page-node-id="KmS5uL2ZikBe3IGuJU6qJE">scores</code>。<b data-page-node-id="VPOzBYz64K3HSIF1Kn1ARq">三张表，一次查不完。</b></p>
+  <p data-page-node-id="1LbB3CfJ2UGVaWJFp581lp">为什么当初不把名字、课程名都塞进成绩表？因为那样张伟会重名重复 4 次、语文会重复 40 多次，改一个任课老师要改 40 行——这叫数据冗余，是不行的。<b data-page-node-id="awWVU20C0756bqcsdEcwHg">所以数据分开存，要用的时候靠关联字段拼回来。JOIN 就是干这个的。</b></p>
+
+  <h3 data-page-node-id="hNhyv6I1Qfxo1TsbyDBpIn">INNER JOIN：只保留两边都匹配上的</h3>
+  <p data-page-node-id="WZwtDT25Ozf0V3WB8Lh3LG">看 <code class="inline" data-page-node-id="xGqBd9SQFMI1PvE8bw9ZT9">scores</code> 表，里面只存了学号 <code class="inline" data-page-node-id="mf6crvbFS95a76aMVlQHAm">1001</code>，没有姓名。JOIN 就是让数据库拿着这个 1001 去 <code class="inline" data-page-node-id="G5SHYaqkFk1v7ykaBuhkKm">students</code> 表里把张伟找出来。</p>
+  <pre data-page-node-id="VZWpYsoe2lnZLBtpHtiil9"><code class="language-sql" data-page-node-id="o0PJLuZ5HCqKkfVm83SFi3">SELECT
+    s.name,
+    s.class_name,
+    sc.course_id,
+    sc.score
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id;</code></pre>
+  <div class="note" data-page-node-id="0yDVIWTC7BOIxjXpGGNDNP">
+    <p data-page-node-id="Jld2D3ABumPzZZSyu5Pf1N"><b data-page-node-id="WHqTI5MnPUFBs3GgIxnBev">语法拆解：</b></p>
+    <p data-page-node-id="qLFYZDFEHqIrVqCzgg5k5j"><code class="inline" data-page-node-id="KvCbQx4VASmob0OVzV93G2">FROM scores sc</code> — 主表是成绩表，<code class="inline" data-page-node-id="8wCtIoDEuWc2WDpwnx14p7">sc</code> 是我给它起的<b data-page-node-id="cDrwwmsPuGziQVetX69SIr">表别名</b>（不写别名也行，但要写全 <code class="inline" data-page-node-id="np8poVvVYKHv1tr8rK4Emb">scores.student_id</code>，很啰嗦）。</p>
+    <p data-page-node-id="4qnPZht4XL8IM4NWuYsYWv"><code class="inline" data-page-node-id="JYglo9EKndjhwtASGGCKmE">JOIN students s ON ...</code> — 要把 students 表接进来，别名 <code class="inline" data-page-node-id="uMAzfnB4Y3JBCqWVyxKn9N">s</code>。</p>
+    <p data-page-node-id="rH8An0GwX8mXSIWt3Klufd"><code class="inline" data-page-node-id="WDi6vg8S2jYkLabndcpTdU">ON sc.student_id = s.student_id</code> — <b data-page-node-id="WgCqGIF5ZYoi329DiiF2qD">连接条件</b>，告诉数据库两边靠哪个字段对应。这个字段就叫<b data-page-node-id="n7X67HBTG78hb1jlscit2s">关联字段</b>（外键）。</p>
+  </div>
+  <div class="result" data-page-node-id="XccSulCowX1Cj0qPlzai17">
+    <div class="rh" data-page-node-id="iqIObuSAdSMrG74qQEznyq">结果（47 行，前 4 行）</div>
+    <table data-page-node-id="GFc2FK6chIEAncb9X7JYdg">
+      <tr data-page-node-id="J2A7BTHGH8ZOwSCNuYh0O3"><th data-page-node-id="P0bm8jBUIC7a0LVjIGKEv2">name</th><th data-page-node-id="fyr563nzmkifRHNHsysAJC">class_name</th><th data-page-node-id="eyeRNeXyDRkQrGniLjYmLe">course_id</th><th data-page-node-id="CQxKdGVwzdhUivW268OjaK">score</th></tr>
+      <tr data-page-node-id="qnJdb6f9WKgebwnPbAqprt"><td data-page-node-id="wNGqnlro8TXxJcspPba16S">张伟</td><td data-page-node-id="CeMJDfykdGmHbPTNjSLamt">一班</td><td data-page-node-id="G70hxSVLUzZ6UeLO59DBZN">C01</td><td data-page-node-id="PfrPImf4JzhHPsrHtXYjK7">88.5</td></tr>
+      <tr data-page-node-id="XoEHvy9YIGYqggbQD15akf"><td data-page-node-id="k3d0dgdu7N3ektCeprOThP">张伟</td><td data-page-node-id="lxxk8xEcMG3RucMdpZZ3Uo">一班</td><td data-page-node-id="aSCu1SRYazpt0Xy3X7A2GE">C02</td><td data-page-node-id="6NXgFbZZrB7Q4d4mgzRCza">92.0</td></tr>
+      <tr data-page-node-id="Vp9pklBAwt3MNZdlIXcBU6"><td data-page-node-id="Fhp9iWrJ4ieDzOLDXWFtNJ">张伟</td><td data-page-node-id="HRVoLHghqncCGDIQRhRysf">一班</td><td data-page-node-id="5qkMFgop7mxapxh96ZLOdL">C03</td><td data-page-node-id="1GaG7pJVm9FU3moOSVoPMA">76.0</td></tr>
+      <tr data-page-node-id="cgPObHHaxRE56kFBDdq6pW"><td data-page-node-id="CfA7N8sDVZS93w9Yv4vasz">张伟</td><td data-page-node-id="yAcE0XY6PgSrtzvTknX8Oi">一班</td><td data-page-node-id="fHIM7sAYyTO1e6vNWbvJBL">C04</td><td data-page-node-id="Ar7dHULKGRDbkkzqqIFVWz">85.0</td></tr>
+    </table>
+  </div>
+
+  <h3 data-page-node-id="ImFFseQBnECH19ig5RVCcN">三张表连起来</h3>
+  <p data-page-node-id="3gcpIF2cGDWESkClGk026j">再接一次 JOIN，把课程名和老师也带出来。</p>
+  <pre data-page-node-id="dqEom9uqVPJ5Yna0V1UFlq"><code class="language-sql" data-page-node-id="YiduE0HeOLh1UH0E3VD8j5">SELECT
+    s.name            AS 姓名,
+    c.course_name     AS 课程,
+    c.teacher         AS 老师,
+    sc.score          AS 分数
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+JOIN courses  c ON sc.course_id  = c.course_id
+ORDER BY s.name, c.course_name;</code></pre>
+  <p data-page-node-id="4f8dM7ghdonAAsOmuMsQxv">规律就是：<b data-page-node-id="a2GpqFm11sCZ1nC4FWrGvA">JOIN 一次接一张表，每接一张都要写 ON 说清楚靠什么字段对上。</b>四张表就 JOIN 三次。</p>
+
+  <h3 data-page-node-id="zwPZSAHCs3WQFttTvnOI07">LEFT JOIN：以左表为主，找不到也保留</h3>
+  <p data-page-node-id="LHt1HeXipwYz4ERxWAXQ4Q"><code class="inline" data-page-node-id="FulLqsNDSpEkzScxPNjHsB">INNER JOIN</code>（就是 <code class="inline" data-page-node-id="5vTOI8uGgpfkfyUtAHKNge">JOIN</code>）只保留<b data-page-node-id="eg737Wlqxn25RfaSRh1H9r">两边都匹配上</b>的行。这有个后果：徐萌（1012）一条成绩都没有，所以在上面那个查询结果里<b data-page-node-id="ggXcGJkUBAt4HdoPGYAjDK">她整个人都不见了</b>。</p>
+  <p data-page-node-id="msQTmafgjfV1ZdChTJhqoF"><code class="inline" data-page-node-id="dbXnipjBsnZoEVaRlaAKQl">LEFT JOIN</code> 的规则是：<b data-page-node-id="Sc4U4StvpukKEEW5OyTO02">左边表的数据全都保留</b>，右边表没有对应数据的地方就填 NULL。</p>
+  <pre data-page-node-id="5TCJjiTUAVtKnlVXwd54jY"><code class="language-sql" data-page-node-id="tHcyWGI33zwhSndR61X7Fi">SELECT
+    s.student_id,
+    s.name,
+    sc.course_id,
+    sc.score
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+ORDER BY s.student_id;</code></pre>
+  <div class="result" data-page-node-id="JVD8yWbcJYgzERMz7FysDI">
+    <div class="rh" data-page-node-id="Ouu8BZMViUPF2eCJY9f1gY">结果（47 + 徐萌 = 48 行，摘录）</div>
+    <table data-page-node-id="hTQECpyvPoervaBOBWrbNM">
+      <tr data-page-node-id="5xp3DBA0INNXvHKXkIalD3"><th data-page-node-id="FYOXkH7kHRjyOn7sAC7cLU">student_id</th><th data-page-node-id="MW5mTTLpwqndFcvdUUlKDB">name</th><th data-page-node-id="taup30AeZjYyLNEdVTJN55">course_id</th><th data-page-node-id="YEyxvAUNkxSvhN7T7BupeA">score</th></tr>
+      <tr data-page-node-id="9iX5GpEpF4boJFFinhRwc7"><td data-page-node-id="7Y1OkhxTBcdLbjxr85PT3x">1001</td><td data-page-node-id="GcvZIqjeGsr4WFqnaGQFw6">张伟</td><td data-page-node-id="DyL6uBoXYoWSG2DtlfyQMz">C01</td><td data-page-node-id="CoiwLAPdO02pwWZoG1HhPI">88.5</td></tr>
+      <tr data-page-node-id="DyMiafkDw2vx3hctACwqfR"><td data-page-node-id="n1rQiUw5AfX6zfKcC3GOYi">…</td><td data-page-node-id="PLmHJC1EQsGy2UBfdamX4l">…</td><td data-page-node-id="CcWG9hfvUT9AVjODyEIEAr">…</td><td data-page-node-id="Fn4PS0mwUvIuwcjwbJnRXY">…</td></tr>
+      <tr data-page-node-id="h28DbUHIHm57W73v468LkD"><td data-page-node-id="oIyP5s9O1srAbcWCIKAC35">1012</td><td data-page-node-id="RDtebjVdG6YEunEA9B42NE">徐萌</td><td class="null" data-page-node-id="z1EViA6K8c59bco6hUdNNu">NULL</td><td class="null" data-page-node-id="Tx5dkFUNvyHfTp2VjF8jCs">NULL</td></tr>
+    </table>
+  </div>
+  <p data-page-node-id="ul7382oM5gFw5uy3bhSpyS"><b data-page-node-id="O3ffgfhVe4sXngjWhnZlpy">这就是 LEFT JOIN 的经典用法——找"缺了什么"：</b></p>
+  <pre data-page-node-id="CsC5hM1rBBmWC9VtNpq1Sk"><code class="language-sql" data-page-node-id="6sN9HTiZwObrqDeHPrICMx">-- 一条成绩都没参加考试的学生
+SELECT s.student_id, s.name, s.class_name
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+WHERE sc.id IS NULL;      -- 右边没匹配上，说明这个人没成绩</code></pre>
+  <div class="note" data-page-node-id="P2G9xU4qTNEBkGvJ46xAVu">
+    <p data-page-node-id="yCUCYHfhoVI1cmmugqvBuP"><b data-page-node-id="ddCWy1lCQBbkRORAzTFPb9">这个方法一定要记住：LEFT JOIN + WHERE 右表字段 IS NULL = 找出左表里有、右表里没有的数据。</b></p>
+    <p data-page-node-id="YSmViEfZB9gnE3qWHAoOXv">实际工作中超常用：找出没下过单的会员、没有分配负责人的订单、没有选任何课的学生……都是这个套路。</p>
+  </div>
+
+  <div class="ex" data-page-node-id="urpYkdvFwHt61BZqRfdpH4">
+    <div class="ex-h" data-page-node-id="6OzVqrEobWxX25xQbDdINd">练习 5 · 多表连接</div>
+    <ol data-page-node-id="ud8qqab8ZtHnJ8k1NYKkqA">
+      <li data-page-node-id="lJj02DcDQiGF4e89NJRSgz">查出每个学生的<b data-page-node-id="1Ku0rbhBMMPG7GTcw3H6pY">姓名和分数</b>（成绩表连学生表）。</li>
+      <li data-page-node-id="Sr7ZTIWMHaMUoQL4NmVPtx">查出<b data-page-node-id="slxhbSQX2GDmWfpYnAMMtk">周婷</b>所有科目的成绩，要显示<b data-page-node-id="uqhoot8VjN7AaVURHCxBkU">姓名、课程名、分数</b>。</li>
+      <li data-page-node-id="Ayh9E0ie7t5jYbQfyHRvyg">查出<b data-page-node-id="F1c8XgL6WVZxpy0M87XPd0">语文</b>这一科的所有成绩：<b data-page-node-id="WuR1t1Wvg4DgYe65YYl2yo">姓名、班级、分数</b>，按分数从高到低。</li>
+      <li data-page-node-id="VeDAPpZDV8a3M3nc6Uk3jt">查出<b data-page-node-id="Rr7y7OAGvWFDtRT7DkZs2z">一条成绩都没有</b>的学生。<span class="hint" data-page-node-id="FxY28eEMZQepzhs4puvAVs">（LEFT JOIN + IS NULL）</span></li>
+      <li data-page-node-id="bMQJ1Q4SaTmTJh0Jt3mmcg">统计<b data-page-node-id="g9SZLCQItxVrUvoKzcEtXe">每门课程</b>的选课人数和平均分，显示<b data-page-node-id="JRWheddWwimiqtQqPUy7OC">课程名称</b>而不是课程编号。</li>
+      <li data-page-node-id="QTmwlhW3E0hY0fVmOLImXu">算出<b data-page-node-id="5IFD6gulQziGP4q9u6lJz7">每个学生的总分和平均分</b>，按总分从高到低排。</li>
+      <li data-page-node-id="OmG8BbvIvdWkXSjC3vg9y2">找出<b data-page-node-id="dyQNc1m15fZDjc9S1Yxr27">有选课记录、但学生表里查不到对应学号</b>的脏数据。<span class="hint" data-page-node-id="xP5erqUaXvtDDBivsuH84s">（这次反着来：以 scores 为主表做 LEFT JOIN）</span></li>
+    </ol>
+    <details data-page-node-id="NzhbdPvqGl5dvwx97PwRHt">
+      <summary data-page-node-id="Ea0hKhdKNAZRYL61EXAUpP">对答案</summary>
+      <div class="ans-li" data-page-node-id="CGD839I9yJWqZglYhMXMiI">1. 姓名 + 分数</div>
+      <pre data-page-node-id="BansmJ0cic0UGUG82DKVl6"><code class="language-sql" data-page-node-id="LPFTZiCJ8jJfycRGRYWeGl">SELECT s.name, sc.score
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id;</code></pre>
+      <div class="ans-li" data-page-node-id="RVkX1QREBBluvuWbBv1suN">2. 周婷的各科成绩</div>
+      <pre data-page-node-id="CrLqTYRxUdDZxbynkmW8qg"><code class="language-sql" data-page-node-id="4xmaKOD3KpgPia6L7XAUUh">SELECT s.name, c.course_name, sc.score
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+JOIN courses  c ON sc.course_id  = c.course_id
+WHERE s.name = '周婷';</code></pre>
+      <p class="hint" data-page-node-id="rxMVyHDkfbAoJytC3Cw5Gd">6 行（她六科全考了）。注意：这里用 <code class="inline" data-page-node-id="DSQzAguscnJmWP7aSDWXgs">s.name = '周婷'</code> 只是练习方便——真实业务里必须用学号查，因为重名是存在的（你的表里就有两个张伟）。</p>
+      <div class="ans-li" data-page-node-id="pJipB49mojE4XKm71MRnSD">3. 语文成绩排行</div>
+      <pre data-page-node-id="Cm1jOxk3f3B7elY0L4JUQ8"><code class="language-sql" data-page-node-id="u7zXXK2GPBlS3bhizZkV58">SELECT s.name AS 姓名, s.class_name AS 班级, sc.score AS 分数
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+JOIN courses  c ON sc.course_id  = c.course_id
+WHERE c.course_name = '语文'
+ORDER BY sc.score DESC;</code></pre>
+      <div class="ans-li" data-page-node-id="IpEHKy78R1C2nzALmvwcBY">4. 没参加考试的学生</div>
+      <pre data-page-node-id="sd9xA1CZ0OroMSK2mHbBsa"><code class="language-sql" data-page-node-id="I2u1bQ6FiesGRsDlrz2Yy9">SELECT s.student_id, s.name, s.class_name
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+WHERE sc.id IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="e2MmPIkRuzPipE4ExkOS2b">1 行：徐萌（1012，四班）。</p>
+      <div class="ans-li" data-page-node-id="ZCERURmdrfUduJucVxBttN">5. 每门课的人数与平均分</div>
+      <pre data-page-node-id="jYyEtIjCeZPHFb6AKVFEQG"><code class="language-sql" data-page-node-id="GIQ7Ua1xfmGsChCoExOEUX">SELECT
+    c.course_name        AS 课程,
+    c.teacher            AS 老师,
+    COUNT(sc.id)         AS 选课人数,
+    ROUND(AVG(sc.score), 1) AS 平均分
+FROM courses c
+LEFT JOIN scores sc ON c.course_id = sc.course_id
+GROUP BY c.course_id, c.course_name, c.teacher
+ORDER BY AVG(sc.score) DESC;</code></pre>
+      <p class="hint" data-page-node-id="lu3jLyo8pMiuVFh7jkPtfv">这里用 LEFT JOIN，是为了让<b data-page-node-id="vFww0YydGZ9S9LYh5H5DE2">没人选的课也能出现在结果里</b>（显示人数 0）。你现在的数据里六门课都有人选，所以看不出差别——但这正是业务上最需要留意的细节。注意 <code class="inline" data-page-node-id="WzkTutb8ZwMzXFCRBnkJci">COUNT(sc.id)</code> 而不是 <code class="inline" data-page-node-id="NW9czJG5XvyRFQSQPGXOzX">COUNT(*)</code>：没人选课时 <code class="inline" data-page-node-id="ZttWBuYcKeF46KMSHt7KWx">COUNT(*)</code> 会算出 1（因为左表那一行还在），<code class="inline" data-page-node-id="0GmmicUwB4nMdt8mLmBmmX">COUNT(sc.id)</code> 才会正确给 0。</p>
+      <p class="hint" data-page-node-id="pxXbok89RVlZfSpDv0Y9d3">另外 <code class="inline" data-page-node-id="2jqIKCsG5YU0D1ysKwsQHN">GROUP BY</code> 后面把 <code class="inline" data-page-node-id="nTIQrNprWoYjGOZaCopYmk">course_name</code>、<code class="inline" data-page-node-id="TZmDaV9lKPlyYfCP9Sho7l">teacher</code> 都写上了——严格模式（ONLY_FULL_GROUP_BY）下必须这样，否则报错。</p>
+      <div class="ans-li" data-page-node-id="OlO3bEjpvO8av3Z9bU8nRM">6. 每个学生的总分和平均分</div>
+      <pre data-page-node-id="1oOERiCBxYhHCZsvXuQfF8"><code class="language-sql" data-page-node-id="Va93ANsrRlkmMBttv5mSCg">SELECT
+    s.student_id,
+    s.name,
+    COUNT(sc.id)            AS 考试科数,
+    SUM(sc.score)           AS 总分,
+    ROUND(AVG(sc.score), 1) AS 平均分
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+GROUP BY s.student_id, s.name
+ORDER BY SUM(sc.score) DESC;</code></pre>
+      <p class="hint" data-page-node-id="mlqnrRZU4EQBlIqqDTvmTx">用 LEFT JOIN 是为了让"一科没考"的学生也留在名单里。<b data-page-node-id="ACS9sATYAUe9L2PKTyOgGg">但注意</b>：缺考的 NULL 不计入 SUM 和 AVG，所以吴涛的数学缺考不会拉低他的平均分——这是好是坏取决于业务定义。做测试的你要习惯问这个问题："这个口径对吗？"</p>
+      <p class="hint" data-page-node-id="ipLjJwDVdJD6NI1L8K1g1m">另外排序时 NULL 会跑到最后（降序），所以徐萌在末尾。</p>
+      <div class="ans-li" data-page-node-id="vWfhUkNkmwsOWJBvgqOmS9">7. 找出孤儿数据</div>
+      <pre data-page-node-id="BeLG2ZzOQ1FsoK4R0VC0CJ"><code class="language-sql" data-page-node-id="XMNIo7DMaltOXe3eO50u62">SELECT sc.*
+FROM scores sc
+LEFT JOIN students s ON sc.student_id = s.student_id
+WHERE s.student_id IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="75oEpIuzbY2mTckhhjP2K0">现在应该返回 <b data-page-node-id="3arlDtR2a6prKEZQOTgal2">0 行</b>——说明数据是干净的，没有孤儿记录。想让这条查询真查出点东西？去第 9 章练习里自己造一条试试。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6" data-page-node-id="5x6GZJXB9EpXFihWMyGKJl">
+  <h2 data-page-node-id="CkQzl7mRZZgyd6S3KEgrgm"><span class="n" data-page-node-id="H0H6ZZiGdIpBXIl2PipiON">6</span>INSERT：新增数据</h2>
+  <p class="sub" data-page-node-id="VofcpWPDAvloF8zB8Y3p7H">增删改三兄弟里最简单的。学会它，你就能自己造测试数据了。</p>
+
+  <h3 data-page-node-id="BF8Vy6uhuTFe8eEJnYaMHB">语法</h3>
+  <pre data-page-node-id="kjydg3xPMnrR5o30G5hru3"><code class="language-sql" data-page-node-id="m5pR9ZACMYFSyhTupNkR0G">INSERT INTO 表名 (列1, 列2, 列3) VALUES (值1, 值2, 值3);</code></pre>
+  <p data-page-node-id="gAowWHxjeON4zTRYdDAKR3">三个关键点：<b data-page-node-id="bXlT5C1GDOHiBdUM6lhVC1">列和值的个数必须一样、顺序必须一一对应、文字要加单引号。</b></p>
+
+  <h3 data-page-node-id="cdEkZytOlWqKiDfeCeaYbF">示例一：插一个学生</h3>
+  <pre data-page-node-id="6oMm1t4OyS9f8HBuUdYcO3"><code class="language-sql" data-page-node-id="GO57G1bPkBhGUZ9mCWUYHk">INSERT INTO students (student_id, name, gender, birth_date, class_name, phone)
+VALUES (1013, '孙悦', '女', '2006-05-05', '四班', '13800007788');
+
+-- 插完立刻验证
+SELECT * FROM students WHERE student_id = 1013;</code></pre>
+  <div class="note" data-page-node-id="cM9OH4ehhGUH9rn91Bs6AX">
+    <p data-page-node-id="sNbwHbp3o6EbwpYp49Gqc2"><b data-page-node-id="xMYePaxo1EIPjGAqPvnuXx">新增数据后一定要立刻查一次。</b>这是习惯，不是可选项。你以为插进去了，可能字段错位、可能中文乱码——不查你不会知道。</p>
+  </div>
+
+  <h3 data-page-node-id="KTaTnEpYfiUXVv2s4Tg5OV">示例二：一次插多条</h3>
+  <p data-page-node-id="irzyf2JOB3YbQcXztisBVq">值和值之间用逗号隔开，一条语句插多行，比写多条 INSERT 快得多。</p>
+  <pre data-page-node-id="sjUp9wymGqGYCPUVHjUqe9"><code class="language-sql" data-page-node-id="goolEzdfL1gqjI3GzCCiRc">INSERT INTO scores (student_id, course_id, score, exam_date) VALUES
+(1013, 'C01', 85.0, '2026-06-15'),
+(1013, 'C02', 90.0, '2026-06-16'),
+(1013, 'C03', 78.5, '2026-06-17');</code></pre>
+
+  <h3 data-page-node-id="NlQaRmshCDpY2mSwwldmvZ">示例三：只插部分列</h3>
+  <p data-page-node-id="2YkU3m3CVehNVnjhCtvuhP">没写出来的列会取默认值，而 <code class="inline" data-page-node-id="piHuLwpCtN4gbnCAntYOMh">scores.score</code> 和 <code class="inline" data-page-node-id="Z3FtGpjeybPMrYD6X7Pxnu">students.phone</code> 允许为空，所以就是 NULL。</p>
+  <pre data-page-node-id="lT0LAKoF4d3nMpziYyaiQy"><code class="language-sql" data-page-node-id="s9cGsGDqdEiDCHa6mqEaC1">INSERT INTO students (student_id, name, gender, class_name)
+VALUES (1014, '郑好', '男', '五班');
+
+SELECT * FROM students WHERE student_id = 1014;
+-- birth_date 和 phone 都是 NULL</code></pre>
+
+  <h3 data-page-node-id="quWL67DVHcXFrEnH5EltjD">关于自增主键</h3>
+  <p data-page-node-id="EmHadO5rk5Y8bIBgahbwxH"><code class="inline" data-page-node-id="zakDELCzuvQQTiWaxuig0t">scores</code> 表的 <code class="inline" data-page-node-id="uDTynA1zpxhwe04psUbtGX">id</code> 是 <code class="inline" data-page-node-id="qyQbWqFqANHH0Jp8o1eUPy">AUTO_INCREMENT</code>，所以插入时<b data-page-node-id="IoRGseTlrnKgSUl56LF4QD">完全不用管它</b>，数据库自动给。如果你想手动指定 id，也可以，但没必要。</p>
+  <pre data-page-node-id="SBCbJ9d3nQBbvu7zLx67Xy"><code class="language-sql" data-page-node-id="mGFf9G1DaTj4QBNJtvOJ1g">-- 让数据库自己编号
+INSERT INTO scores (student_id, course_id, score, exam_date)
+VALUES (1013, 'C04', 88.0, '2026-06-18');</code></pre>
+
+  <div class="ex" data-page-node-id="jBpO4wNnhlk3t7QsiitG2g">
+    <div class="ex-h" data-page-node-id="0DdgfWEbFF7tjVFp0nnSgv">练习 6 · 新增数据</div>
+    <p class="hint" data-page-node-id="NNPjuSrxxePx6jiqHdART6">做之前先记一下 <code class="inline" data-page-node-id="c0RQBzrpTrfCVsvJlxGW4h">SELECT COUNT(*) FROM students;</code> 当前是多少，做完好对账。</p>
+    <ol data-page-node-id="hMSEuAunBWohgXawlJC8QD">
+      <li data-page-node-id="Z7rkBViwETA1kQgmXght3O">新增一个学生：学号 <b data-page-node-id="tbzgHDbCal4ZU9jsDkf7jX">1015</b>，姓名<b data-page-node-id="b74HAYn81NHXbwGb3x1GGh">「何雨」</b>，女，出生日期 <b data-page-node-id="CRHH6RhzmfjIbPlUyA09Vg">2006-08-08</b>，班级<b data-page-node-id="o52impD1PJql8F7YQR3y4F">「五班」</b>，电话 <b data-page-node-id="U8tKAUfreUKKS5d4kd00OF">13600001234</b>。插完查出来看看。</li>
+      <li data-page-node-id="CiI11qeLhSru6UzIvesCbU">再新增一个学生：学号 <b data-page-node-id="EVtpgxDYDGcNKxMCHm0GCN">1016</b>，姓名<b data-page-node-id="Qvn2G1YRPN84ps81GrdJAF">「马超」</b>，男，<b data-page-node-id="su4h0qyR2XZljJ1ybnDedR">五班</b>。<b data-page-node-id="JNTvB1WfCrC8lDbOA6pnUd">不给电话，也不给出生日期。</b>查出来确认这两个字段是 NULL。</li>
+      <li data-page-node-id="rEkvzSLCr7ZAQwGj0IGYuj">给何雨（1015）一次性插入<b data-page-node-id="GGgtEhN5qiERz0MnkPfMVo">三科成绩</b>：语文 82.0、数学 76.5、英语 88.0，考试日期统一用 <b data-page-node-id="h1g3oY97oXKqiHudMFIYRJ">2026-06-15</b>。</li>
+      <li data-page-node-id="eFZfptYvFVlt0zOYUINYum">给马超（1016）插入一条成绩：<b data-page-node-id="TLKc8Db4pDr5iVJq0dcn30">数学</b>，分数填 <b data-page-node-id="pyS2n0Syor4BXl8eqQ11L9">NULL</b>（表示缺考），日期 2026-06-16。然后查出所有 score 为 NULL 的记录，看看现在是几条。</li>
+      <li data-page-node-id="dRNbpRkS7nFAwkAvtLqbcy"><b data-page-node-id="RzTj6xu9tcVS6iopA3yARK">思考题：</b>如果往 students 表插一个学号已经存在的学生（比如 1001），会发生什么？先猜，再动手试。</li>
+    </ol>
+    <details data-page-node-id="54MeVfb0LnFw5H3nzs0Slz">
+      <summary data-page-node-id="wLQaHn9aJLZinPH6uLjIiW">对答案</summary>
+      <div class="ans-li" data-page-node-id="uVEKMMDT9YS4NuabiTdJ9m">1. 插入何雨</div>
+      <pre data-page-node-id="kNyjuIsinIjqVjScEa53tt"><code class="language-sql" data-page-node-id="49EbhwIGCFTflHSzMHDzZ1">INSERT INTO students (student_id, name, gender, birth_date, class_name, phone)
+VALUES (1015, '何雨', '女', '2006-08-08', '五班', '13600001234');
+
+SELECT * FROM students WHERE student_id = 1015;</code></pre>
+      <div class="ans-li" data-page-node-id="q3GoQGuMXpjdi8KsaVQ5xz">2. 插入马超（部分列）</div>
+      <pre data-page-node-id="xh4v017cP3eK1DskYjYvaB"><code class="language-sql" data-page-node-id="11TDoYiw2gBFBZuTGzpeMS">INSERT INTO students (student_id, name, gender, class_name)
+VALUES (1016, '马超', '男', '五班');
+
+SELECT * FROM students WHERE student_id = 1016;</code></pre>
+      <p class="hint" data-page-node-id="5kX2jobBd9Zt6Rth3CNZmg">birth_date 和 phone 显示成 <code class="inline" data-page-node-id="IpPHhOq6SOw39o4A5wP7nB">(NULL)</code> 或空白。</p>
+      <div class="ans-li" data-page-node-id="wzHJ162cdBOUlWMACwL7YJ">3. 何雨的三科成绩</div>
+      <pre data-page-node-id="YTPt1Dh2QKHnmEN9DawJ5e"><code class="language-sql" data-page-node-id="fzyxy9Zy6y5JUJAGtIueSu">INSERT INTO scores (student_id, course_id, score, exam_date) VALUES
+(1015, 'C01', 82.0, '2026-06-15'),
+(1015, 'C02', 76.5, '2026-06-15'),
+(1015, 'C03', 88.0, '2026-06-15');</code></pre>
+      <div class="ans-li" data-page-node-id="vehQaFeSH6y2i1bcif3FV2">4. 马超缺考</div>
+      <pre data-page-node-id="TDi9HWVAPEjkMwLsxORxpB"><code class="language-sql" data-page-node-id="mcZSBUqIZaIa5Imt2qzPNs">INSERT INTO scores (student_id, course_id, score, exam_date)
+VALUES (1016, 'C02', NULL, '2026-06-16');
+
+SELECT * FROM scores WHERE score IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="5yflFmXzHeHPlVe9E89F9f">现在应该是 <b data-page-node-id="tnL4r8FOJczCsucywPp7Db">2 条</b>：原来吴涛那条 + 马超这条。如果你查出来还是 1 条，检查一下是不是把 NULL 写成了 <code class="inline" data-page-node-id="YDM9IbjjahUOkNTwaBLy55">'NULL'</code>（加引号就变成字符串了）或者 <code class="inline" data-page-node-id="4L8GO4U2UHEYp5QQpg1IMg">0</code>。</p>
+      <div class="ans-li" data-page-node-id="V153C7juOHp1e994MKG7hk">5. 插入已存在的学号</div>
+      <p class="hint" data-page-node-id="vtAQjugTLXZWOtLPheQYSC">会报错：</p>
+      <pre data-page-node-id="XevR4D6gUHrya2n56x4oRs"><code class="language-sql" data-page-node-id="Si2NVcijv4QPtwL8Hx940m">ERROR 1062 (23000): Duplicate entry '1001' for key 'PRIMARY'</code></pre>
+      <p class="hint" data-page-node-id="eHM04yObXKM8Frz0VfijW2">这就是<b data-page-node-id="Jmg6FafXbUZFodFDBwUIDC">主键约束</b>的作用——学号是主键，唯一且不能重复。数据库帮你挡住了"两个学号一样的人"这种错误。<b data-page-node-id="AGFmKqGT0iPXELtKY6JHdD">做测试时，这种"重复插入应该报错"的场景，就是要专门验证的点。</b></p>
+      <p class="hint" data-page-node-id="iek5F3IiTaR7GUPkGJFmnZ">（有主键约束兜底真好。想想如果没约束会怎样——两个 1001，之后你对 1001 做的任何操作都会同时影响两个人。这就是为什么"数据唯一性校验"是测试必查项。）</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="c7" data-page-node-id="pbOUi16eDhwUb3pQbQiSNo">
+  <h2 data-page-node-id="7zncQah6MMiEoemlNXcDGS"><span class="n" data-page-node-id="PSdxRSvlPTzKRKpz2zSDwg">7</span>UPDATE：改数据</h2>
+  <p class="sub" data-page-node-id="cxTYDMyv4ZUQkC6jb9CAaa">最容易出事故的一条语句。看完这节你会理解为什么老手改数据前都要先 SELECT。</p>
+
+  <h3 data-page-node-id="D6PzwbPln7FAmhH7V3hmEI">语法</h3>
+  <pre data-page-node-id="PXYIxDAfNDhrfmjSWeFM7F"><code class="language-sql" data-page-node-id="5LH8fH9OC1jccSzqwnwksN">UPDATE 表名 SET 列1 = 新值1, 列2 = 新值2 WHERE 条件;</code></pre>
+  <p data-page-node-id="FR74NdlX1PA7bthzFfMNq7"><code class="inline" data-page-node-id="hAjGgEHHTk3HeNJG6u7Vzk">SET</code> 后面写"改成什么"，<code class="inline" data-page-node-id="eD9UhVjpcFNvXnPMHb5r5r">WHERE</code> 后面写"改哪些行"。</p>
+
+  <h3 data-page-node-id="FBPDemZh65Epgs3If74aEv">示例一：标准流程（先查后改）</h3>
+  <pre data-page-node-id="lEe1xCNxIFWXZz7xENsNkd"><code class="language-sql" data-page-node-id="4BObzELYJtCPNdkbJdPU3V">-- 第一步：先看清楚这一行现在什么样
+SELECT * FROM students WHERE student_id = 1010;
+
+-- 第二步：确认真的是他，再改
+UPDATE students SET phone = '13900001111' WHERE student_id = 1010;
+
+-- 第三步：改完再查一次确认
+SELECT * FROM students WHERE student_id = 1010;</code></pre>
+  <p data-page-node-id="f09tnWBCW2CqNnG6cKmlYb"><b data-page-node-id="4bIUUd4jORIge1d67eWEzV">三步走，一步都别省。</b>第一步的成本是 2 秒钟，第二步写错的成本可能是 2 小时。</p>
+
+  <h3 data-page-node-id="rwRQCI0ApBpQFdxd4qHpnm">示例二：一次改多个字段</h3>
+  <pre data-page-node-id="oyNigYG59sl04wjng6FhwX"><code class="language-sql" data-page-node-id="ULjj0WwDQsn1eztdkDTNwE">UPDATE students
+SET phone = '13900002222',
+    class_name = '五班'
+WHERE student_id = 1010;</code></pre>
+
+  <h3 data-page-node-id="OY8aKjaWAAlzfpBM2WwqNM">示例三：基于原值计算</h3>
+  <p data-page-node-id="T1q5OUKwnw6TYMjvWgSPK1">可以用原来的值算新值。比如班里批改有误，所有成绩统一加 5 分：</p>
+  <pre data-page-node-id="7XeAF9iKSgiXTJEBZHra6F"><code class="language-sql" data-page-node-id="afDUeInv12B7VbNZTXzgjj">-- 注意：这条会影响李强的 4 条成绩记录
+UPDATE scores SET score = score + 5 WHERE student_id = 1003;
+
+-- 想改回去
+UPDATE scores SET score = score - 5 WHERE student_id = 1003;</code></pre>
+  <div class="warn note" data-page-node-id="VAR891ILPeTEZhfupYp8nr">
+    <p data-page-node-id="30bXeCBJhuMMM1r1IBj5LR"><b data-page-node-id="ikF0U05CKwzcZTarUEpyYa">凡是做批量 UPDATE，先跑一次 SELECT 看行数。</b></p>
+    <pre style="margin:10px 0 0" data-page-node-id="y59B3gkRqrrZ1lGa8HeZsG"><code class="language-sql" data-page-node-id="eKyd8zw5A0r1ugKhBbTVED">SELECT COUNT(*) FROM scores WHERE student_id = 1003;  -- 4 条，心里有数了再改</code></pre>
+  </div>
+
+  <h3 data-page-node-id="DI7GAUpTX0i1H3axmEADOS">示例四：把值改成 NULL</h3>
+  <pre data-page-node-id="4CiOmKblalc8oQTHrINA2q"><code class="language-sql" data-page-node-id="DZea6H1J4O7k0OKHuwLs0u">UPDATE students SET phone = NULL WHERE student_id = 1010;</code></pre>
+  <p data-page-node-id="iwoUBGhdTsEldJhJJwBf9F">直接写 <code class="inline" data-page-node-id="o1SG4rCwtaReyPsgBxBhfc">= NULL</code> 是可以的（在 SET 里），但要跟 WHERE 里的 <code class="inline" data-page-node-id="dClg7LDQtiPgRKYk4Y6Kno">IS NULL</code> 区分开。</p>
+
+  <div class="danger note" data-page-node-id="xDuMK2eqdI6lKETyKdJJ7W">
+    <p data-page-node-id="olkSzax7U0ar68zgDARZLZ"><b data-page-node-id="oxNLFteczYwsgjB6RfDeHZ">危险演示：忘了写 WHERE</b></p>
+    <pre style="margin:10px 0 0" data-page-node-id="2qnhxEVzZCorxTbDowOK6a"><code class="language-sql" data-page-node-id="WwqUk7occ2abU75DINBWjX">UPDATE students SET phone = NULL;</code></pre>
+    <p style="margin-top:10px" data-page-node-id="f5DyjZ2f7L9O6Q4NULGNpU">这条语句<b data-page-node-id="ayDjrBPSrLfo3r2eP0C5sq">语法完全正确、不会报错、不会警告</b>，但它会把 12 个学生的电话<b data-page-node-id="gjHHQns6itU1V4koxA5Cb4">全部清空</b>。数据库非常"听话"，它不会猜你的意图，也不会问"你确定吗"。</p>
+    <p data-page-node-id="0yOwifLVNlaTBUNHjR7wPG"><b data-page-node-id="RAPf2SIT6v88JLJEB0nm9o">养成肌肉记忆：写完 UPDATE，先回头看一眼有没有 WHERE。</b></p>
+  </div>
+
+  <h3 data-page-node-id="KC3c1TYpZK3mtJKLjpU2Y2">如果真改错了怎么办</h3>
+  <p data-page-node-id="mQDESa4gDoi7wRn522hDbZ">三条路，按优先级：</p>
+  <ol data-page-node-id="4rf3SIAhV2PL5SKt0Cc1fh">
+    <li data-page-node-id="Fkik2IqhC3Pb9Ds7xzH094"><b data-page-node-id="IJQXFUeQ4tuOL5jFhI9vVj">开事务</b>（进阶）：<code class="inline" data-page-node-id="kEuhP2ZVALd9dWQ6mgdZmv">START TRANSACTION;</code> 改 → 查看结果 → 不对就 <code class="inline" data-page-node-id="gSus4CG0xoOt6vKt6FYQLC">ROLLBACK;</code> → 对就 <code class="inline" data-page-node-id="I9KDFHjdDgkqsXJLzYHWkZ">COMMIT;</code>。改错了还能退回来。</li>
+    <li data-page-node-id="AO8ehildcqKXyLN2AW2Mbu"><b data-page-node-id="1zwdIaiWAKS7I84sBRo2oc">练习时重跑脚本</b>：把 <code class="inline" data-page-node-id="es0VuwbvAhep7G7dMa1kTh">01_setup.sql</code> 再跑一遍，数据恢复原样。</li>
+    <li data-page-node-id="sjH8dRJB7WGCuba8tub9J1"><b data-page-node-id="R94jsh4KxeqwFPekSfaHc3">生产环境改错了</b>：立刻停手、上报，靠备份恢复。<b data-page-node-id="hFEfZSi32cWlGC8CoWNrFg">千万不要自己在生产库上反复尝试补救</b>——那通常会把事情变得更糟。</li>
+  </ol>
+
+  <div class="ex" data-page-node-id="0MutzwxHtsy0V57SG1tTeF">
+    <div class="ex-h" data-page-node-id="aDDoZObUD3eT7CaKksDAiW">练习 7 · 修改数据</div>
+    <p class="hint" data-page-node-id="kE4l7RwMvXDvDmGQb3F9ar">每条都按"先 SELECT → 再 UPDATE → 再 SELECT"三步走。</p>
+    <ol data-page-node-id="zO1TJHuaAigWr8VHbzUsqM">
+      <li data-page-node-id="vb85aS0CBn4jjfeRBFMwkH">把 <b data-page-node-id="LWHmtQtRuHHTIOwJET2xS9">1010 吴涛</b>的电话改成 <b data-page-node-id="APyRKQS6kqbJUvK6NWvgXh">13911112222</b>。</li>
+      <li data-page-node-id="6ue87YH0vERwQn5PL3U5nB">把 <b data-page-node-id="y6RmIQvhWVvTd1NQBerb8R">1016 马超</b>补上出生日期 <b data-page-node-id="JpZJraqXaTFOH3laO8AURr">2006-03-03</b>。</li>
+      <li data-page-node-id="37EkUJssYIqbPC9rrbgXdQ">把 <b data-page-node-id="LuKtPPyXErHfC6QWmRDu2I">何雨（1015）</b>的班级从「五班」改成「六班」，电话也同时改成 <b data-page-node-id="zbzUuhJsArj7iMEVilf9x9">13600009999</b>。<span class="hint" data-page-node-id="WmKob8LPmrkvxNPLRIsTBE">（一条语句改两个字段）</span></li>
+      <li data-page-node-id="HkFeI4XvHG0mTZln8eA8HC">把 <b data-page-node-id="dJMmXAhH3TLFrYScFlAhK2">杨磊（1006）</b>的所有成绩<b data-page-node-id="4yQiJKoB6xWk3PWFMRoU3N">加 10 分</b>。先查一下他有多少条，改完再查一遍确认。</li>
+      <li data-page-node-id="HDkZfMnVffxi1SASnLo06R">把 <b data-page-node-id="TEA8JtxZRLdiGjK2GB90Nj">1014 郑好</b>的电话改成 NULL。</li>
+      <li data-page-node-id="Ep8LMAslSMue3K9OHyjcki">把所有<b data-page-node-id="4HGaEiyUuTywUAAdnuwUx8">分数低于 60 的成绩</b>改成 60（"及格线保底"）。<b data-page-node-id="JWId7pEcUm1BRkGqqB72IF">先查出来看看会影响几条</b>。</li>
+      <li data-page-node-id="CB6mYBDlct0mUBJeIuGgG9"><b data-page-node-id="eEQ8zvf3mdmCULkIE94zMT">思考题：</b>下面这条语句会改掉几行？为什么？<br data-page-node-id="PiNQAYFtd0ITCCgzyLcRnC"><code class="inline" data-page-node-id="zfoUALrts5aCqemA0SToCX">UPDATE students SET class_name = '四班' WHERE class_name = '四班';</code></li>
+    </ol>
+    <details data-page-node-id="clFzdPdUDpoSFNsMKsGW8N">
+      <summary data-page-node-id="RvApIRdshROxUjgKGZXhJD">对答案</summary>
+      <div class="ans-li" data-page-node-id="8KWaEKFOkiHchtbvGij79v">1. 改吴涛电话</div>
+      <pre data-page-node-id="o6CcwNWr6VdhTpkYGTiOZD"><code class="language-sql" data-page-node-id="2ju88fOdKz5J6TlwMkx5XC">SELECT * FROM students WHERE student_id = 1010;
+UPDATE students SET phone = '13911112222' WHERE student_id = 1010;
+SELECT * FROM students WHERE student_id = 1010;</code></pre>
+      <div class="ans-li" data-page-node-id="iaaX1iDElBz2VLQAmPhFqO">2. 补马超出生日期</div>
+      <pre data-page-node-id="CH745upvneekMd6rI9F5rw"><code class="language-sql" data-page-node-id="cRcY2XwcmeJ6FI4aJ7fq3m">UPDATE students SET birth_date = '2006-03-03' WHERE student_id = 1016;</code></pre>
+      <div class="ans-li" data-page-node-id="VPEE85Y9h2xHa5sXblYEhs">3. 何雨改班级和电话</div>
+      <pre data-page-node-id="N6OjfI6xrItsIepqud5MKs"><code class="language-sql" data-page-node-id="j2ndA12BijFRsQY2edexpq">UPDATE students
+SET class_name = '六班', phone = '13600009999'
+WHERE student_id = 1015;</code></pre>
+      <p class="hint" data-page-node-id="lZGqEO54PBGwWA6oqj7rCA">两个字段之间用逗号，<b data-page-node-id="U4q60iRCjYIJrEcXxZw44C">只有一个 WHERE</b>。写成 <code class="inline" data-page-node-id="YxFY7fEf1o1a0Pq6yBBPgk">SET a=1 WHERE ... SET b=2 WHERE ...</code> 是错的。</p>
+      <div class="ans-li" data-page-node-id="rZ1U5fJ3QMuJwxpBsgu3CI">4. 杨磊成绩加 10 分</div>
+      <pre data-page-node-id="cBtRDHkq9QYgdfQaJPOFUh"><code class="language-sql" data-page-node-id="KFBdVKieA8vgisioRdZ1Sm">SELECT * FROM scores WHERE student_id = 1006;      -- 5 条
+SELECT COUNT(*) FROM scores WHERE student_id = 1006;
+
+UPDATE scores SET score = score + 10 WHERE student_id = 1006;
+
+SELECT * FROM scores WHERE student_id = 1006;      -- 确认都 +10 了</code></pre>
+      <p class="hint" data-page-node-id="Gt0A3fRtpChXrycOHDyAiY">杨磊原本 55/61/48/59/65，改完是 65/71/58/69/75。想还原就 <code class="inline" data-page-node-id="1LnEymBewShJ8QkvKXvG4r">score - 10</code> 再跑一次。</p>
+      <div class="ans-li" data-page-node-id="Tkn0UfBdNZ1jxEpqsUQQnF">5. 郑好电话改 NULL</div>
+      <pre data-page-node-id="X8DauDutPWOxLyo3zalkTH"><code class="language-sql" data-page-node-id="1AZy9ytJ1OSoBzGk5G0hZl">UPDATE students SET phone = NULL WHERE student_id = 1014;</code></pre>
+      <p class="hint" data-page-node-id="q87lJxh7d2phJlsGvgl29j">验证用 <code class="inline" data-page-node-id="0NOXuA09zPzDTHAQ05tJw3">SELECT * FROM students WHERE phone IS NULL;</code>（不能用 = NULL）。</p>
+      <div class="ans-li" data-page-node-id="lLoE2RV5FGMas0mCoMBhbG">6. 低于 60 的改成 60</div>
+      <pre data-page-node-id="vMZcIVwdAnTYdlkzpCJ1x4"><code class="language-sql" data-page-node-id="7HmgDfCr8b4HDSDccNrFA5">SELECT * FROM scores WHERE score &lt; 60;              -- 先看影响哪些行
+UPDATE scores SET score = 60 WHERE score &lt; 60;
+SELECT * FROM scores WHERE score &lt; 60;              -- 现在应该是 0 行</code></pre>
+      <p class="hint" data-page-node-id="PXY7wwcjEeaanPZYeo8YAa">原始数据里低于 60 的有：李强 58.5、55；杨磊 55、48、59（注意杨磊刚被加了 10 分，如果上题做了，这里就不是这几个数了）。<b data-page-node-id="SunFng8mNyg0EV9tWsHCGh">这就是"先查"的价值——你动手前就知道会改几行，改完一对比就知道对不对。</b></p>
+      <div class="ans-li" data-page-node-id="tyhBwZokjKJnHMpMVpez1B">7. 思考题的答案</div>
+      <p class="hint" data-page-node-id="VDthOmHTy5kpbce7inZPJl">会"改掉" 3 行（四班的 3 个学生），但<b data-page-node-id="OHrIElDInsnymcGci8lV0a">值没有任何变化</b>——因为本来就已经是「四班」了，把 4 改成 4 而已。</p>
+      <p class="hint" data-page-node-id="0ncoSUtbQOcFdc1J7SRCFw">数据库会照实报告 <code class="inline" data-page-node-id="RUMKBUiCsA9pWZ8ADRgFZF">3 rows affected</code>（或者 0，取决于配置）。这提醒你两件事：<b data-page-node-id="DHzzCSJQyXEo88tqwq32pn">一是</b> "影响了 3 行"不等于"数据变了"；<b data-page-node-id="kwJY7wDcXODNO63aE4E8tb">二是</b> 测试时如果断言只校验"受影响行数"，这类场景就可能漏掉。行数正确 ≠ 结果正确，这是测试用例设计的一个真实坑点。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="c8" data-page-node-id="5nxRH9Rv9tCgfSVk0vlOHA">
+  <h2 data-page-node-id="7JFBPkxH66oEycxBQJslPI"><span class="n" data-page-node-id="ay8nFLCiotqs5UoIOOJIWw">8</span>DELETE：删数据</h2>
+  <p class="sub" data-page-node-id="673v7YnLiEw2Jv7mmJ9zWq">不可逆。这节的重点不是语法，是心态。</p>
+
+  <h3 data-page-node-id="vAthfj9STcNt5vyWamAJbU">语法</h3>
+  <pre data-page-node-id="lS4DDE0HFwEljnZBPg1m1G"><code class="language-sql" data-page-node-id="cR44etFSasazR8L7UHvPyC">DELETE FROM 表名 WHERE 条件;</code></pre>
+  <p data-page-node-id="8e6tPISHU0PpKrAxZC46Tm">就这一条。语法简单到没有任何门槛，所以风险全在 <code class="inline" data-page-node-id="CtDgnxTM9IXnKiKERFjXbC">WHERE</code> 上。</p>
+
+  <h3 data-page-node-id="XBzPeOS62bVlWq5lkd7iAt">示例一：删单条记录</h3>
+  <pre data-page-node-id="9lSKTizeCQ2fE9wExmAnDp"><code class="language-sql" data-page-node-id="1lmoQcXJmtYWAyRNKeak0L">-- 先查
+SELECT * FROM scores WHERE id = 48;
+
+-- 再删
+DELETE FROM scores WHERE id = 48;
+
+-- 确认
+SELECT * FROM scores WHERE id = 48;   -- 应该 0 行</code></pre>
+  <div class="note" data-page-node-id="S2ViZVremi4DPEGqwUssat">
+    <p data-page-node-id="WCbBy3WJneudIva46XU8oA">为什么用 <code class="inline" data-page-node-id="QTTo3GZlj9WZ5qI2Mgyz7H">id</code> 删而不是用 <code class="inline" data-page-node-id="TKpq4X3MlxpSrZAV2F0URN">student_id</code> 删？因为 <code class="inline" data-page-node-id="zj2Rskc2agjwkTOrfQDFSk">id</code> 是主键，<b data-page-node-id="fUnrND1fJPztcPAJpNvD7Q">唯一</b>，只会命中一行。如果用 <code class="inline" data-page-node-id="efu2qf4fqndzhBeFvcB3h9">WHERE student_id = 1013</code> 删，何雨的三条成绩会全被删掉——可能不是你要的。</p>
+    <p data-page-node-id="S2Mf3Olkoklb1enpo4q9kZ"><b data-page-node-id="s7pwJLPEggLRQeJxPd2QOH">删单条数据时，优先用主键定位。</b></p>
+  </div>
+
+  <h3 data-page-node-id="2sRQ1mtkA5p2ilqjLObYdm">示例二：按条件批量删</h3>
+  <pre data-page-node-id="ZnuGrvkPT1vVazWbk1D75l"><code class="language-sql" data-page-node-id="xroNzo71Wc0TkRGXZUgrtQ">-- 删掉所有不及格的记录（慎重）
+SELECT * FROM scores WHERE score &lt; 60;
+DELETE FROM scores WHERE score &lt; 60;
+
+-- 删掉 2026-06-20 那天的考试记录
+DELETE FROM scores WHERE exam_date = '2026-06-20';</code></pre>
+
+  <h3 data-page-node-id="TYbia5KTK0VRCXANQ294cH">示例三：删一个学生和他所有的成绩</h3>
+  <p data-page-node-id="yAsfHmjCKXS2JytaHDG3qY">因为咱们<b data-page-node-id="ZQXWwcNiRE05U07QLEiSwE">故意没建外键约束</b>，所以删除顺序得你自己保证。合理顺序是<b data-page-node-id="GTAA0Bu9huC2j4CJPtDXqA">先删子表、再删主表</b>：</p>
+  <pre data-page-node-id="s3Zz2nX94QOF971nzzTzhV"><code class="language-sql" data-page-node-id="IDismFYry6BeVP3k3vp23z">-- 先删他的成绩（子表）
+DELETE FROM scores WHERE student_id = 1014;
+
+-- 再删他的人（主表）
+DELETE FROM students WHERE student_id = 1014;</code></pre>
+  <div class="warn note" data-page-node-id="DjS7dX8k0VLGBCcZHTfWcQ">
+    <p data-page-node-id="Kn10YzBXzkafb6qEgbTCHh"><b data-page-node-id="POkabCx3C1Xgo6X7sHzXYZ">如果只删了主表会怎样？</b>学生没了，但他的成绩记录还留在 scores 里，学号指向一个不存在的人——这就是<b data-page-node-id="37CNfAzkNymytkqXdXEUTn">脏数据 / 孤儿记录</b>，正是第 5 章练习 7 查的东西。</p>
+    <p data-page-node-id="QkiOlqKzy1w2q2qUOHRhi6">如果当初建了外键约束，数据库会直接拦住你，报"违反外键约束"，根本删不掉。这就是外键的价值：<b data-page-node-id="ejewudycFGidHujEWukKE3">把"人必须自己记得顺序"变成"数据库强制保证"。</b></p>
+    <p data-page-node-id="II3Sw1d29X6jdPtxmQEyIW">等你把增删改练顺了，建议回头给 <code class="inline" data-page-node-id="30tdc6M6LCnFjorqZ2TcPf">scores</code> 表补上外键，再试试删除，能直观看到约束的作用。</p>
+  </div>
+
+  <div class="danger note" data-page-node-id="qAidQmPQTxCCXT68yLy6dk">
+    <p data-page-node-id="c8xbdTK2CbKQCmuM3CUFCF"><b data-page-node-id="jJTA1Hl00REttMTijPvcH1">危险演示：忘了写 WHERE</b></p>
+    <pre style="margin:10px 0 0" data-page-node-id="2M1BEt0lRFKAFO8xy1H8Mv"><code class="language-sql" data-page-node-id="rFPzQbEE0znFlfiZ7xCFh8">DELETE FROM scores;    -- 47 条成绩，一次性全没</code></pre>
+    <p style="margin-top:10px" data-page-node-id="z9zInQHNS4Ykml4G7QraMo">和 UPDATE 一样，这条语句不报错、不警告、不问你是否确定。<b data-page-node-id="VzR0DYTYOQDzpQh4GjpIg3">DELETE 是没法"撤销"的</b>——没有回收站。</p>
+    <p data-page-node-id="RsVcULOP4pP5tiXt4txuhM">所以规矩要更严：<b data-page-node-id="CntAOzg4Il6g4vGA63X6pN">先写 SELECT，看着结果确认无误，再把 SELECT * 改成 DELETE。</b></p>
+  </div>
+
+  <h3 data-page-node-id="iBqhqE7Cj3f8PD6dlMqSvO">顺带认识：TRUNCATE</h3>
+  <pre data-page-node-id="iDDvdv9o4oT6dWZzmSKeek"><code class="language-sql" data-page-node-id="K8dEHsRSqdjEiNtPB0mFsm">TRUNCATE TABLE scores;   -- 清空整张表，比 DELETE FROM scores 快得多</code></pre>
+  <p data-page-node-id="FCcATo7Hg1sNzWpvjAzCts">区别：<code class="inline" data-page-node-id="Fa9kWqZ3CYR5OO3Xykxbdr">TRUNCATE</code> 会清空整表、重置自增 id，而且<b data-page-node-id="6fQlQaSVbRNr8nNB8AC5jd">不能加 WHERE</b>（想按条件删只能用 DELETE）。日常练习里没必要用它。</p>
+
+  <div class="ex" data-page-node-id="w0rvnggORf30VQFpB0XXCk">
+    <div class="ex-h" data-page-node-id="hLz1bBvDTSAzr9FWRFcOm1">练习 8 · 删除数据</div>
+    <ol data-page-node-id="AqvuMgTKEIz7naoXSghpd6">
+      <li data-page-node-id="Zl4BQbZGyORxC45j17iTMu">删除成绩表中 <b data-page-node-id="QJxIIqNNgxF5LOjFGyMLWu">id = 45</b> 的那条记录（先查出来看看是谁的、哪一科）。</li>
+      <li data-page-node-id="REcTyBBOwTXj0sos7t5Gr3">删除<b data-page-node-id="Eit8FwvNX7zdgOSYDtBKpt">徐萌</b>的所有成绩记录。<b data-page-node-id="UPihICXrIijeSFGPAFmL4z">先想一想：她真有成绩记录吗？查完再说。</b></li>
+      <li data-page-node-id="ngZqZtaefB4DKtQGUExEFC">删除 <b data-page-node-id="Oy7Oj1dEUdMUUCGyGeN8le">1016 马超</b>的缺考记录（score 为 NULL 的那条）。</li>
+      <li data-page-node-id="O20EEVST0Bm9gVgFqrurCj">把 <b data-page-node-id="FVNiStE400NZAsqSTZdFf9">1014 郑好</b>这个学生完整删掉——包括他的成绩记录和学生记录，注意顺序。</li>
+      <li data-page-node-id="r6xGprSvJrrKivwOuvZIro">删除所有 <b data-page-node-id="vHgB1bFjnOTDoqxqMwnjGd">2026-06-20</b> 的考试记录。先查有几条。</li>
+      <li data-page-node-id="7nA3VT0eJaKWiM8Txmj3d4"><b data-page-node-id="MQg8MiHmdv8YGrj0o2EBhb">思考题：</b>你执行了 <code class="inline" data-page-node-id="2hxAtGHzSTqilxn7WX9kDP">DELETE FROM scores WHERE student_id = 1001;</code>（删了张伟的 4 条成绩），这时候 students 表里的张伟还在吗？反过来，如果删了 students 里的张伟，scores 表会怎样？先想，再动手验证。</li>
+    </ol>
+    <details data-page-node-id="MAAELLUmcjQUcytXNBFfyd">
+      <summary data-page-node-id="sAJ4DCqSVad48wXNuVRxm0">对答案</summary>
+      <div class="ans-li" data-page-node-id="ZoC10hFPYgMdtL6XHyZhIi">1. 删 id = 45</div>
+      <pre data-page-node-id="ZdO69HFsbbTDHfB4ggoAZr"><code class="language-sql" data-page-node-id="gMXCnzEPzBbKeG0StqqcdG">SELECT * FROM scores WHERE id = 45;      -- 先看看是谁的
+DELETE FROM scores WHERE id = 45;</code></pre>
+      <p class="hint" data-page-node-id="jk5pJOO6VamjDW7cuWuYV9">注意：这条 id 存在的前提是你没在前面练习里删改过、且脚本完整跑过。如果查不到，用 <code class="inline" data-page-node-id="6qZ4VBD94hlZxDk5aSmfBj">SELECT id FROM scores ORDER BY id DESC LIMIT 5;</code> 看看现在最大的 id 是多少。</p>
+      <div class="ans-li" data-page-node-id="Fs3gpkT8Y8FdgLbfU1Tm3F">2. 删徐萌的成绩</div>
+      <pre data-page-node-id="ag90nzPnDNTgemCT2KjMh0"><code class="language-sql" data-page-node-id="YnufoQwK4Wn2rXMUAkg0Ky">SELECT * FROM scores WHERE student_id = 1012;   -- 0 行，她没有任何成绩
+DELETE FROM scores WHERE student_id = 1012;     -- 执行了，但一条没删</code></pre>
+      <p class="hint" data-page-node-id="Vd6K3nXjwsU4sXOl8XMevf">结论：<b data-page-node-id="5LtwgwUvxX1dqlTIBbHnW4">"删除 0 行"不会报错。</b>数据库只会淡淡地说 <code class="inline" data-page-node-id="jAOs4sAd920iJPkSL2TVzz">0 rows affected</code>。所以测试时"执行成功"绝不能作为"功能正确"的判断依据——必须验证<b data-page-node-id="N8ieAK4iFHGvELgnLJXFFF">数据实际变成什么样</b>。这是新手测试最容易犯的错。</p>
+      <div class="ans-li" data-page-node-id="8jD0wVCSoJIksweQNI3NBS">3. 删马超的缺考记录</div>
+      <pre data-page-node-id="LY1dO4UOPc4rV3A4BHXJ2G"><code class="language-sql" data-page-node-id="apiTMk0XJlG3QQpsaIVLA3">DELETE FROM scores WHERE student_id = 1016 AND score IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="hJ6O4Y7ueYSI2zYBjyO1S4">两个条件用 AND 连起来，确保只删这一条。如果只写 <code class="inline" data-page-node-id="1zKddPkv8GYApjHuSjFwPM">WHERE score IS NULL</code>，会把吴涛那条也一起删掉。</p>
+      <div class="ans-li" data-page-node-id="lniTDHwJI2yVm4iHKCppXw">4. 完整删除郑好</div>
+      <pre data-page-node-id="u0DlgwZLCejuMqrbYc4nwN"><code class="language-sql" data-page-node-id="YAfh7XdKUEXBe6iRDkDIx5">SELECT * FROM scores WHERE student_id = 1014;
+DELETE FROM scores   WHERE student_id = 1014;   -- 先子表
+DELETE FROM students WHERE student_id = 1014;   -- 再主表
+
+-- 验证
+SELECT * FROM students WHERE student_id = 1014; -- 0 行
+SELECT * FROM scores   WHERE student_id = 1014; -- 0 行</code></pre>
+      <div class="ans-li" data-page-node-id="vCwIWIdw5znJZo9poWQpFz">5. 删 06-20 的记录</div>
+      <pre data-page-node-id="d0qE2MhxNcEwZZEwwpQdxH"><code class="language-sql" data-page-node-id="x1n1AER1oXPPzS45yvlac7">SELECT * FROM scores WHERE exam_date = '2026-06-20';   -- 王芳的生物、陈静的生物、周婷的生物
+SELECT COUNT(*) FROM scores WHERE exam_date = '2026-06-20';
+DELETE FROM scores WHERE exam_date = '2026-06-20';</code></pre>
+      <p class="hint" data-page-node-id="9sy5OJQ5NQCr4jaihJP5d4">应该是 3 条（三张 C06 生物的成绩都在 06-20）。</p>
+      <div class="ans-li" data-page-node-id="GcBqJlpU7CdN0gIbfke6Hq">6. 思考题的答案</div>
+      <p class="hint" data-page-node-id="q4TjDOwo2D8xEMjg7YuVMk"><b data-page-node-id="hlLxdZuZG1M0Odt9BUXPeO">删了成绩，学生还在。</b>因为是"子表引用主表"，删子表的数据不会影响主表。<code class="inline" data-page-node-id="gQlKk0coWOXyZpLueH4ZYF">students</code> 里张伟完好，只是他变成了"一个没参加任何考试的学生"。</p>
+      <p class="hint" data-page-node-id="YqseGVgZG4eDBQy1YSh0SC"><b data-page-node-id="N7A7mTxBKSoZRizLzPv3Kc">反过来删学生，成绩会残留。</b>因为没建外键约束，<code class="inline" data-page-node-id="bg6vHjh3poBAsCAwREVX4I">scores</code> 里那 4 条记录的 <code class="inline" data-page-node-id="r775EZyQEeDDLb8TQqNFD9">student_id = 1001</code> 会变成指向空气的<b data-page-node-id="cLTJBXCdQkBJV7fl6H7RKq">孤儿记录</b>。你可以用第 5 章练习 7 那条 LEFT JOIN 查询把它揪出来——会从 0 行变成 4 行。</p>
+      <p class="hint" data-page-node-id="H8VUb8InJAvdaize2Lr7d6">这就是"数据完整性"问题的真实面目：<b data-page-node-id="Zy4B0a6YwCTQdRMXD08bFA">单看哪张表都正常，一关联就露馅。</b>建议你真动手试一遍，然后用脚本重跑恢复数据。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section id="c9" data-page-node-id="wWzCtRJAzBSeSmI3irMoGI">
+  <h2 data-page-node-id="YJZ7gpOmIVEl060A6nSAfa"><span class="n" data-page-node-id="pWCKuCCeHqPQPRevfvLFEn">9</span>实战：测试岗的数据题</h2>
+  <p class="sub" data-page-node-id="wWgGmOTNaeXpJxKBXX8CnC">前面都是练语法，这节练"用 SQL 解决实际问题"。软件测试岗最常用的几类数据库操作都在这。</p>
+
+  <h3 data-page-node-id="eElPcMqUYGsXvcZwhdwkkA">测试为什么必须会 SQL</h3>
+  <ul data-page-node-id="omEO4sOw61aqssWgO5unAd">
+    <li data-page-node-id="wwS0Jkk6SUI3fIgIkb2Fm0"><b data-page-node-id="8q1zaHFbjGSTVTHgytk8LN">造数据</b>——功能测一半发现缺测试数据，等开发造不如自己插</li>
+    <li data-page-node-id="ikQ3MDLpzuklGvpEmELIn1"><b data-page-node-id="ohIs5BJ6DayUka1g5lma2g">校验数据</b>——界面显示"总分 356"，你得去库里算一遍对不对</li>
+    <li data-page-node-id="g5ahSq4oBY4a6UE6duwMGi"><b data-page-node-id="nQU27qdN3GPk9rD6uNFx9X">定位问题</b>——接口返回不对，先查库看是"数据本来就不对"还是"数据对但显示错了"</li>
+    <li data-page-node-id="IRbCb3ky1OFsz3nRh4PlMD"><b data-page-node-id="Htgd7KoesdiJy9zJgUMZug">数据清洗</b>——测试环境被搞乱了，自己修回来</li>
+  </ul>
+  <div class="note" data-page-node-id="PIdg51EzboNdheDE49xfsy">
+    <p data-page-node-id="QILtqy8PjXuSnK9GJPnzo5"><b data-page-node-id="nIehucICrGlYk25JKws6vs">最后一条是重点思维：</b>界面错了，可能是<b data-page-node-id="n0Ig1hOIbdR1BHIHHGapSk">数据错了</b>，也可能是<b data-page-node-id="GSf32lgXSCr9LKrQUWnyte">数据没错但代码算错了</b>。这两者的定位方向完全不同。会查库的人，能一句话说清是哪个环节的问题。</p>
+  </div>
+
+  <h3 data-page-node-id="piPQ2DkRTRf5Z72lvaYi5E">套路一：找异常数据（数据校验）</h3>
+  <p data-page-node-id="1yBXDJLEMUnH7MiiBzvKgT">假设有个校验规则：分数必须在 0 到 100 之间。怎么写 SQL 去验证库里有没有违反的数据？</p>
+  <pre data-page-node-id="ydCZfqDJgSfC9p8JcFC3Xd"><code class="language-sql" data-page-node-id="40i11zxED3euYjedQuWYlA">-- 先查 0-100 之外的记录
+SELECT * FROM scores WHERE score &lt; 0 OR score &gt; 100;
+
+-- 再换个角度：查 0-100 之内的，两边数字加起来应该等于总数
+SELECT COUNT(*) FROM scores WHERE score BETWEEN 0 AND 100;  -- 应该 = 47
+
+-- 如果两个数对不上，就说明有脏数据漏进去了</code></pre>
+  <p data-page-node-id="NSG4HJIXSxdHksqGNBwwdo"><b data-page-node-id="0vPTmjtVkg6eCUlf2h1OGx">「正着查一遍、反着查一遍、数字对得上」</b>——这是数据校验的基本思路。单查一边容易漏。</p>
+
+  <h3 data-page-node-id="kaOvOLrLzpppSoT0NnnUCm">套路二：找孤儿数据（引用完整性）</h3>
+  <pre data-page-node-id="XrOSxc2UUHkeTaL9DgCvPH"><code class="language-sql" data-page-node-id="KmRFM5J9qd8MD9Nc9RCwBW">-- 成绩表里有、学生表里查不到学号 → 孤儿记录
+SELECT sc.*
+FROM scores sc
+LEFT JOIN students s ON sc.student_id = s.student_id
+WHERE s.student_id IS NULL;
+
+-- 反向：学生表里有、但从来没参加过考试
+SELECT s.*
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+WHERE sc.id IS NULL;</code></pre>
+
+  <h3 data-page-node-id="4qiKBjZXv610IVXkNbIpWY">套路三：找重复数据（唯一性）</h3>
+  <pre data-page-node-id="kEm0FR99IryNEj91jT8Kwh"><code class="language-sql" data-page-node-id="Rh43qQ3IO8g2z1YNlnfOuW">-- 同一个学生、同一门课，本该只有一条成绩，看看有没有重复
+SELECT student_id, course_id, COUNT(*) AS 重复条数
+FROM scores
+GROUP BY student_id, course_id
+HAVING COUNT(*) &gt; 1;</code></pre>
+  <p data-page-node-id="SrlfBnKZlVAiH21RsE2sfN"><b data-page-node-id="axwvK3S01ECaPjB6qOVTNM">HAVING COUNT(*) &gt; 1 是查重复数据的万能句式</b>，换掉 GROUP BY 的字段就能查各种维度的重复。</p>
+
+  <h3 data-page-node-id="HfoEk4yoXAdAB2H886ofZ1">套路四：数量对账（一致性）</h3>
+  <pre data-page-node-id="iL23pBHKQCYdrBRHuD2R0h"><code class="language-sql" data-page-node-id="hx0DBFk8pBITROtiOYNHXh">-- 学生表里的总人数
+SELECT COUNT(*) AS 学生总数 FROM students;
+
+-- 成绩表里出现过的去重学号（有多少人真的考过试）
+SELECT COUNT(DISTINCT student_id) AS 有成绩的人数 FROM scores;
+
+-- 差出来的就是没参加考试的人
+SELECT COUNT(DISTINCT student_id) FROM scores;  -- 11
+SELECT COUNT(*) FROM students;                  -- 12</code></pre>
+  <p data-page-node-id="kekZrruE0sjSu7a8rYxdEf"><code class="inline" data-page-node-id="N0eM09f9ewWZQLHyYwqRNZ">COUNT(DISTINCT 字段)</code> 是"去重后计数"，一个学生考了 6 科也只算 1 个人。<b data-page-node-id="4m2sAZveA8yoORyCBYvHbC">这个函数非常常用，一定要记住。</b></p>
+
+  <div class="ex" data-page-node-id="NsAlyCzL1QtcsSRwEY5YCL">
+    <div class="ex-h" data-page-node-id="lJiTGoL3MMbW5NaHNsrGKz">练习 9 · 综合实战</div>
+    <p class="hint" data-page-node-id="knx9pl0JQi9uvpzQUiISk1">这组题没有标准答案顺序，写法可能不止一种。重点是思路对。</p>
+    <ol data-page-node-id="9pAO8j6mDPKowMn06Y2EHS">
+      <li data-page-node-id="17Dpf8CJnHCfogL52Z9kHX"><b data-page-node-id="dMcsRi9Xvgg9yyp1PZRyLP">造一条脏数据再揪出来：</b>往 scores 表插一条分数为 <b data-page-node-id="hprCOs0xyEEFQAAbWNsf9b">120</b> 的记录（学号 1015，课程 C05，日期 2026-06-19）。然后用"找异常数据"的 SQL 把它查出来。最后删掉它。</li>
+      <li data-page-node-id="Ba5XlEK23BhVHuf2dVAT5R"><b data-page-node-id="2GR8ByS2LDsKzbKDHUXhio">造一条孤儿数据：</b>插一条 <code class="inline" data-page-node-id="QUJ2V8Xss4h6ZGjqtJ2SWG">student_id = 9999</code> 的成绩（这个学生在 students 表里不存在）。用"找孤儿数据"的 SQL 把它揪出来，再删掉。</li>
+      <li data-page-node-id="UfJLHQzKz1e5KyTxWR03tw"><b data-page-node-id="a6UTe4dPigH2pI4Rb3c8py">检查重复：</b>给同一个学生（1015）同一门课（C01）再插一条成绩。然后用查重复的 SQL 找出这条重复数据。</li>
+      <li data-page-node-id="nkuDyPTJukLAoAxrDcUq47"><b data-page-node-id="uOH4F6V2vPGZnjrvFODHDO">数量对账：</b>求出"学生总数"和"参加过考试的人数"，算出差几个，并用查询列出<b data-page-node-id="Hq5XR5mitKFIWIVkTcENq9">具体是哪几个学生</b>没考试。</li>
+      <li data-page-node-id="1YeLA8xQQc62TnV16YINWx"><b data-page-node-id="XBjQ1qiBP4vQuAVgJrTGLl">业务题：</b>导出<b data-page-node-id="9VYc8cnxfjNRlU2J2VgCPu">补考名单</b>——所有分数低于 60 的学生，显示<b data-page-node-id="PqSGq70Vx9xkICD89mWRA0">学号、姓名、班级、课程名、分数</b>，按分数从低到高排。</li>
+      <li data-page-node-id="devhgE33UG9bF8aOoBzW8I"><b data-page-node-id="DNarS4ZY5POZXO4NWBMWjl">业务题：</b>算出每个学生的<b data-page-node-id="YFAhGxLUtQbStKUhwZV7Cy">平均分</b>，只显示平均分<b data-page-node-id="Mjhm9X2wXfRbPot8EL0f5b">高于 85</b> 的，按平均分降序，显示<b data-page-node-id="6nVC7dwmbQ7trPVMsvIr0u">姓名和平均分</b>（保留 1 位小数）。</li>
+      <li data-page-node-id="tmq9tI5rmMNsMA3RwX66hD"><b data-page-node-id="NKSVfuL6duulJraOt5eoFJ">业务题：</b>找出<b data-page-node-id="bLY9csLw88Y7DkB3nREZvj">至少有两门课不及格</b>的学生。先自己想清楚思路再看答案。</li>
+    </ol>
+    <details data-page-node-id="3o3vY7T61Dh4nkzxdvByEK">
+      <summary data-page-node-id="2rtL0S8M1ZhGGIMKl0IDr7">对答案</summary>
+      <div class="ans-li" data-page-node-id="EdsFVH4N35O76YBCaeW5YY">1. 造脏数据并揪出来</div>
+      <pre data-page-node-id="OWkFSHvPYSYMNgsIlv3KiM"><code class="language-sql" data-page-node-id="2p7ukWLvPcYEF2L0MhAv4O">INSERT INTO scores (student_id, course_id, score, exam_date)
+VALUES (1015, 'C05', 120, '2026-06-19');
+
+SELECT * FROM scores WHERE score &lt; 0 OR score &gt; 100;
+
+DELETE FROM scores WHERE score = 120;</code></pre>
+      <p class="hint" data-page-node-id="bzmSdWGs6uZ9s4HkpP0OwU">删的时候用 <code class="inline" data-page-node-id="wxOAsZlMlrhLnB081NIBp3">WHERE score = 120</code> 就够精准了，因为正常情况下不会有 120 这样的分数。<b data-page-node-id="TKirj3Wk2BNSmN7ztaJZaW">但真实环境里更稳的写法是先查出 id，再用 id 删</b>，避免误伤。</p>
+      <div class="ans-li" data-page-node-id="etFSUwCQlPMzWtiPE8hCmb">2. 造孤儿数据</div>
+      <pre data-page-node-id="KXD75IUKl7UEaOPlxi2ZeE"><code class="language-sql" data-page-node-id="yViItYeGQCDjTDXYIEXLsm">INSERT INTO scores (student_id, course_id, score, exam_date)
+VALUES (9999, 'C01', 70, '2026-06-19');
+
+SELECT sc.* FROM scores sc
+LEFT JOIN students s ON sc.student_id = s.student_id
+WHERE s.student_id IS NULL;
+
+DELETE FROM scores WHERE student_id = 9999;</code></pre>
+      <p class="hint" data-page-node-id="ZbFhlMcu8DqjKoEsidmtji"><b data-page-node-id="EDo3okwkE0nXNSMHLcTRCY">这就是为什么外键约束重要。</b>如果有外键，第 1 条 INSERT 就失败了——数据库直接拦住"给不存在的人记录成绩"这件事。</p>
+      <div class="ans-li" data-page-node-id="rV05QEsFFDLBGC7NQGHkgl">3. 检查重复</div>
+      <pre data-page-node-id="otdSqG7vDG0pGX0uFsBrfk"><code class="language-sql" data-page-node-id="zNfbQJB7h5FO05bGlOWjZW">INSERT INTO scores (student_id, course_id, score, exam_date)
+VALUES (1015, 'C01', 90.0, '2026-06-15');
+
+SELECT student_id, course_id, COUNT(*) AS 重复条数
+FROM scores
+GROUP BY student_id, course_id
+HAVING COUNT(*) &gt; 1;</code></pre>
+      <p class="hint" data-page-node-id="yGHKWrix2oPY1zfNHhTEeY">应该查出 (1015, C01) 重复 2 条。</p>
+      <p class="hint" data-page-node-id="GSivDyR7Wk8gIVFivEF4rn"><b data-page-node-id="ZmbZteIKpZ4o5UqPeMyGEq">注意这里的要点：</b>数据库允许这条重复插入（因为主键是自增 id，不是"学号+课程号"）。如果业务规则是"一个学生一门课只能有一条成绩"，那<b data-page-node-id="3hGKnn5dHrJnuRPwlJFA9y">这就应该是个约束，而现在的表设计漏了它</b>。做测试时发现这类缺口，是很高价值的输出。</p>
+      <p class="hint" data-page-node-id="COsCDDcDU90RQrDgFUXBr7">修法有两种：把 <code class="inline" data-page-node-id="KFm8MoSVnsP9tuhQ5wW5Fh">(student_id, course_id)</code> 建为<b data-page-node-id="VAtUBFwInKfiATEv6kXwDG">唯一索引</b>（数据库强制），或者让代码层校验。<b data-page-node-id="sSwxJE82TsHHnocWmuuz1v">前者更可靠</b>——代码可能被绕过，约束不会。</p>
+      <div class="ans-li" data-page-node-id="sziriRWk1Qs0to6SMcwYCy">4. 数量对账</div>
+      <pre data-page-node-id="wznrzufHztfzgoFhgWYp52"><code class="language-sql" data-page-node-id="EgYVbKCpBjHkK5VmoxC0P3">SELECT COUNT(*) AS 学生总数 FROM students;
+
+SELECT COUNT(DISTINCT student_id) AS 参考人数 FROM scores;
+
+-- 具体是谁没考
+SELECT s.student_id, s.name, s.class_name
+FROM students s
+LEFT JOIN scores sc ON s.student_id = sc.student_id
+WHERE sc.id IS NULL;</code></pre>
+      <p class="hint" data-page-node-id="YvNMDytgXJkij9IqzrvHqz">12 - 11 = 1 人，是徐萌（1012）。</p>
+      <div class="ans-li" data-page-node-id="Gfm6nnzGdBIB3Pufa80Kjb">5. 补考名单</div>
+      <pre data-page-node-id="MTo1DnYwiHlLmso8KnavIH"><code class="language-sql" data-page-node-id="eAzEFHMDiUepARVoXGrGyg">SELECT
+    s.student_id    AS 学号,
+    s.name          AS 姓名,
+    s.class_name    AS 班级,
+    c.course_name   AS 课程,
+    sc.score        AS 分数
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+JOIN courses  c ON sc.course_id  = c.course_id
+WHERE sc.score &lt; 60
+ORDER BY sc.score;</code></pre>
+      <p class="hint" data-page-node-id="B19bpBzIrfU23eFwsGVi9J">这道题是本节最"真实"的一道——三表连接 + 条件 + 排序，工作里 80% 的业务查询就是这个形状。</p>
+      <div class="ans-li" data-page-node-id="BHflZngHxG2TwXhxBUXq6R">6. 平均分高于 85 的学生</div>
+      <pre data-page-node-id="9SwvGtRLDAofhli4QJoJxr"><code class="language-sql" data-page-node-id="QwGD07bh70HIIoylzhutJT">SELECT
+    s.name                  AS 姓名,
+    ROUND(AVG(sc.score), 1) AS 平均分
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+GROUP BY s.student_id, s.name
+HAVING AVG(sc.score) &gt; 85
+ORDER BY AVG(sc.score) DESC;</code></pre>
+      <p class="hint" data-page-node-id="G6p4GJxR6eoYGr1fgKCTYX">这里用 JOIN 而不是 LEFT JOIN，因为"平均分高于 85"本身就要求有成绩，没成绩的人不在讨论范围。用哪个取决于业务口径——<b data-page-node-id="ltM6GKINITCCPWsisd0d4D">"没考试的人算不算 0 分"这个问题的答案，会改变结果</b>。做测试时这就是典型的"需求歧义点"，要提出来。</p>
+      <div class="ans-li" data-page-node-id="uBQGjxIB3owa0nmqEZu6Nv">7. 至少两门课不及格</div>
+      <p class="hint" data-page-node-id="DAnFn5mNem245Y5uyIugwq"><b data-page-node-id="j10TQ2wKHNX0Qs8w3EhjbC">思路拆解：</b>第一步先"每人每门课是否不及格" → 第二步"按人分组数出来几条" → 第三步"筛出 ≥ 2 的"。</p>
+      <pre data-page-node-id="4kMnf6cqGfgEuSgucbBwaQ"><code class="language-sql" data-page-node-id="bZvIPxCDeFCqML7i18iBST">SELECT
+    s.student_id,
+    s.name,
+    COUNT(*) AS 不及格科数
+FROM scores sc
+JOIN students s ON sc.student_id = s.student_id
+WHERE sc.score &lt; 60
+GROUP BY s.student_id, s.name
+HAVING COUNT(*) &gt;= 2
+ORDER BY COUNT(*) DESC;</code></pre>
+      <p class="hint" data-page-node-id="WbIPJT85aMtuGd7K1neXzC">关键在于 <b data-page-node-id="ryc7z9AkmQLgBrBS6XGxJ6">WHERE 先筛出不及格的行，GROUP BY 再按人分组数</b>。这个"先过滤再分组"的思维模式，是 SQL 里最值钱的东西。</p>
+      <p class="hint" data-page-node-id="HRIsDC9eYQSTfNg9s6jD7b">李强和杨磊应该都会上榜（注意如果你前面做过"低于 60 改成 60"那道题，结果就变了——这正是数据库练习的特点：<b data-page-node-id="wFgfBQEMSv3xgOrDoDONm5">你的操作会改变后续题目的答案</b>。乱了就把脚本重跑一遍）。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 附录 ================= -->
+<section id="cx" data-page-node-id="mjpAd2pUFSD8YwlwD7CkvA">
+  <h2 data-page-node-id="ARhYRjalIIExZ8eYSoUsH2"><span class="n" data-page-node-id="79TgvJpbxp5tXgO8kFtwbV">附</span>速查表</h2>
+  <p class="sub" data-page-node-id="hZPDBnl5Yw56gQL1sQnRaD">写 SQL 时对着这张表找，不用回去翻。</p>
+
+  <h3 data-page-node-id="VPgNysCsh2AkjfoO2C5IEV">语句结构</h3>
+  <pre data-page-node-id="5uFfn6EiUKulc8BjNgaNt5"><code class="language-sql" data-page-node-id="WyahkYlyrVA8a2DnahUzep">SELECT   要哪些列
+FROM     哪张表
+JOIN     另一张表 ON 关联条件
+WHERE    每行的过滤条件
+GROUP BY 按什么分组
+HAVING   分组的过滤条件
+ORDER BY 按什么排序
+LIMIT    取几条;</code></pre>
+  <p data-page-node-id="MXioCLgHZ9Shjsti4PXPym">这个顺序是固定的，不能调换。</p>
+
+  <h3 data-page-node-id="YOxXrU52W6gvBiqJ4pEUoi">常用条件写法</h3>
+  <pre data-page-node-id="J6IEC6ShHsVQz1NoL5SPmz"><code class="language-sql" data-page-node-id="qGqZplROuYdGtnIa4BjBPA">=  !=  &lt;  &gt;  &lt;=  &gt;=          比较
+AND  OR  NOT                    与、或、非（注意括号）
+IN ('A','B')  /  NOT IN (...)    在 / 不在某个范围
+BETWEEN 60 AND 80               区间（含两端）
+LIKE '张%'  /  LIKE '%伟'        模糊匹配
+IS NULL  /  IS NOT NULL         空值判断（不能用 = NULL）</code></pre>
+
+  <h3 data-page-node-id="oZr8yHhW4ODBJ8wa4fdooC">聚合函数</h3>
+  <pre data-page-node-id="0NC5RCJkoWlV4OIpmQkuW3"><code class="language-sql" data-page-node-id="vzoFDfK45EemlAjBUn7r2I">COUNT(*)          数行数
+COUNT(列名)        数该列非 NULL 的个数
+COUNT(DISTINCT 列) 去重后计数
+SUM(列名)          求和
+AVG(列名)          平均（忽略 NULL）
+MAX(列名)  MIN(列名) 最大 / 最小</code></pre>
+
+  <h3 data-page-node-id="4VwpA1G3BgRGxh2nPYSYMy">常用函数</h3>
+  <pre data-page-node-id="yX6wwATwAr15iu0vGdlDfw"><code class="language-sql" data-page-node-id="3Cp7TQMaLeCApbw3HvjP6a">ROUND(值, 2)                 保留 2 位小数
+CONCAT(值1, 值2)             字符串拼接
+IFNULL(值, 替换值)           值为 NULL 时用替换值（做报表常用）
+DATE(日期时间)               只取日期部分
+YEAR(日期)  MONTH(日期)      取年 / 月</code></pre>
+
+  <h3 data-page-node-id="qlvQURcjKbsNXjuowj5inU">增删改</h3>
+  <pre data-page-node-id="0NJFUW6NnLkAyg3K6YbhfA"><code class="language-sql" data-page-node-id="IRuy3NqrcThDKDaNkZL6hF">-- 新增
+INSERT INTO 表 (列1, 列2) VALUES (值1, 值2);
+
+-- 修改
+UPDATE 表 SET 列 = 新值 WHERE 条件;
+
+-- 删除
+DELETE FROM 表 WHERE 条件;</code></pre>
+
+  <h3 data-page-node-id="Gtk6p9J1AEisQ53Lqthtlm">写 SQL 的检查清单</h3>
+  <ol data-page-node-id="nvnsRQXEW6AlKsMAObsbTd">
+    <li data-page-node-id="bO17F24gYB6RKAzpUnrpyC">WHERE 写了吗？（UPDATE / DELETE 前必问）</li>
+    <li data-page-node-id="IAjVNrwaC2xusOzfD0rfie">文字加单引号了吗？</li>
+    <li data-page-node-id="WRArDO7XUqDQf2NpVawTaM">NULL 用 <code class="inline" data-page-node-id="i74UU9kYoSigliaetzCONX">IS NULL</code> 而不是 <code class="inline" data-page-node-id="aBdpfAtiImmOhF86RqUAjD">= NULL</code> 了吗？</li>
+    <li data-page-node-id="o6IBQOXVudxx5mdDx2BjMR">SELECT 里的列，要么在 GROUP BY 里、要么在聚合函数里了吗？</li>
+    <li data-page-node-id="dpcwI79vGy4ZRAFLa1eJ0w">JOIN 的 ON 条件写对了吗？连接字段类型一致吗？</li>
+    <li data-page-node-id="WV9glWpTtPBWSbiiyWHQeV">要排序的话，ORDER BY 加了吗？</li>
+    <li data-page-node-id="HnoLR376QUxe3I9iHmSyK4">改完 / 删完，验证过了吗？</li>
+  </ol>
+
+  <div class="ok note" data-page-node-id="AoJY7OaKXta9uPF5mM6w1j">
+    <p data-page-node-id="gVkFtOv2ZwJo6X3MFSsMWR"><b data-page-node-id="pUSjX5LvwrKH5kOhdfQizz">下一步练什么？</b></p>
+    <p data-page-node-id="FNyOlupExa9ZHI89XF1MyW">现在这 9 节练完，你已经能应付工作里大部分取数需求了。往下可以走的方向：<b data-page-node-id="atvqdCZP3Nag7nKsAuthpD">子查询</b>（查询里套查询）、<b data-page-node-id="kKTWA2yITzP7q7UemcnJbQ">窗口函数</b>（排名、累计，做报表神器）、<b data-page-node-id="ivJ2PPXw4XJs7B3IC1zpKx">索引与执行计划</b>（查询慢的时候怎么办）、<b data-page-node-id="HJpYPiFw4AnWlEwgHEVJm7">事务</b>（改错了能不能退回来）。</p>
+    <p data-page-node-id="lVWo32wwLsTwEVAmfISIsc">但别急着往前赶。<b data-page-node-id="5cmmv028gbnqRLZUqDMC2o">把这 9 节的练习重做一遍，不看答案能全写对，比多看 4 个新知识点有价值得多。</b></p>
+  </div>
+</section>
+
+<div class="foot" data-page-node-id="Jvp3J0KZVRpBNDNT7BF9vm">
+  <p data-page-node-id="aeOL2bqw8t8UcGwwYZd30p">SQL 入门边讲边练 · 学生选课成绩库 &nbsp;|&nbsp; 配套脚本：01_setup.sql</p>
+  <p style="margin-top:6px" data-page-node-id="bs8jsKkUxEMLGSgvi7YG8I">练完想重来，把 01_setup.sql 重跑一遍就恢复原样。</p>
+</div>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

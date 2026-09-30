@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pytest + requests 第二讲 · 让结果看得清</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+.cmd{
+  margin:0 0 16px;background:#1f2328;border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+.cmd code{font-family:var(--mono);font-size:13px;line-height:1.68;color:#e6edf3;background:none;padding:0}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+
+.map{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+.map th,.map td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.map th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px}
+.map td:first-child{color:var(--text-2)}
+.map code{font-family:var(--mono);font-size:12px;color:#0a3069}
+.map tr:last-child td{border-bottom:none}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 18px}
+.cmp > div{border:1px solid var(--line);border-radius:9px;overflow:hidden;min-width:0}
+.cmp .ch{padding:7px 14px;font-size:11.5px;font-family:var(--mono);border-bottom:1px solid var(--line);background:#f8f9fb;color:var(--text-3)}
+.cmp .ch.bad{background:var(--red-bg);color:var(--red);border-bottom-color:var(--red-line)}
+.cmp .ch.good{background:var(--green-bg);color:var(--green);border-bottom-color:var(--green-line)}
+.cmp pre{border:none;border-radius:0;margin:0;background:#fbfcfd;max-height:270px}
+
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details pre{margin-bottom:12px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .cmp{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <span class="kicker">接口自动化 · 第二讲</span>
+    <h1>让结果看得清：三个参数 + 一份 HTML 报告</h1>
+    <p>你已经能看到结果了，问题是终端里那一大坨读不进去。这一讲解决三件事：把输出压到能读懂的长度、把详情挪进一份能点开的报告、以及——搞清那些「红」到底是不是你的错。</p>
+  </div>
+
+  <div class="toc">
+    <h3>本讲目录</h3>
+    <ol>
+      <li><a href="#s1"><span class="n">1</span>yaml、logging、报告：三个词是三件事</a></li>
+      <li><a href="#s2"><span class="n">2</span>输出太乱：加三个参数</a></li>
+      <li><a href="#s3"><span class="n">3</span>一劳永逸：HTML 报告</a></li>
+      <li><a href="#s4"><span class="n">4</span>失败时，traceback 从下往上读</a></li>
+      <li><a href="#s5"><span class="n">5</span>随机的红：这不一定是 bug</a></li>
+      <li><a href="#s6"><span class="n">6</span>参数速查表</a></li>
+      <li><a href="#s7"><span class="n">7</span>自测题（口述优先）</a></li>
+    </ol>
+  </div>
+
+  <!-- ========== 1 ========== -->
+  <section id="s1">
+    <h2><span class="n">1</span>yaml、logging、报告：三个词是三件事</h2>
+    <p class="sub">先把概念归位，不然装了也用不上</p>
+
+    <p>你问的 <code class="inline">yaml</code> 和 <code class="inline">logging</code>，跟「结果看不清」其实是三个不同的问题。它们各自解决什么，先看这张表：</p>
+
+    <table class="map">
+      <tr>
+        <th>你想到的词</th>
+        <th>它真正管的事</th>
+        <th>解决「结果太乱」吗</th>
+      </tr>
+      <tr>
+        <td><code>yaml</code></td>
+        <td>存<b>测试数据</b>的文件格式（跟你的 <code>posts_by_user.csv</code> 是一个位置的东西）</td>
+        <td>不解决。它管「用例的输入从哪来」，不管「结果怎么显示」</td>
+      </tr>
+      <tr>
+        <td><code>logging</code></td>
+        <td>在代码运行过程中<b>打印过程信息</b>（请求了哪个 URL、返回了什么）</td>
+        <td>不直接解决。它是给「排查问题」用的，而且默认还被 pytest 收走不显示</td>
+      </tr>
+      <tr>
+        <td><b>报告 / 输出参数</b></td>
+        <td>控制<b>结果怎么呈现</b>给你：多详细、失败看多少、要不要出一份文件</td>
+        <td><b>这才是你要的</b></td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <p><b>一句话记住这三个的位置：</b></p>
+      <p><b>数据</b>（yaml / csv）→ 进去的东西；<b>日志</b>（logging）→ 过程中说的话；<b>报告</b> → 出来给你看的东西。</p>
+      <p>你现在卡在第三个。前两个以后都会用到，但不是今天。</p>
+    </div>
+
+    <h3>那 yaml 该什么时候上？</h3>
+    <p>你现在用 CSV，一点问题都没有。CSV 是「一行一条、字段扁平」的数据——你的 8 条用例正好长这样。</p>
+    <p>什么时候 CSV 会难受？当<b>一条用例的输入本身是嵌套结构</b>的时候。比如以后你测一个「创建订单」接口，body 长这样：</p>
+<pre><code>{
+  "user": {"id": 1, "name": "张三"},
+  "items": [
+    {"sku": "A001", "qty": 2},
+    {"sku": "B002", "qty": 1}
+  ],
+  "coupon": null
+}</code></pre>
+    <p>这种「带层级」的东西塞进 CSV 就得转义成一坨字符串，读都读不了。这时候 yaml 或者 json 才划算——因为它本来就是表达层级的格式。</p>
+    <div class="note warn">
+      <p><b>所以：现在不用装 yaml。</b>你的测试数据是扁平的，CSV 已经是最优解。等真的遇到嵌套 body 再换，那时候换是顺理成章的，不是提前囤工具。</p>
+    </div>
+
+    <h3>logging 又该什么时候上？</h3>
+    <p>logging 的用途是「把运行过程记下来」，典型场景是：<b>一条用例失败了，你光看断言那行不知道请求到底发了什么、服务器回了什么。</b></p>
+    <p>那时候你会想在代码里加一句，把请求和响应的实际内容打到报告里：</p>
+<pre><code>import logging
+
+logger = logging.getLogger(__name__)
+
+resp = requests.get(BASE_URL, params={"userId": user_id}, timeout=10)
+logger.info("请求: %s 状态码: %s", resp.url, resp.status_code)
+logger.info("响应体: %s", resp.text[:200])</code></pre>
+    <p>然后跑的时候让 pytest 把日志显示出来（<code class="inline">--log-cli-level=INFO</code>），就能在终端看到这两行。</p>
+    <p>注意：<b>pytest 默认把日志收走了不打印</b>，这是故意的——不然后台日志会淹掉结果。这也是为什么你「加了 logging 好像没反应」是常见现象，得开开关。</p>
+    <div class="note">
+      <p><b>结论：logging 不是「看得清结果」的工具，是「看得到细节」的工具。</b>它解决的是「为什么失败」，不是「结果太乱」。乱的问题，下一节解决。</p>
+    </div>
+  </section>
+
+  <!-- ========== 2 ========== -->
+  <section id="s2">
+    <h2><span class="n">2</span>输出太乱：加三个参数</h2>
+    <p class="sub">不用装任何东西，改命令就行</p>
+
+    <p>你看到的「乱」，主要是两个来源叠在一起：</p>
+
+    <ul>
+      <li><b>每条用例名前面都带着一大串文件路径</b>——8 条就是 8 行巨长的路径，把真正的信息（用例名 + 结果）挤到看不见。</li>
+      <li><b>失败时打印整条调用栈</b>——requests 请求失败时，追溯链特别长，一条失败能刷出 200 行，全是 <code class="inline">urllib3</code>、<code class="inline">ssl.py</code> 这些跟你无关的内部代码。</li>
+    </ul>
+
+    <p>这两个都能一键压掉。</p>
+
+    <h3>参数一：<code class="inline">-q</code>　把「一行一条长路径」变成「一个点」</h3>
+    <p>点号 <code class="inline">.</code> = 通过，<code class="inline">F</code> = 失败。8 条用例就 8 个字符。想看名字的时候再换回 <code class="inline">-v</code>。</p>
+
+    <h3>参数二：<code class="inline">--tb=line</code>　失败只留一行</h3>
+    <p><code class="inline">tb</code> 是 traceback（回溯）的缩写。<code class="inline">--tb=line</code> 的意思是：<b>失败信息压缩成一行，只留「在哪一行、什么错」。</b>完整的调用栈它不删，而是挪到 HTML 报告里去（下一节）。</p>
+
+    <h3>参数三：<code class="inline">-ra</code>　末尾给一份「谁失败了」的清单</h3>
+    <p>跑完在最后列出所有非通过的用例名，不用到中间去翻。</p>
+
+    <h3>改前 / 改后，对比一下</h3>
+    <div class="cmp">
+      <div>
+        <div class="ch bad">改前：pytest api-test\pytest -v</div>
+<pre><code>api-test\pytest\test_posts_by_user.py::test_posts_by_user[正常_有数据] PASSED [ 12%]
+api-test\pytest\test_posts_by_user.py::test_posts_by_user[正常_第二条] PASSED [ 25%]
+api-test\pytest\test_posts_by_user.py::test_posts_by_user[边界_最大值] PASSED [ 37%]
+api-test\pytest\test_posts_by_user.py::test_posts_by_user[越界_无数据] PASSED [ 50%]
+...(8 行长路径)
+
+================================== FAILURES ===================================
+.venv\Lib\site-packages\urllib3\connectionpool.py:470: in _make_request
+    self._validate_conn(conn)
+.venv\Lib\site-packages\urllib3\connectionpool.py:1125: in _validate_conn
+    conn.connect()
+.venv\Lib\site-packages\urllib3\connection.py:878: in connect
+    wrapped_socket, is_verified = _ssl_wrap_socket_and_match_hostname(
+.venv\Lib\site-packages\urllib3\util\ssl_.py:437: in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+...
+（下面还有 180 行）
+</code></pre>
+      </div>
+      <div>
+        <div class="ch good">改后：pytest api-test\pytest -q --tb=line</div>
+<pre><code>..FF....                                                          [100%]
+
+================================== FAILURES ===================================
+E   requests.exceptions.ReadTimeout:
+    HTTPSConnectionPool(host='jsonplaceholder
+    .typicode.com', port=443): Read timed out.
+    (read timeout=10)
+
+=========================== short test summary info ===========================
+FAILED api-test\pytest\test_posts_by_user.py::
+       test_posts_by_user[越界_无数据]
+FAILED api-test\pytest\test_posts_by_user.py::
+       test_posts_by_user[边界_零]
+2 failed, 6 passed in 41.65s
+</code></pre>
+      </div>
+    </div>
+
+    <div class="note ok">
+      <p><b>同样跑 8 条用例：左边 200 多行，右边 12 行。</b>而且右边把关键信息全留下了：哪几条失败、每条为什么失败、总共几个绿几个红、花了多久。</p>
+      <p>这就是「看得清」的标准——<b>不看完整过程也能判断这次运行正常不正常</b>。</p>
+    </div>
+
+    <h3>你现在用这条命令</h3>
+    <div class="cmd"><code>D:\selenium\.venv\Scripts\python.exe -m pytest D:\selenium\api-test\pytest -q --tb=line -ra</code></div>
+    <p>如果你已经在 <code class="inline">D:\selenium</code> 目录下（PyCharm 的终端默认就是），可以缩短成：</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\pytest -q --tb=line -ra</code></div>
+  </section>
+
+  <!-- ========== 3 ========== -->
+  <section id="s3">
+    <h2><span class="n">3</span>一劳永逸：HTML 报告</h2>
+    <p class="sub">你已经装好了，就一行命令的事</p>
+
+    <p>上面那三个参数解决的是「终端别刷屏」。但如果你想<b>把这次运行的结果存下来、发给别人看、或者慢慢点着看</b>，终端就不合适了——终端是流水，翻过去就没了。</p>
+
+    <p>这时候要的是<b>报告</b>：一次运行产出一个文件，可以打开、可以留档。</p>
+
+    <p>我已经给你装了插件，也生成了一份。生成命令就是把 <code class="inline">--html</code> 加上去：</p>
+
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\pytest --html=api-test\pytest\report.html --self-contained-html</code></div>
+
+    <table class="map">
+      <tr><th>这一段</th><th>它的意思</th></tr>
+      <tr><td><code>--html=路径</code></td><td>把报告写到这个文件。不写 <code>=</code> 后面的路径就默认叫 <code>report.html</code></td></tr>
+      <tr><td><code>--self-contained-html</code></td><td><b>关键。</b>把 css / js / 图标全部内嵌进这一个文件。不加这句，报告会依赖同目录一堆散文件，你单独发给别人就挂了</td></tr>
+    </table>
+
+    <h3>打开后你会看到什么</h3>
+    <ul>
+      <li><b>最上面一排汇总</b>：跑了多少条、几个通过、几个失败、花了多久。一眼判断这次运行的健康度。</li>
+      <li><b>中间是Environment / Summary / Results 三块</b>。Results 里每条用例一行，通过是绿色、失败是红色。</li>
+      <li><b>失败的行可以点开</b>：里面是完整的 traceback、出错的那行代码、还有 pytest 帮你标出来的「实际值 vs 期望值」。终端里被 <code class="inline">--tb=line</code> 压掉的细节，全在这里。</li>
+      <li>有些版本还带搜索框和「只看失败」的过滤——失败的条目多了特别好用。</li>
+    </ul>
+
+    <div class="note">
+      <p><b>报告和 <code>--tb=line</code> 是配合用的，不是二选一：</b></p>
+      <p>终端用 <code>--tb=line</code> 保持干净，一眼看结论；要深挖某一条的时候，打开报告点进去看完整栈。<b>粗看用终端，细看用报告。</b></p>
+    </div>
+
+    <h3>它和 yaml 的本质区别</h3>
+    <p>顺带把这条钉死：<b>报告是「输出」，yaml 是「输入」。</b>报告是运行完才有的东西，yaml 是运行前就准备好的东西。两者永远不会互相替代，问「该用报告还是 yaml」就像问「该用筷子还是用碗」。</p>
+  </section>
+
+  <!-- ========== 4 ========== -->
+  <section id="s4">
+    <h2><span class="n">4</span>失败时，traceback 从下往上读</h2>
+    <p class="sub">这是新手最容易白读 200 行的地方</p>
+
+    <p>看完整 traceback 有个反直觉的规矩：<b>别从上面读，从最下面读。</b></p>
+
+    <p>Python 的 traceback 是从上往下的调用顺序——最上面是「最外层谁调用了谁」，最下面才是「真正炸掉的那一下」。requests 这种库调用层次特别深，所以上面那几十行永远是 <code class="inline">urllib3</code> 的内部代码，跟你毫无关系。</p>
+
+    <p>你只需要看两个位置：</p>
+
+    <h3>位置一：最下面那一行 <code class="inline">E</code> 开头的</h3>
+    <p><code class="inline">E</code> = Error，这一行是<b>错误的类型和原因</b>。拿你这次的真实失败举例：</p>
+<pre><code>E   requests.exceptions.ReadTimeout: HTTPSConnectionPool(
+        host='jsonplaceholder.typicode.com', port=443):
+        Read timed out. (read timeout=10)</code></pre>
+    <p>读出来就是：<b>连 jsonplaceholder 这个域名超时了，因为我只给了 10 秒。</b>信息量已经够了——它压根没说你的断言有问题。</p>
+
+    <h3>位置二：往上找那个写着你的文件名的行</h3>
+    <p>在那一堆 <code class="inline">.venv\Lib\site-packages\...</code> 里面，找唯一一行路径是 <b><code class="inline">test_posts_by_user.py</code></b> 的：</p>
+<pre><code>api-test\pytest\test_posts_by_user.py:49: in test_posts_by_user
+    resp = requests.get(BASE_URL, params={"userId": user_id}, timeout=10)</code></pre>
+    <p>它告诉你：<b>错在你这行 49 号代码上</b>——就是发请求那一行。</p>
+
+    <div class="note ok">
+      <p><b>三步定位法，记住这个就够：</b></p>
+      <ol>
+        <li>跳到<b>最底下</b>，读 <code class="inline">E</code> 那行 → 知道<b>是什么错</b></li>
+        <li>往上找<b>你自己的文件名</b>那一行 → 知道<b>错在哪行代码</b></li>
+        <li>中间那几十行 <code class="inline">site-packages</code> → <b>直接跳过，那是库的内部实现</b></li>
+      </ol>
+    </div>
+
+    <p>顺便说一个常见误判：<b>不是所有失败都是「断言没通过」。</b>像这次，测试根本没走到断言那一步——请求阶段就抛异常了。pytest 都会报红，但含义完全不同：</p>
+
+    <table class="map">
+      <tr><th>红的样子</th><th>含义</th><th>该怪谁</th></tr>
+      <tr><td><code>assert 10 == 11</code></td><td>请求成功了，但返回值不符合预期</td><td>被测系统（或你的期望值写错了）</td></tr>
+      <tr><td><code>requests.exceptions.ReadTimeout</code></td><td>请求压根没成功拿到响应</td><td>网络 / 被测服务不可用，<b>跟断言无关</b></td></tr>
+      <tr><td><code>ModuleNotFoundError</code></td><td>代码没开始跑</td><td>环境问题，解释器选错了</td></tr>
+    </table>
+
+    <div class="note warn">
+      <p><b>这三种红，面试时是能力分水岭。</b>新手的回答是「测试失败了，有 bug」；能分清「环境问题 / 被测对象问题 / 期望值写错」的人，才是能进现场干活的。</p>
+    </div>
+  </section>
+
+  <!-- ========== 5 ========== -->
+  <section id="s5">
+    <h2><span class="n">5</span>随机的红：这不一定是 bug</h2>
+    <p class="sub">你这次就撞上了，值得单独说</p>
+
+    <p>你之前跑出来的那几条红，真身是 <code class="inline">ReadTimeout</code>——<b>请求超时</b>。而且注意一个特征：<b>每次红的还不一样。</b></p>
+
+    <p>你先后几次跑，红的分别是：</p>
+    <ul>
+      <li>第一次：正常_第二条、越界_无数据、异常_负数</li>
+      <li>第二次：正常_有数据、正常_第二条、边界_最大值、越界_无数据</li>
+      <li>第三次：边界_最大值、越界_无数据</li>
+    </ul>
+
+    <p>同一份代码、同一份数据，<b>红的名单每次都在变</b>——这就是它跟真 bug 最本质的区别。</p>
+
+    <div class="note danger">
+      <p><b>判断准则（记住这条，比记住任何工具都值钱）：</b></p>
+      <p><b>真 bug 是「稳定的」</b>——同样的输入，跑一百次红一百次，fail 的永远是同一条。<br>
+      <b>环境问题 / 不稳定用例是「飘的」</b>——同样输入，这次红这条、下次红那条，红的名单不固定。</p>
+      <p>看到「飘」，先怀疑网络、第三方服务、并发、缓存、时间，别急着提 bug 单。</p>
+    </div>
+
+    <h3>你这颗红从哪来的</h3>
+    <p>被测接口是 <code class="inline">jsonplaceholder.typicode.com</code>——<b>一个对全世界免费开放的演示接口</b>。免费 + 公网 + 无 SLA，就等于「时快时慢、偶尔连不上」。</p>
+    <p>我在这台机器上实测连发 5 次的效果：</p>
+
+    <table class="map">
+      <tr><th>第几次</th><th>结果</th><th>耗时</th></tr>
+      <tr><td>1</td><td class="pass">200，正常返回 10 条</td><td>1.21 秒</td></tr>
+      <tr><td>2</td><td class="pass">200，正常返回 10 条</td><td>3.02 秒</td></tr>
+      <tr><td>3</td><td class="fail">超时，连不上</td><td>30.58 秒（卡死）</td></tr>
+      <tr><td>4</td><td class="pass">200，正常返回 10 条</td><td>1.62 秒</td></tr>
+      <tr><td>5</td><td class="pass">200，正常返回 10 条</td><td>12.70 秒</td></tr>
+    </table>
+
+    <p>同样的请求，正常时 1.2 秒，抽风时能卡到 30 秒还连不上。你的 8 条用例连着发，撞上抽风的那一次就变红了——<b>跟你写的代码毫无关系。</b></p>
+
+    <h3>这不是「算了不管」，而是要有对策</h3>
+    <p>真实工作里遇到不稳定的外部依赖，标准做法是这三条（现在你只需要知道，不用马上做）：</p>
+    <ol>
+      <li><b>超时给够。</b>你现在写的是 <code class="inline">timeout=10</code>。对这种公网接口，30 秒比 10 秒合理得多——超时设太短会把「慢」误判成「坏」。</li>
+      <li><b>加自动重试。</b>失败后隔一会儿再试 1~2 次，能挡掉大部分偶发抖动。真实项目里常用 <code class="inline">tenacity</code> 这类库，或者给 requests 挂一个重试适配器。</li>
+      <li><b>或者把被测对象换成稳定的。</b>公司内部接口、或者本地搭的 mock 服务，就不会有这个问题。学习阶段先用公网接口没问题，但要知道它不可靠。</li>
+    </ol>
+
+    <div class="note">
+      <p><b>顺便建立个概念：</b>「偶尔失败、重跑就好」的用例，业内叫 <b>flakey test（不稳定用例）</b>。它是自动化测试里最招人烦的东西之一——因为它会让整个测试结果失去可信度：<b>红了没人信，久了就没人看报告了。</b></p>
+      <p>你以后在团队里做自动化，这条会是你要主动去治的问题。<b>面试提一句「我知道外部依赖不稳定会导致 flakey test，通常会加重试和超时来治」——这是个很加分的回答。</b></p>
+    </div>
+  </section>
+
+  <!-- ========== 6 ========== -->
+  <section id="s6">
+    <h2><span class="n">6</span>参数速查表</h2>
+    <p class="sub">存下来，用的时候照抄</p>
+
+    <table class="map">
+      <tr><th>参数</th><th>作用</th><th>什么时候用</th></tr>
+      <tr><td><code>-q</code></td><td>安静模式，通过=一个点，失败=F</td><td>日常跑，只想看「过没过」</td></tr>
+      <tr><td><code>-v</code></td><td>详细模式，一行一条完整用例名</td><td>要看清具体是哪条</td></tr>
+      <tr><td><code>--tb=line</code></td><td>失败信息压成一行</td><td><b>日常默认加这个</b>，终端立刻清爽</td></tr>
+      <tr><td><code>--tb=short</code></td><td>失败显示简略栈（比完整短，比 line 长）</td><td>需要看栈、但不想看 200 行</td></tr>
+      <tr><td><code>--tb=no</code></td><td>完全不显示失败详情</td><td>只关心通过率统计时</td></tr>
+      <tr><td><code>-ra</code></td><td>末尾列出所有非通过用例的清单</td><td>失败多的时候快速定位</td></tr>
+      <tr><td><code>-x</code></td><td>第一条失败就立刻停</td><td>调试阶段，先修第一个</td></tr>
+      <tr><td><code>--lf</code></td><td>last-failed：只重跑上次失败的</td><td><b>改完再验，不用重跑全量</b></td></tr>
+      <tr><td><code>--ff</code></td><td>failed-first：先跑上次失败的，其余照跑</td><td>想先看到失败结果</td></tr>
+      <tr><td><code>-k 关键字</code></td><td>只跑名字含关键字的用例</td><td><code>-k 越界</code> 只跑越界那几条</td></tr>
+      <tr><td><code>-s</code></td><td>不捕获输出，显示 <code>print</code> 的内容</td><td>临时打印调试</td></tr>
+      <tr><td><code>--log-cli-level=INFO</code></td><td>把 logging 的日志实时打到终端</td><td>要顺着日志看执行过程</td></tr>
+      <tr><td><code>--html=报告路径</code></td><td>生成 HTML 报告</td><td>要留档 / 给别人看</td></tr>
+      <tr><td><code>--self-contained-html</code></td><td>报告自带全部样式，单文件可发</td><td>跟着 <code>--html</code> 一起加</td></tr>
+    </table>
+
+    <h3>两条你现在就该固定下来的命令</h3>
+    <p class="code-label">日常跑（终端看结论）</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\pytest -q --tb=line -ra</code></div>
+    <p class="code-label">出报告（留档 / 细看）</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\pytest --html=api-test\pytest\report.html --self-contained-html</code></div>
+    <p class="code-label">改完只想验上次失败的那几条</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\pytest --lf -q --tb=line</code></div>
+  </section>
+
+  <!-- ========== 7 ========== -->
+  <section id="s7">
+    <h2><span class="n">7</span>自测题（口述优先）</h2>
+    <p class="sub">先自己说一遍，再展开对照</p>
+
+    <div class="ex">
+      <div class="ex-h">口述题</div>
+      <ol>
+        <li>有人跟你说「pytest 结果看不清，加个 yaml 吧」。这句话哪里不对？</li>
+        <li><code>--tb=line</code> 和 <code>--self-contained-html</code> 分别解决什么问题？</li>
+        <li>你跑完看到 <code>..FF....</code>，这几个字符各是什么意思？一共几条用例、几条失败？</li>
+        <li>一条用例报红，你怎么在 10 秒内判断「这是环境问题还是真 bug」？</li>
+        <li>traceback 有 200 行，你打算从哪一行开始看？为什么？</li>
+        <li>什么是 flakey test？它为什么比「一直失败」更麻烦？</li>
+      </ol>
+
+      <details>
+        <summary>展开参考答案</summary>
+
+        <p class="ans-li">1. 「pytest 结果看不清，加个 yaml 吧」哪里不对？</p>
+        <p>yaml 是<b>测试数据</b>的格式，管的是「用例的输入从哪来」，跟「结果怎么显示」没有关系。结果看不清要调的是<b>输出参数</b>（<code>-q</code>、<code>--tb=line</code>）和<b>报告</b>（<code>--html</code>）。把 yaml 加进来，该乱还是乱。<br>
+        另外补一句：只有数据是<b>嵌套结构</b>时 yaml 才比 CSV 划算；扁平数据用 CSV 就够。</p>
+
+        <p class="ans-li">2. 两个参数分别解决什么？</p>
+        <p><code>--tb=line</code>：把失败时那条 200 行的调用栈<b>压缩成一行</b>，只留「哪一行、什么错」，让终端能读。<br>
+        <code>--self-contained-html</code>：让 HTML 报告的 css / js 全部<b>内嵌进单文件</b>，这样报告可以单独发人、单独归档，不会因为缺了配套文件而样式全丢。</p>
+
+        <p class="ans-li">3. <code>..FF....</code> 是什么意思？</p>
+        <p>一共 <b>8 条</b>用例；<code class="inline">.</code> 是通过、<code class="inline">F</code> 是失败，所以是 <b>6 条通过、2 条失败</b>。失败的是第 3、第 4 条（从左往右数）。</p>
+
+        <p class="ans-li">4. 10 秒判断「环境问题还是真 bug」？</p>
+        <p>看<b>稳定性</b>：立刻重跑一遍。<br>
+        · 还是同一条红 → 稳定复现 → 倾向真问题（可能是被测对象的 bug，也可能是我的期望值写错了）。<br>
+        · 红的换人了 / 这次全绿 → 飘的 → 环境或网络问题，别急着提单。<br>
+        再补一个更快的抓手：看 <code>E</code> 那行是什么类型。<code>assert</code> 失败=走到了断言；<code>Timeout / ConnectionError</code>=请求都没成功，跟断言无关。</p>
+
+        <p class="ans-li">5. 200 行 traceback 从哪读？</p>
+        <p>从<b>最底下</b>读。<br>
+        ① 先看最下面 <code class="inline">E</code> 开头那行——那是错误类型和原因；<br>
+        ② 再往上找<b>我自己文件名</b>的那一行——那是出错的代码行；<br>
+        ③ 中间几十行 <code class="inline">site-packages</code> 里库的内部实现，直接跳过。<br>
+        原因：traceback 从上往下是调用顺序，最上层是「谁调用了谁」，最下层才是「真正炸掉的那一下」。</p>
+
+        <p class="ans-li">6. 什么是 flakey test？</p>
+        <p>同样代码、同样输入，结果时而通过时而失败的不稳定用例。它比「一直失败」更麻烦的原因是：<b>它摧毁报告的可信度。</b>一直红大家会去修；时红时绿，久了团队就学会「红了再看一眼，八成是它又抽风」——于是真正的 bug 也混在噪声里被忽略，整条自动化链路就废了。常见成因：外部依赖不稳定、时间/时区、并发、测试间共享状态没清理。</p>
+
+      </details>
+
+      <details>
+        <summary>动手题</summary>
+        <ol>
+          <li>用 <code>-q --tb=line -ra</code> 跑一遍全量，数一数输出有几行。再换成 <code>-v</code> 跑一遍，对比行数差多少。</li>
+          <li>用 <code>--html</code> 生成一份报告，打开找到「Results」区域，点开一条失败的用例，看看完整 traceback 长什么样——对比终端里被压到一行的样子。</li>
+          <li>跑一次 <code>--lf</code>，观察它是不是只跑了上次失败的那几条。</li>
+        </ol>
+        <p>做完第 2 题你会明白为什么说「<b>粗看用终端，细看用报告</b>」——两者不是替代关系。</p>
+      </details>
+    </div>
+  </section>
+
+  <div class="foot">
+    接口自动化学习 · 第二讲 &nbsp;|&nbsp; 配套文件：<code>report.html</code>、<code>requirements.txt</code>
+  </div>
+
+</div>
+</body>
+</html>

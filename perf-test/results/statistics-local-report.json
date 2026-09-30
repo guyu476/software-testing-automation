@@ -1,0 +1,34 @@
+{
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 0.9999999999999999,
+    "medianResTime" : 1.0,
+    "minResTime" : 0.0,
+    "maxResTime" : 23.0,
+    "pct1ResTime" : 2.0,
+    "pct2ResTime" : 2.0,
+    "pct3ResTime" : 22.799999999999898,
+    "throughput" : 57.570523891767415,
+    "receivedKBytesPerSec" : 21.364061600460563,
+    "sentKBytesPerSec" : 11.356685377086931
+  },
+  "GET 条目详情 /api/item" : {
+    "transaction" : "GET 条目详情 /api/item",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 0.9999999999999999,
+    "medianResTime" : 1.0,
+    "minResTime" : 0.0,
+    "maxResTime" : 23.0,
+    "pct1ResTime" : 2.0,
+    "pct2ResTime" : 2.0,
+    "pct3ResTime" : 22.799999999999898,
+    "throughput" : 57.570523891767415,
+    "receivedKBytesPerSec" : 21.364061600460563,
+    "sentKBytesPerSec" : 11.356685377086931
+  }
+}

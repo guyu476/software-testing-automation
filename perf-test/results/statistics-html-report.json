@@ -1,0 +1,34 @@
+{
+  "GET 视频详情 /x/web-interface/view" : {
+    "transaction" : "GET 视频详情 /x/web-interface/view",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 53.36000000000002,
+    "medianResTime" : 43.0,
+    "minResTime" : 37.0,
+    "maxResTime" : 416.0,
+    "pct1ResTime" : 77.30000000000004,
+    "pct2ResTime" : 83.94999999999999,
+    "pct3ResTime" : 414.71999999999935,
+    "throughput" : 45.62043795620438,
+    "receivedKBytesPerSec" : 233.69247547901458,
+    "sentKBytesPerSec" : 10.202226847627736
+  },
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 53.36000000000002,
+    "medianResTime" : 43.0,
+    "minResTime" : 37.0,
+    "maxResTime" : 416.0,
+    "pct1ResTime" : 77.30000000000004,
+    "pct2ResTime" : 83.94999999999999,
+    "pct3ResTime" : 414.71999999999935,
+    "throughput" : 45.62043795620438,
+    "receivedKBytesPerSec" : 233.69247547901458,
+    "sentKBytesPerSec" : 10.202226847627736
+  }
+}

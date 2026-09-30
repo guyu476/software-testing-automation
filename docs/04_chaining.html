@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="uRR5kFDzgFplBVy8YRqzb1">
+<head data-page-node-id="sshmQF2rZ6FgNuULtVCM7q">
+<meta charset="UTF-8" data-page-node-id="JQkY67lcAS2iwG1dBL1eeN">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="8tZgYmBQct8siU2fZGrAaD">
+<title>接口测试 · 接口关联（取 → 存 → 用）详解</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0 0 10px;color:var(--text-2);font-size:14.5px;max-width:680px}
+.header p:last-child{margin-bottom:0}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+h2 .n.hot{background:var(--amber)}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code{font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;}
+b,strong{font-weight:600}
+
+pre.code{
+  background:#f6f8fa;border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;margin:0 0 16px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#0a3069;
+}
+pre.code .cm{color:#6e7781}
+pre.code .st{color:#0a7d4e}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top;line-height:1.6}
+table.tbl th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px;white-space:nowrap}
+table.tbl td{color:var(--text-2)}
+table.tbl td:first-child{color:var(--text)}
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:4px 0 22px}
+.flow .step{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:10px;padding:12px 12px 11px}
+.flow .step.first{border-color:var(--amber-line);background:var(--amber-bg)}
+.flow .step b{display:block;font-size:13.5px;margin-bottom:2px}
+.flow .step.first b{color:#5c3708}
+.flow .step em{display:block;font-style:normal;font-size:12px;color:var(--text-2);line-height:1.5}
+
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}
+.chain .st{
+  font-size:13px;padding:5px 12px;border-radius:7px;
+  background:#f0f2f5;border:1px solid var(--line);color:var(--text);white-space:nowrap;
+}
+.chain .st.blue{background:var(--blue-bg);border-color:var(--blue-line);color:#123a63}
+.chain .st.amber{background:var(--amber-bg);border-color:var(--amber-line);color:#5c3708}
+.chain .st.green{background:var(--green-bg);border-color:var(--green-line);color:#2c5309}
+.chain .st.red{background:var(--red-bg);border-color:var(--red-line);color:#7c2020}
+.chain .ar{color:var(--text-3);font-size:13px}
+
+.qa{border:1px solid var(--line);border-radius:10px;padding:15px 18px;margin:0 0 12px;background:#fbfcfd}
+.qa .q{font-weight:600;font-size:14px;margin:0 0 7px}
+.qa .a{font-size:13.5px;color:var(--text-2);margin:0}
+.qa .a b{color:var(--text)}
+
+details{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s;}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+
+.foot{text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .flow{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body data-page-node-id="armMyXMvjTkZdrAygbAHKC">
+<div class="wrap" data-page-node-id="ld28tRu2HhzRGdTB6Ffktn">
+
+<div class="header" data-page-node-id="OHOggVa8ysAldWjh0LUQQ7">
+  <div class="kicker" data-page-node-id="sFiZpNZkuKjHLReQZjfkEs">接口测试 · 接口关联详解</div>
+  <h1 data-page-node-id="s1m53cbWnG256hDRwyQjjc">接口关联：把上一个接口的响应，喂给下一个接口</h1>
+  <p data-page-node-id="picRt8TPgPcFEUmEwk34nV">单个接口测通了，不代表会测业务流。真实工作里的接口测试绝大部分是<b data-page-node-id="OLBTd2t04xxgSErTry09fc">串起来跑的</b> —— 先登录拿 token，再用 token 调业务接口；先创建拿 id，再用 id 查详情。<b data-page-node-id="OZJIae1pAxkZzQwbSkGduZ">把这条链子接起来的技术，就叫接口关联。</b></p>
+  <p data-page-node-id="B0QukDGiyP1KZziknODdkj">这份文件里两个例子的<b data-page-node-id="9858JvYCGOevt7DvqB692y">所有接口返回，都是先在你本机真实请求验证过的</b>，不是编的。练习对象：公开 API <code data-page-node-id="vSEWFThMZKKljaqRBB3RRP">httpbin.org</code> 与 <code data-page-node-id="EWmGKK42wDDWBUcuFo88gJ">JSONPlaceholder</code>，都不用注册。</p>
+</div>
+
+<div class="toc" data-page-node-id="VxHxCbDDZgo4D1nWWZ4XG8">
+  <h3 data-page-node-id="xA8uOfidcKKVYsuFkDQWXx">这一讲的十个部分</h3>
+  <ol data-page-node-id="SjNCXYGX56NaqjD1QJzNCg">
+    <li data-page-node-id="J4FztmqGzmc4Sp3rURks9h"><a href="#c1" data-page-node-id="OAcZn7pMkNKp4jbTxAgMpf"><span class="n" data-page-node-id="zQhIwISjNDZIuACMjGlFJZ">1</span>什么是接口关联，为什么非做不可</a></li>
+    <li data-page-node-id="S7zVnR5eTpZoibF6UajBxW"><a href="#c2" data-page-node-id="NolCN4Tcdp4pWbAIRjkvKJ"><span class="n" data-page-node-id="QvPHXrpAjDxM8ZXI5JzmWt">2</span>关联只有三个动作：取 → 存 → 用</a></li>
+    <li data-page-node-id="wnK6BbW0zlfjATgLfGaOPP"><a href="#c3" data-page-node-id="TUsBoGoulkF9ME0qleRAWi"><span class="n" data-page-node-id="evQRWa6eEFvpUAJJI33kyI">3</span>变量存在哪里（第一个大坑）</a></li>
+    <li data-page-node-id="Szifw3GNkVElrAwgXL2u3M"><a href="#c4" data-page-node-id="lMxBVRtNJjw03mrjigJDDG"><span class="n" data-page-node-id="g1Utp9VCm3yAzBmw0aMAfi">4</span>例子 A：登录 → 取 token → 带 token 访问</a></li>
+    <li data-page-node-id="CZbs6fVrz14ACodi6N5dGI"><a href="#c5" data-page-node-id="x9ZLCYD4oP7DV98oEDBnu6"><span class="n" data-page-node-id="v89RutXrwaoNlhW4MpV5cu">5</span>例子 B：列表 → 取 id → 查详情</a></li>
+    <li data-page-node-id="e2BnFEKQDumZhwJu6gIqhh"><a href="#c6" data-page-node-id="bbYMZVGHOWD23WuLNB5Lj8"><span class="n" data-page-node-id="Mwf8Y3xmIIlxs7LBoETvRq">6</span>取值写法速查表</a></li>
+    <li data-page-node-id="GhMa387oWchsnbtRpdBbE6"><a href="#c7" data-page-node-id="v0js7CrfFtSiFa2l9Is8KH"><span class="n" data-page-node-id="sjkZDOegDDme02d1Wg2Xj9">7</span>关联链上最容易翻车的地方</a></li>
+    <li data-page-node-id="RlqAyCEj82q10gK4xHRaAi"><a href="#c8" data-page-node-id="Q733B02wQXnCB2CNxIPl2K"><span class="n" data-page-node-id="UHYHNnAaP71anmdaEh0ajq">8</span>每个请求分别该断言什么</a></li>
+    <li data-page-node-id="MwpRJAeGBHxX5caGdYBFk1"><a href="#c9" data-page-node-id="7yBZz52fmsbda8VLyNzAEH"><span class="n" data-page-node-id="IbUMBUOOiDvNxy5F27jyU0">9</span>JSONPlaceholder 的坑（必读）</a></li>
+    <li data-page-node-id="6CV5yTFV0lf1XtgPB2m6lb"><a href="#c10" data-page-node-id="6YyszT2uWPOXHQmlBiVJnl"><span class="n" data-page-node-id="BWBMDpgaVUBsJJOTTdx7GF">10</span>面试话术 + 自测题</a></li>
+  </ol>
+</div>
+
+<!-- ================= 1 ================= -->
+<section id="c1" data-page-node-id="NGPx97InKoGZH8GI1bIl2u">
+  <h2 data-page-node-id="M4srXgQWMb8So8oPdyPvU6"><span class="n" data-page-node-id="nj2Xv5ltUrUrDoEuaDgWSs">1</span>什么是接口关联，为什么非做不可</h2>
+  <p class="sub" data-page-node-id="AYDR6k5i1Srki2fokMhjkI">先看清它在真实工作里的位置</p>
+
+  <p data-page-node-id="8n95QuNu9skeXukjuFObFq"><b data-page-node-id="92lZBlRjMSdV6Kt0efuIvx">定义一句话</b>：<b data-page-node-id="4zTjF4omWUf00Bk0fXBKbA">上一个接口的响应内容，是下一个接口的输入参数</b> —— 这两个接口天然有先后依赖，不能单独测，必须串起来。这个"串"的动作就是接口关联（也有人叫"关联传参""参数传递"）。</p>
+
+  <p data-page-node-id="hBusqeG77nboiPIQFpVyMQ">真实工作里到处都是这种依赖：</p>
+  <table class="tbl" data-page-node-id="UukFQQmUXKxmBlkLMUf7qD">
+    <tr data-page-node-id="bSpBGaDq9H8YlInr0iwpbI"><th data-page-node-id="SXS9tX2TwZMPPrvNIj0dVo">业务场景</th><th data-page-node-id="6VwrbW9drb9Nd15GzKCmOt">请求 1 给出什么</th><th data-page-node-id="juNuNzAS9cdhZhPeZVZDjT">请求 2 拿它干什么</th></tr>
+    <tr data-page-node-id="rEiZS2HBLlp88hJrw5fvNZ"><td data-page-node-id="55HGsH4VwyiNOVTGX6tBvh">登录</td><td data-page-node-id="5JTQ0Ub2sudX3VxA0QEX7g"><code data-page-node-id="FDaWrJ3R33YsBJrlBahUsh">token</code></td><td data-page-node-id="6eYJfJ2F0mLSA4MDopriRW">后续每个接口都要带在请求头里</td></tr>
+    <tr data-page-node-id="Decj0l05F1uGG7Ul9YRKBC"><td data-page-node-id="1J7GuUG6g71JkPdimprd7K">提交订单</td><td data-page-node-id="xCGF7p1kVi6hwjRjILyuLV"><code data-page-node-id="9CKT3IguO6WTjMdom5V4iQ">orderId</code></td><td data-page-node-id="3YGTTSU3FPEvCOCCqae9GS">用它查订单详情、发起支付、取消订单</td></tr>
+    <tr data-page-node-id="dzhNWtobzjCiARzKiipCRx"><td data-page-node-id="spoQUpA8BVtz8K55FRnaOf">上传头像</td><td data-page-node-id="tSt2RtMLu56AVu0O8kckHr"><code data-page-node-id="qPtcAvzY0a5IpvTQbzfaPC">fileId</code></td><td data-page-node-id="H0BQqFikaNmaKSuDOydk9T">用它把文件绑定到用户资料上</td></tr>
+    <tr data-page-node-id="MlXCHFa08vfcbatDcX4xbb"><td data-page-node-id="C6i1bK8Wmt2vnRaytm97dg">提工单</td><td data-page-node-id="XDyx5aj4wTsxzDMsJpPb14"><code data-page-node-id="kw6Lca6pENxRnCGjscifiK">issueKey</code></td><td data-page-node-id="aHCaW4FpkSrYq6V1Zbe1cB">用它去评论、流转状态、关闭</td></tr>
+    <tr data-page-node-id="56IxPDF8IesFfHVJBHYrzm"><td data-page-node-id="7u5QZlIVXgt0bNhqdmvqhr">批量造数据</td><td data-page-node-id="AjiyKRwnKa5gUhFd0cOCLZ">一批新建记录的 <code data-page-node-id="2SaZ5oh3pl013cZQb42vJj">id</code></td><td data-page-node-id="IIVrQH9CxsT6IZ15nX4l57">逐个去查详情、去删除（清理数据）</td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="CQFmCKHTdN8TRWV3v7UZcT">
+    <p data-page-node-id="8IHMVgjJDEEj8fO5xHwSlh"><b data-page-node-id="QPE2iYPwijmVwhA7xZ6kcv">为什么它是分水岭</b></p>
+    <p data-page-node-id="GVwARh2NOm5s4qxKhpvA4s">「调通一个接口」和「测一个业务流」之间隔着的就是这件事。<b data-page-node-id="MJUAG7CmKhNZ1ooLjg4WSZ">只会单接口 = 只会点 Send；会关联 = 能测一个完整业务场景。</b>面试里问"你做过接口自动化吗"，能答上来的通常就是这一块。</p>
+  </div>
+
+  <h3 data-page-node-id="WJ8umiBY92nwdeMwH8D5Jw">不这么做会怎样</h3>
+  <p data-page-node-id="9z5wPBBlGLzT5rJYHCWGIC">假设你测登录后的业务接口，需要带 token。最省事的做法是把 token 直接<a data-page-node-id="Dq6gCez3CB22Hmc6Ydl8BH">写死在请求头里</a>：</p>
+  <table class="tbl" data-page-node-id="BFqNngvPAqbSyx4J7gKkdJ">
+    <tr data-page-node-id="RHUWwxKtDxl8RA4yT6yCxn"><th data-page-node-id="bqAJ9sSCxRr9l3P4EsdQ5u"></th><th data-page-node-id="TnoiFKRQDVzSCwlUrx0w5S">写死 token（坏例）</th><th data-page-node-id="6VF8eZkQRIZtvZoV3BGzLk">用关联（好例）</th></tr>
+    <tr data-page-node-id="l9H0n6wVDDBnF4D6oUwG6y"><td data-page-node-id="LELja8bYeIL6mLc2GF2u5e">怎么填</td><td data-page-node-id="xj3B11Aj80Tl7ofJvD9Weu">请求头手填 <code data-page-node-id="qd8YidrhihKY2558RJN380">Bearer eyJhbGci...</code></td><td data-page-node-id="CAPpM4FL4hQFbmNUfYR3p6">请求头填 <code data-page-node-id="VJFkgGxiFMCELKH0Qmdn7L">Bearer {{token}}</code></td></tr>
+    <tr data-page-node-id="FczY0fnfRD2K2edyXKB558"><td data-page-node-id="wOD9lxA8AarPSJwFYG7P9m">token 几小时后过期</td><td class="fail" data-page-node-id="jUf4g7Hm06YXAVjZXNLLAL">全部用例 401 集体失败，你得手工换一遍</td><td class="pass" data-page-node-id="Qz392si8OcEH7vEauN4NqR">重跑一次登录请求，自动换新</td></tr>
+    <tr data-page-node-id="FtwD2j6qNHzGevDMgjwhCB"><td data-page-node-id="CDQo4dJZSfyWCVOPm0OL29">换测试环境</td><td class="fail" data-page-node-id="seoOa4UuF9vGfxEjjjor81">token 是另一个环境的，不通</td><td class="pass" data-page-node-id="WTh4RJox8UH65aPSRuC7kM">切环境，变量自动变</td></tr>
+    <tr data-page-node-id="kJNCY6VerB8WQfSD5Cpx1D"><td data-page-node-id="ZojIzgB1P4qPki4F2zI0bT">批量跑 100 条用例</td><td class="fail" data-page-node-id="YtLTSHUlFQ63gbvwd5dK54">跑一半过期，后面全红</td><td class="pass" data-page-node-id="PWXvMHs2OwHztNAB9lJ7El">先跑登录，后面自动带上</td></tr>
+    <tr data-page-node-id="EFsV0sy9iatIzGoGxzby7I"><td data-page-node-id="9H4VKL18zwhfWXEiG3ttYJ">能不能进 CI</td><td class="fail" data-page-node-id="kUkG7dLgTaJSHXecm1roym">不能，要人工维护</td><td class="pass" data-page-node-id="XRZpchgtVGXNmuBNFG4770">能，全自动</td></tr>
+  </table>
+
+  <div class="warn note" data-page-node-id="5uEEJE35cDFuQuywaWC6ak">
+    <p data-page-node-id="OJiFOdBcUZBirNCvgPSsSH"><b data-page-node-id="ylw9U9DBJaOCwR3qUPkuVm">一句话记住</b>：<b data-page-node-id="dABzas17K90rsERv9ZqGAF">凡是会"变"的东西，都不能写死。</b>token 会变、id 会变、时间戳会变 —— 这些都必须靠关联传递。</p>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2" data-page-node-id="CECxK3zEQViCgQfAzusYkN">
+  <h2 data-page-node-id="lJtpfKgwRF5FxgtRAvcLe2"><span class="n" data-page-node-id="y915OixzSA0jMLYeFyU230">2</span>关联只有三个动作：取 → 存 → 用</h2>
+  <p class="sub" data-page-node-id="x8pGWZlAoHOX1L1LxoRqJj">所有关联，不管多复杂，都是这三步</p>
+
+  <div class="flow" style="grid-template-columns:repeat(3,1fr)" data-page-node-id="L44QSD0OezVG6KV2cP2Xvf">
+    <div class="step first" data-page-node-id="9PGgMVgl7FgXT6Fp48m1hR"><b data-page-node-id="w2ZEDeI0jHkDZPUsh1bc8r">① 取</b><em data-page-node-id="cBsI6TOy5y67PQdWBHT1Zq">从上一个接口的响应里，把那个值拿出来</em></div>
+    <div class="step" data-page-node-id="7T4zlAFbOIRW6M2oD0Fq5N"><b data-page-node-id="6vC0jGvOlR0iQPRRqEG1IA">② 存</b><em data-page-node-id="nkwVOBU2A92vTAgKqWicxR">把它存进一个变量，起个名字</em></div>
+    <div class="step" data-page-node-id="ocCfEWkZpWdHib6mBOEOuX"><b data-page-node-id="HFa0JBaIb9grVFfZuSM8VT">③ 用</b><em data-page-node-id="TMwVdchOQD0g2Ir8MqpWbf">在下一个接口里用 <code data-page-node-id="A92iK4jhgja7mny38dsCY5">{{名字}}</code> 引用它</em></div>
+  </div>
+
+  <p data-page-node-id="vmv1FnaR8FoszmOEyYwUdi">三步各自的写法，就这么点东西：</p>
+  <pre class="code" data-page-node-id="0IkfJnKHg8ZTCQxrfc06wY"><span class="cm" data-page-node-id="8Qo9haJ83hz0eStRS1J6E2">// ① 取 —— 写在第一个请求的 Scripts → After response 里</span>
+var res = pm.response.json();   <span class="cm" data-page-node-id="ksE59XTfDrizT1r4a1OBrf">// 把响应体解析成 JS 对象</span>
+var token = res.json.token;     <span class="cm" data-page-node-id="AL9aAKaD99ANCfsAESXSWK">// 按路径把值取出来</span>
+
+<span class="cm" data-page-node-id="RcyZwC8NIpU93lAyP9K7IY">// ② 存 —— 还是写在同一个地方，紧挨着上一行</span>
+pm.environment.set("token", token);   <span class="cm" data-page-node-id="UJgXhU7nN1iQybayWleB8d">// 存进环境变量，名字叫 token</span>
+
+<span class="cm" data-page-node-id="9vWhugIFhr1wHPFNT1yUAl">// ③ 用 —— 这部分不在脚本里，写在第二个请求的界面上</span>
+<span class="cm" data-page-node-id="mlw4Qq7mwxJnEYZUL8qboX">//    请求头里填：  Authorization = Bearer {{token}}</span></pre>
+
+  <table class="tbl" data-page-node-id="d00DC7xJHntae4NLaBFEuA">
+    <tr data-page-node-id="X5j20ZhLF7SO7UZ5j9xMBH"><th data-page-node-id="F1UdUqJKThc8tyExS9Q2pZ">动作</th><th data-page-node-id="bjPlyDIXO7rASrIownmFOc">写在哪</th><th data-page-node-id="LDx39oPB7Wkg2CbYzZ4GrC">关键代码</th></tr>
+    <tr data-page-node-id="dkn9nTGV4oQGp36EfGxYKJ"><td data-page-node-id="uuwqqxoX2xjmGujGC6RYGs">① 取</td><td data-page-node-id="P317I22gYFOrgAJHdDvR8J">请求 1 的 After response</td><td data-page-node-id="FJit6Okb2319fx5Vss7s0Q"><code data-page-node-id="SCtwGjSrK1COOEMaCvXIsE">pm.response.json()</code> + 字段路径</td></tr>
+    <tr data-page-node-id="hqH1B3ZsDTM290T68MoScQ"><td data-page-node-id="6gGSPnhKjwxlTX4yQ2F7VE">② 存</td><td data-page-node-id="nTcHApvocm0ncyhp0IqCBD">请求 1 的 After response</td><td data-page-node-id="Zm6iS01hSbsSBrSFByGmHV"><code data-page-node-id="CbkehAPoUCWgA4fOQLZzUv">pm.environment.set("名", 值)</code></td></tr>
+    <tr data-page-node-id="BQHFDVIYv11v0YqwSaatlL"><td data-page-node-id="ZXLYjrwxitFRuLmcUe3UWV">③ 用</td><td data-page-node-id="mFFxgCkQyfrquZQ0YiBAgH">请求 2 的地址 / 请求头 / 请求体里</td><td data-page-node-id="FV9WfIK8bax7aZNm2SZgbJ">双大括号 <code data-page-node-id="675EtIhFUYld5pJHG9kbZM">{{token}}</code></td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="WAA6xYyq4VHtM46kPRBO02">
+    <p data-page-node-id="7oBkQ0BTikdzMB7VusHnUI"><b data-page-node-id="8cegtDx5VDqo2iQiDCvJ2L">双大括号是 Postman 的"插值"语法</b></p>
+    <p data-page-node-id="mPFMGX781M3ANCeSPcy6CG">你在请求里写 <code data-page-node-id="bNtAGbQ489v5Nk70TBPTas">{{token}}</code>，Postman 发出去之前会<b data-page-node-id="nML6vqZEG33wt8fsktTf8a">先把它替换成变量的真实值</b>。所以服务器收到的是真实 token，它根本不知道你用没用什么变量。</p>
+    <p data-page-node-id="Fv9xMWMVYAA8HiJWH2FKQ0">这个替换动作发生在<b data-page-node-id="vf1yekaCqEaIXEBq2A10US">发送的那一刻</b>。所以改了变量的值，必须重新 <code data-page-node-id="IGbzUbf5aWX3m3EBuoiAr0">Send</code> 才会生效 —— 这点跟断言一样。</p>
+  </div>
+
+  <h3 data-page-node-id="eJOoc2yFYrfqPiKXUH2tVZ">为什么要在"第一个"请求存，而不是在"第二个"请求里取</h3>
+  <p data-page-node-id="0mVVGSl9lcPUKjpukzkY9F">因为<b data-page-node-id="vzY8TtIUmADvGt4AmHPNAD">请求 2 拿不到请求 1 的响应</b>。每个请求的 <code data-page-node-id="qMQ5tHw1m4DSlHjYjzJyIm">pm.response</code> 只代表自己的那次响应，脚本跑完就过去了。所以值必须在请求 1 那里就"存起来"，请求 2 才有东西可用。</p>
+  <p data-page-node-id="OQvXEI36MR2ixvkmqLhyan">这也解释了第 3 节那个坑为什么最容易踩：<b data-page-node-id="ykhDTl5TorRvkFpaKepIBH">存错地方了，值活不到下一个请求。</b></p>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3" data-page-node-id="JPREhx56ihv23mIJlo6zIF">
+  <h2 data-page-node-id="9YXXcVBjoqKEKYpauLOFcP"><span class="n hot" data-page-node-id="QY8uvpiVZhz1QUTk2g4Ekt">3</span>变量存在哪里（第一个大坑）</h2>
+  <p class="sub" data-page-node-id="UEipmvLqROi33mUYVPZtlM">存错地方，值就传不过去 —— 这是初学者最常卡住的一步</p>
+
+  <p data-page-node-id="6fgPAyNchPts2esNJ2Vft9">Postman 有四种变量，写法长得几乎一样，但<b data-page-node-id="jfpf43MneEbvL4CaNQUQz7">能活多久</b>差别巨大：</p>
+
+  <table class="tbl" data-page-node-id="y2vOy4e44TkefNIOeVn2P5">
+    <tr data-page-node-id="UIJBSnDQjTCR5FzolBTevu"><th data-page-node-id="vqMHnkz7Eyyx4kZGVgvF6j">类型</th><th data-page-node-id="siGHb3omcWPHnpTrDDv7pl">怎么写</th><th data-page-node-id="ba6jFRg0uCEqmtIxPXSpVP">能跨请求吗</th><th data-page-node-id="0aFRVOQ2EiHFVPi2FooZTo">什么时候用</th></tr>
+    <tr data-page-node-id="AZgfBH7mHMBp2tqNMdCHU2"><td data-page-node-id="wJZBCJyfHAjTEkIVJ43u8Z">局部变量</td><td data-page-node-id="JXxg4yyKZLmoT67aEcKMkD"><code data-page-node-id="Eu55Vahk41u0K93hfG3c0D">pm.variables.set()</code></td><td class="fail" data-page-node-id="zqHSFZjiYVHCkNq4svKGRF">不能</td><td data-page-node-id="dEMY7BOfb5utlPaGMIJHX6">只在当前这一次请求里临时用</td></tr>
+    <tr data-page-node-id="xT8gxWEIFVntq1U1sARvdj"><td data-page-node-id="XRuRhMLEiKfhWCGIWp48KH"><b data-page-node-id="poYwqoFSLcnKGUpieFOeVj">环境变量</b></td><td data-page-node-id="VazdNIrmVAWPzn9JsnqFoB"><code data-page-node-id="4IYMOELcSCU1pEW08Aqyta">pm.environment.set()</code></td><td class="pass" data-page-node-id="1oi0fVmRCn4W8DBUHqoidm">能</td><td data-page-node-id="MREATdBFiM6gqA4Dov9n0M"><b data-page-node-id="OOwoUVyHCCXiPqK3ZtUs0U">关联首选</b>，切换环境时自动换值</td></tr>
+    <tr data-page-node-id="9bOABkHKwDL79FDn0ngNy0"><td data-page-node-id="PxbYuEKYENLVziHPebhbO4"><b data-page-node-id="FM3H6SvnZs6BqIuAziAZaQ">集合变量</b></td><td data-page-node-id="tPGfMVc1cvFCyBhK1ShGkg"><code data-page-node-id="Y8XFN6HI1IzRUQiTgrSXRG">pm.collectionVariables.set()</code></td><td class="pass" data-page-node-id="2TwEqmpfa1H1UGsHeNxK4a">能</td><td data-page-node-id="K1l9VwK5JBqTOGV4rGI9wk">只在某个集合内部用的值</td></tr>
+    <tr data-page-node-id="l0ara66YFn2unB1R0DgBky"><td data-page-node-id="TcOreeWR3itewsJYA2xFhw">全局变量</td><td data-page-node-id="r1rWmzHuE7371sSoKf6qCx"><code data-page-node-id="pm0dHdQaHVeAaTMSe8TWlE">pm.globals.set()</code></td><td class="pass" data-page-node-id="Qjle259myw44ESyeXuAUP0">能</td><td data-page-node-id="pWm7cZA9QeGSkdQNYIvLH0">所有集合都要用的值（少用，容易乱）</td></tr>
+  </table>
+
+  <div class="danger note" data-page-node-id="xaN0N0dcJngWiyuKLYYWL1">
+    <p data-page-node-id="kSrEhbwgPd1b0F5ZhoLSKN"><b data-page-node-id="drMocQ6BqXTNfNV1xyTtGl">最大的坑：<code data-page-node-id="CA4JCiUIHCCOyrOKrWzLJ5">pm.variables.set()</code> 不能用来做关联</b></p>
+    <p data-page-node-id="FuZme4ZOA5ea0oHm2i7utX">它的名字最"通用"，所以最容易顺手就用了。但它是<b data-page-node-id="qjQhN3NlaCHjmQknInXyCC">局部变量，只在当前这个请求的执行过程中存活</b> —— 脚本跑完就没了。</p>
+    <p data-page-node-id="jreQ7TbzAenI8VI1Pbpj1Z">结果就是：请求 1 里你明明存了，请求 2 里却取不到，你盯着两段一模一样的代码看半天，找不出哪里错了。</p>
+    <p data-page-node-id="IbSUNMDEOPLACrfNHCnRXH"><b data-page-node-id="De3E2JAf0HwGjeyOzfXLUR">做关联，一律用 <code data-page-node-id="kIRGTs83HZtUyTLah6iTAD">pm.environment.set()</code> 或 <code data-page-node-id="W4DANFrw5CiLtlOjkluZ9x">pm.collectionVariables.set()</code>。</b></p>
+  </div>
+
+  <h3 data-page-node-id="sHPpCbcopBLFCQy9RokxW8">环境变量 vs 集合变量，到底选哪个</h3>
+  <table class="tbl" data-page-node-id="UuUEADKXZ5sJotooMWfYdk">
+    <tr data-page-node-id="LJZ3a601BfccVl87dgKxg3"><th data-page-node-id="bqX01HZedlEGh5MHrgjZV3">选谁</th><th data-page-node-id="tzpGJvGyZD28nzitAQIE0r">什么时候</th></tr>
+    <tr data-page-node-id="VapjTx5T0x0k3GKWwr4cts"><td data-page-node-id="SyqzMpQEMRxBKblnCB73UV">环境变量</td><td data-page-node-id="w1wBVkMGZk817XT92Dsqga">这个值<b data-page-node-id="EhxUHQY9unASVztTYBH0z1">会随环境变</b>，或者你要用它切环境（测试环境 / 预发 / 生产各一套 token、域名）</td></tr>
+    <tr data-page-node-id="xSd1ql7IDQ3fuCm1eqPuIt"><td data-page-node-id="1VnFoNPpJk8a3p6ujhviO8">集合变量</td><td data-page-node-id="J1IlbuudfxycEp6bKy1VYl">这个值<b data-page-node-id="WEAnUvqtrl9jg4QTt8RSYX">只在这个集合内部有意义</b>，跟环境无关（比如从列表接口取到的临时 id）</td></tr>
+  </table>
+  <p data-page-node-id="bshEYnvrlcnr7g6cwtc47K">拿不准就用<b data-page-node-id="AsRRZtF4CfFvPxM8cVM4Zb">环境变量</b>，后面切换环境时你会庆幸。<br data-page-node-id="qVAp8gvGfuqDe7jnoNVr5V">本讲的例子 A（token）用环境变量，例子 B（id）用集合变量，两种都让你碰一次。</p>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4" data-page-node-id="UOLyw4eHgrjmyAUQk4UTDA">
+  <h2 data-page-node-id="J1UHvyJi8tJrd7PkZYm1FN"><span class="n hot" data-page-node-id="947EJB0vtaTXaMFGZdaAQn">4</span>例子 A：登录 → 取 token → 带 token 访问</h2>
+  <p class="sub" data-page-node-id="NTy0uKRDBu3VDvbz8ZbX0F">最接近真实工作的那条链</p>
+
+  <p data-page-node-id="CK0BCzOHfK85xEAKgaArFF">先看这条链要串成什么样：</p>
+  <div class="chain" data-page-node-id="xTXaJxsf9qSzLpHQLKaUdC">
+    <span class="st blue" data-page-node-id="OCRrTSCP5oJUo5oqa1LZtY">POST /post<br data-page-node-id="kUrbFjAV4EWfzXPjoGTEMN"><small data-page-node-id="ryTJvxGTsCh2djJORU1OPu">（模拟登录，提交用户名和 token）</small></span>
+    <span class="ar" data-page-node-id="HRXnQXBVY5PARaYsFt2h3p">→</span>
+    <span class="st amber" data-page-node-id="A3TCTD3remgnVzkxEHizPL">取响应里的 <code data-page-node-id="zlWsSgguuJIYx4LSThvTUG">json.token</code></span>
+    <span class="ar" data-page-node-id="oz89iAm4gHHcj0M1d7EMAB">→</span>
+    <span class="st amber" data-page-node-id="seGGAH3oceX7qwnhsntArv">存进环境变量 <code data-page-node-id="m1ibyt3rrKbxA4SS33cbAD">{{token}}</code></span>
+    <span class="ar" data-page-node-id="EgBHpFYuWLeAseKbrw69qk">→</span>
+    <span class="st green" data-page-node-id="4bOCtDzEOhmKumttQx5yh0">GET /bearer<br data-page-node-id="ReopcXZ8hudsYm70u2aCZk"><small data-page-node-id="ZOscM2GmOIX5crZKtzMqI1">请求头带 Bearer {{token}}</small></span>
+  </div>
+
+  <h3 data-page-node-id="HKnc8JN2WkggiX6MwTC9BH">先看我实测出来的真实行为</h3>
+  <p data-page-node-id="oAHCD0s0Oo8Qsu2ypPe2Si">我把这条链上的接口先在你机器上跑了一遍，结果如下 —— <b data-page-node-id="4zhK7Wyx47dLJunZ0YbHaj">所以你知道下面每个"预期结果"都是真的</b>：</p>
+  <table class="tbl" data-page-node-id="Bld0qJYUdVOL6lYFwh3txi">
+    <tr data-page-node-id="5TnYSUqTWTPIVKp7j9nDKf"><th data-page-node-id="Oo4YBrcf9hGlxXIhsCmSef">请求</th><th data-page-node-id="Q1pjxNTuvULn58oBRGrely">状态码</th><th data-page-node-id="RtYj7hdxXLTK37kG42KpkY">返回</th></tr>
+    <tr data-page-node-id="MRVxrIz2UJA8dpX3PYVYd4"><td data-page-node-id="5mmFCM4pZzlSlFM3mNVU6p"><code data-page-node-id="AtkkQY8pmMe8WIaHLsmGwf">GET /bearer</code> <b data-page-node-id="NeWdDm5BA7pJtMKZ2xpMwa">不带</b> Authorization 头</td><td class="fail" data-page-node-id="s3gQDJupZywaB3atKXCmip">401</td><td data-page-node-id="Hxl3KEVG0U4tjB9xN0nHrv">—（未授权）</td></tr>
+    <tr data-page-node-id="7DVzXLFwgZtwZj4qcithPE"><td data-page-node-id="BBRqFG2hEd9aNcNCy9exY0"><code data-page-node-id="qCESYB1ADPN4yxM45WA0Ek">GET /bearer</code> 带 <code data-page-node-id="QaXQoeNGgg8kKkuEqo8O9h">Authorization: Bearer abc123</code></td><td class="pass" data-page-node-id="hq7QRgUWxGxDEI4QA6o8hN">200</td><td data-page-node-id="H8KiwCFdDWmVvuMZ14DpH3"><code data-page-node-id="3FX3t39J2Wf6FSmRESW7xs">{"authenticated": true, "token": "abc123"}</code></td></tr>
+    <tr data-page-node-id="AIoMBWuT5JYClGHiW0fqw5"><td data-page-node-id="tSUmYeAnKXVAWyAvqTEZfJ"><code data-page-node-id="C20uTA4cMLuhRLOsIRaoBs">GET /bearer</code> 带 <code data-page-node-id="dsxPoUsO7eg2xNamwKC9E2">Authorization: Bearer </code>（token 为空）</td><td class="fail" data-page-node-id="PaDRKr5FobEzzTlvED1qBm">401</td><td data-page-node-id="hEJS2tYFBfOGvWKQiNaQLU">—（未授权）</td></tr>
+    <tr data-page-node-id="O2whioELmYaDDAEITHIrUe"><td data-page-node-id="l9x5xBbW9Mjpp68WiSaZtU"><code data-page-node-id="NsprXmHYsq60QmC4YQdVpW">POST /post</code>，请求体 <code data-page-node-id="M8R3Pw2Coa6pWFIvcqABfo">{"username":"tester","token":"tok_abc123"}</code></td><td class="pass" data-page-node-id="viDdk9qHgTk7j5memO2TOl">200</td><td data-page-node-id="tOq7ytPyJy98iESzelGOnW">响应里有 <code data-page-node-id="Isowr5FgpdR0K3A0HabtFv">json.token = "tok_abc123"</code></td></tr>
+  </table>
+  <div class="ok note" data-page-node-id="mLgNzzWZQKuKFKRdJ9u0T6">
+    <p data-page-node-id="Mc49c12BFsAnxMtHq1gdyn"><b data-page-node-id="BnpPSTeXdEaH9uQxQmXe7U">注意最后一行</b>：httpbin 会把你提交的 JSON 原样放在响应的 <code data-page-node-id="6sSHOxrCKytr16MIR8tqBE">json</code> 字段里还给你。所以取 token 的路径是 <code data-page-node-id="SMXsgM1i256wncsA3ZhyDd">res.json.token</code>（<b data-page-node-id="zhAhytw8R9dchhX5Orh47Y">两层</b>：先 <code data-page-node-id="svPGRsIHyPHEDYVGzWSbIU">json</code>，再 <code data-page-node-id="Ups6PbFsK0nzBEjr1Ns8LD">token</code>）。这一层是新手最常写错的地方。</p>
+    <p data-page-node-id="qgDmj8HyiSPwDilrL0qBcZ">同时注意前两行：<b data-page-node-id="tMP7whd9rVIPEUstlHO80i">不带 token → 401，带上 → 200</b>。这就是一个自带鉴权的接口，正好用来演示关联。</p>
+  </div>
+
+  <h3 data-page-node-id="OHy6d5JNPw2kZW14RSefcO">步骤 1：建一个环境，放两个变量</h3>
+  <ol data-page-node-id="ioU83anNvFQE9A8NSJ1OaL">
+    <li data-page-node-id="FyLwGuVQmIiXJJBQb3PgWU">左边竖栏（跟你之前看到的 <code data-page-node-id="8rvVCFReHRsGPWodbqTkFA">COLLECTIONS</code> 并排的那几个入口）里找到 <code data-page-node-id="e0vRFdtB8PH2fsHJRQ96rg">Environments</code></li>
+    <li data-page-node-id="H8tn1vAfr6osQiWI3zYDDa">点 <code data-page-node-id="81DyX9OFfVCkktWwZT21s7">+</code> 新建，名字随便起，比如 <code data-page-node-id="GvLvSMTwwBe5AO5AHgP7xS">api-test</code></li>
+    <li data-page-node-id="gi287JSl0TLADJ0xCn19I7">在表格里加两行：</li>
+  </ol>
+  <table class="tbl" data-page-node-id="KtYaeu6n4GDNSGGY2g8Zjh">
+    <tr data-page-node-id="TXNfLycnmpyk08rDYwR8MK"><th data-page-node-id="55mGbefEE9wkPAEQrI6rFe">Variable</th><th data-page-node-id="RLHz9QQUmUKUR1pMAKMeNl">Value</th></tr>
+    <tr data-page-node-id="AtUZPMTBBDwE2fjUA8xzFi"><td data-page-node-id="G9KHtuwiZ8tW64TFuPfS53"><code data-page-node-id="HXNSB4TbMMjwyvAFN3DAYR">hb_url</code></td><td data-page-node-id="hcsbJrEBKdHOCcdeqFfrMI"><code data-page-node-id="NoabimwOAXBApFAVVjRgaY">https://httpbin.org</code></td></tr>
+    <tr data-page-node-id="HGPixGKLHOosCh7kttBzC4"><td data-page-node-id="2nUkaDMezp1Ff2BW1sXHlb"><code data-page-node-id="bYPl0aDaXF3aZ4xIHydqcG">token</code></td><td data-page-node-id="piw2GELzdyBTWwcJHmIeyy">（<b data-page-node-id="fESmDGKXLpTl1ZXSdFb2x7">留空</b> —— 等脚本自动填进去）</td></tr>
+  </table>
+  <ol start="4" data-page-node-id="Ie8rZtrsyLSHsKtZ8QfMAM">
+    <li data-page-node-id="SDo3DH2FqgcQ6VKHrNAXTN">保存（<code data-page-node-id="mrb1GnVQeE4BhVRc3RFaOY">Ctrl+S</code>）</li>
+  </ol>
+
+  <div class="danger note" data-page-node-id="CXfOiww4bBLPhtSWmtx5nY">
+    <p data-page-node-id="ZWyVCV5zaijVFVBsY2qFQO"><b data-page-node-id="1LcItoAQpw6F1bzdp0VJLR">最容易漏的一步：回右上角的下拉框，选中 <code data-page-node-id="ViYdT1gPePVmbRgWxYz5Gx">api-test</code></b></p>
+    <p data-page-node-id="6TcMFHJAFEuuJhBFWZTkVG">你右上角原先显示的是 <code data-page-node-id="4qVHqW1nqtXoaHoffGc9bH">No environment</code>。建完环境<b data-page-node-id="7rLDmJfMA9IeTeMP1NRGC8">不等于已经在用它</b>，必须点那个下拉把它选中。</p>
+    <p data-page-node-id="ODask9xH2JkEnCwiCvte2F">没选中的话，<code data-page-node-id="JIq3jypz4qlzf61oLVakkc">pm.environment.set()</code> 会<b data-page-node-id="Gf7Zlyi7mg51Tchthci4FL">直接报错</b>，`{{hb_url}}` 也不会被替换 —— 你会看到地址栏里赫然写着 <code data-page-node-id="g6ASHQCAPLziltHapmU5Ks">{{hb_url}}/post</code>，请求当然失败。</p>
+  </div>
+
+  <h3 data-page-node-id="2Tlook63BWuBB0RwCTgtAA">步骤 2：请求 1 —— 模拟登录</h3>
+  <table class="tbl" data-page-node-id="ElctAlocZhiHcH4IX0bQA7">
+    <tr data-page-node-id="SJsk0C87JnJby6KQVv1YGu"><th data-page-node-id="xk8cSelKg81FRQlQcGgVwV">项目</th><th data-page-node-id="ufHrFlpJMHeuxzJPxS7drq">填什么</th></tr>
+    <tr data-page-node-id="4PtSnVbHjdKULKQNtDWBi8"><td data-page-node-id="ZGJH6P4gBa31juC1atXMRc">方法</td><td data-page-node-id="ODNqnex0jF4Mgkz5Bn5plR"><code data-page-node-id="ghfE6frr5AC9shsCZXDCT4">POST</code></td></tr>
+    <tr data-page-node-id="GH292HQoAT0QtGkNrjxt8a"><td data-page-node-id="VGw2QWbFi5LUhf1LK3m0wv">地址</td><td data-page-node-id="0OSfSS88fjdkne2Z00SvOU"><code data-page-node-id="q5ydoY7e0F2UqhqUGlxYFi">{{hb_url}}/post</code></td></tr>
+    <tr data-page-node-id="9bm80xGxZmmiVpX6VVZfxo"><td data-page-node-id="Jych6VTr7BzaHtGLOG9Q44">Body</td><td data-page-node-id="QV0bhh8kHAJjoeQIfty8y0">选 <code data-page-node-id="SpMa3VKInmZJ6Go4Q6oqaH">raw</code>，右边选 <code data-page-node-id="lkLsSouozuU9DSgO27QqFz">JSON</code></td></tr>
+    <tr data-page-node-id="F8hWsAfo0Q3Iw0YsgpM3FI"><td data-page-node-id="07zdYjwKpYnUUNKKwBa3fQ">Body 内容</td><td data-page-node-id="iIhlEucCtGnTRqBFBLCh41">见下</td></tr>
+  </table>
+  <pre class="code" data-page-node-id="1E2r69QxNpIe4ri6OBAJWf">{
+  "username": "tester",
+  "token": "tok_abc123"
+}</pre>
+
+  <h3 data-page-node-id="N0JAYlOQq9dcxH0S3LzxvF">步骤 3：请求 1 的 After response 脚本（取 + 存 + 验证）</h3>
+  <p data-page-node-id="lJEmJ7bxM15NVebHR6SCLr">位置还是你熟悉的那个：<code data-page-node-id="Js0xNaD9AMVgTGVeqn2WyZ">Scripts</code> → 左边那一列的 <code data-page-node-id="W1QmfvHFQPHuVzPdCN4Lw2">After response</code>。整段贴进去：</p>
+  <pre class="code" data-page-node-id="mfGAWvIOfifYJrHd4XwCUl"><span class="cm" data-page-node-id="smQjAnZrel7n5xBHGNOtDF">// ① 取</span>
+var res = pm.response.json();     <span class="cm" data-page-node-id="HAMyp0QCePs4TapeFSkd41">// 整个响应体</span>
+var token = res.json.token;       <span class="cm" data-page-node-id="xj84GRs0AaWruHo06BGRvJ">// 两层：先 json，再 token</span>
+
+<span class="cm" data-page-node-id="03los6ZYZIIGdeGUDgVE41">// ② 存</span>
+pm.environment.set("token", token);
+
+<span class="cm" data-page-node-id="Hums2NPwNmgtE9CT4J8Bht">// ③ 自检：确认真的取到了（这一步千万别省，理由见第 7 节）</span>
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("响应里取到了 token", function () {
+    pm.expect(token, "token 字段").to.be.a("string").and.not.empty;
+});
+
+<span class="cm" data-page-node-id="FTyBXMCAG1H36QHR3npFlQ">// 打印出来看一眼，出问题时有据可查</span>
+console.log("我取到的 token =", token);</pre>
+
+  <p data-page-node-id="ff6yqzOI1hEatEXlJ5j33b">先单独 <code data-page-node-id="TS2XAhAlugdufVbI4qR1TD">Send</code> 这一个请求，确认底部 <code data-page-node-id="RTaMbzdEyOvDNYAdFi2Uf6">Test Results</code> 是 <b data-page-node-id="lvg0jzuK5pAcS9ovk9OjPD">2/2</b>。然后打开 <code data-page-node-id="ttzNZmCRW4iZJlwgJHu03a">Console</code>，应该能看到 <code data-page-node-id="mL82X7SoOTCVYiDLpXQv3y">我取到的 token = tok_abc123</code>。</p>
+
+  <h3 data-page-node-id="MB0uNqjivYoDKe1B6HXgFF">步骤 4：请求 2 —— 带着 token 访问</h3>
+  <p data-page-node-id="J8unfhWEdIaFVMAasBpbNR">把这个请求也存进你的集合里（和请求 1 放同一个 Collection），然后：</p>
+  <table class="tbl" data-page-node-id="yBtcx9AeoVovk3QdCkWiDo">
+    <tr data-page-node-id="AHtZRXfhp7NjgwOpSJGD1Y"><th data-page-node-id="uJMXGr74rUkMgjFk3XdU7J">项目</th><th data-page-node-id="KiRWz84GD6dIDpbDpGstzl">填什么</th></tr>
+    <tr data-page-node-id="znTe5adgbXeHboiI5IWvUj"><td data-page-node-id="rnrJLF66Kzd1aoOkw2pgtD">方法</td><td data-page-node-id="dvQuB3UEHDxZk3JPCalcWq"><code data-page-node-id="gWN3hfAlhTNuYw1uvKLC3U">GET</code></td></tr>
+    <tr data-page-node-id="ElrRDr8vrGrAPak7PwVZeA"><td data-page-node-id="cDmhpIOkoenMBS4ig6kC60">地址</td><td data-page-node-id="A68BV2ifETrQqVePnC0nML"><code data-page-node-id="o7eN6dnnPJTaGQ3U1MEzrL">{{hb_url}}/bearer</code></td></tr>
+    <tr data-page-node-id="iu1tfUIIZByxPzhiLxDMm7"><td data-page-node-id="lR0Sss4AcxsW1DPX9mx63D">Headers</td><td data-page-node-id="gYr3dNCbl6jplXGCAkDLMo">加一行：Key = <code data-page-node-id="pz1LUcOAp6JHDN8kOGpsvH">Authorization</code>，Value = <code data-page-node-id="FPSTQ8bT2lCSoaU0mqSWqn">Bearer {{token}}</code></td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="fMTBXaP8Wqzog5yfA8LDFv">
+    <p data-page-node-id="yAsP1fbYhYk7snAnJTqRbf"><b data-page-node-id="viMdycikPO98DB001Ggf5R">注意 <code data-page-node-id="pD1IXtMIK28GRjMwmSCi3f">Bearer</code> 后面有一个空格，再跟 <code data-page-node-id="hWz6ALFBfrCER05RbqnIXk">{{token}}</code></b>。这个格式是 HTTP 鉴权的标准写法，少了空格服务器认不出来。</p>
+    <p data-page-node-id="noAaAD2qvBmWoloctBhvMY">Header 的 Key 和 Value 就是你在 Params 那一页学过的同一套东西 —— <b data-page-node-id="RPbH7ZDci3i0NMhQc7a0AZ">名字 = 内容</b>。</p>
+  </div>
+
+  <h3 data-page-node-id="F0ggrYD4A6rCKTDVd5Knmf">步骤 5：请求 2 的断言</h3>
+  <pre class="code" data-page-node-id="7GrDA89WN7OyfU6Dl9IjZk">var res = pm.response.json();
+
+pm.test("状态码是 200（鉴权通过）", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("服务器认出了我的 token", function () {
+    pm.expect(res.authenticated, "authenticated").to.eql(true);
+});
+
+<span class="cm" data-page-node-id="aBHxK7W4Fweq76HZDhmiUH">// 最强的一条：服务器回显的 token，必须等于我环境变量里存的那个</span>
+pm.test("回显的 token 和我存的一致", function () {
+    pm.expect(res.token).to.eql(pm.environment.get("token"));
+});</pre>
+
+  <p data-page-node-id="28feV55G8L7kv856YMnxWU"><code data-page-node-id="hI6KuP8BsBbcTG6ttKZKE2">Send</code> 之后，预期：状态码 <b data-page-node-id="anxVfNFYBGfX9JkKxAo4VN">200</b>，响应体 <code data-page-node-id="hslB2mMWZyDhzCR3GDoyTa">{"authenticated": true, "token": "tok_abc123"}</code>，<code data-page-node-id="ELY0yo43ZU7nKielbKtFba">Test Results</code> <b data-page-node-id="P7bdP8V8Cp81CCqIYOmXYu">3/3</b>。</p>
+
+  <div class="ok note" data-page-node-id="gdaU3KA7XpiPEJpzlkV4pn">
+    <p data-page-node-id="5NQUtLUNY8DFfUNkUmLwDN"><b data-page-node-id="3jfJZuNIAjn54BvGEy6REm">先跑请求 1，再跑请求 2</b> —— 顺序不能反。如果先跑请求 2，<code data-page-node-id="DG59FjlBcaeebfIZNmYmzV">{{token}}</code> 还是空的，你必然收到 401。这不是接口坏了，是链子没接上。</p>
+  </div>
+
+  <h3 data-page-node-id="ie6CZdkWJpSK2fqaKemWjW">步骤 6：反证 —— 证明 token 真的是从请求 1 传过来的</h3>
+  <div class="warn note" data-page-node-id="xXmwea3TjzgltTCss9fV2y">
+    <p data-page-node-id="kBcH5bciozYshuhQKDU773"><b data-page-node-id="oRauaeGjPHqBlopz9NDM5b">这一步绝对不能跳过</b>，跟上一步"故意改坏看变红"是同一个道理：<b data-page-node-id="pQpQG55zwu7FMmeO4sSAzo">你没见过它失败，就不知道它是不是真的在工作。</b></p>
+  </div>
+  <ol data-page-node-id="q0jF4ZcnYDT8zedD03oBW1">
+    <li data-page-node-id="fbIvgobLMagqHbX5QMmdB5">打开 <code data-page-node-id="KLA2IKMWsBsCmH6cgYK9Wm">Environments</code>，把 <code data-page-node-id="wRjbyMSKXWboNlcd2jRoF4">token</code> 的值<b>清空</b>（删干净，保存一个空值）</li>
+    <li data-page-node-id="heBDIiWGDqcnMmiFhyK29b">回到请求 2，<code data-page-node-id="6VIeScUOzkuF4FmE0GGoSl">Send</code></li>
+  </ol>
+  <p data-page-node-id="9XxO0xn4jiIUOzgwDOxMJR">预期：状态码 <b data-page-node-id="LapgitIHzOjElh13Z1oxYm">401</b>，断言全部<span class="fail" data-page-node-id="Xmu3LMygqrn9mBNv7GaFUn">失败</span>。</p>
+  <p data-page-node-id="6Y3KmpDN98KgMm1kpwBVxg">这说明<b data-page-node-id="1z4tjuxhdtc3e1akj7Jmf1">服务器读到的确实是你变量里的那个值</b> —— 变量一空，请求头就退化成 <code>Bearer </code>（前缀后面什么都没有），服务器立刻拒绝，关联链路成立。</p>
+  <div class="warn note">
+    <p><b>不要用「把 token 改成一个错误的值」来反证 —— 那样不会失败。</b></p>
+    <p>实测过：httpbin 的 <code>/bearer</code> 只检查请求头里有没有 <code>Bearer </code> 这个前缀、前缀后面是不是空的，<b>根本不校验 token 的内容对不对</b>。所以填 <code>Bearer wrong_token</code> 照样返回 <b>200</b>。</p>
+    <p>真正会返回 <b>401</b> 的只有三种情况：<b>①</b> 变量清空（退化成 <code>Bearer </code>）；<b>②</b> 把 Headers 里 <code>Authorization</code> 那一行的勾取消（等于完全不发这个头）；<b>③</b> 忘了写 <code>Bearer </code> 前缀，直接填了裸 token。任选一种做反证都行。</p>
+  </div>
+  <ol start="3" data-page-node-id="tsGMbS25rejqFLAUS82xvE">
+    <li data-page-node-id="jDwpwvQGntDEzcnMZk1VI8">改回来（<b>重新跑一次请求 1</b>，让脚本把真的 token 写回变量）→ 再跑请求 2，恢复 <b>200</b></li>
+  </ol>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5" data-page-node-id="KAFulCSHzNUDDJoHoRi4Ct">
+  <h2 data-page-node-id="Coj9gsf761qjrnILVhE07L"><span class="n" data-page-node-id="Fx0NaEIzvVqfjHgNozBmul">5</span>例子 B：列表 → 取 id → 查详情</h2>
+  <p class="sub" data-page-node-id="VP7uvgCLq2TeV3bGqZa8Yt">"从数组里取一个值"是这个例子的真正考点</p>
+
+  <div class="chain" data-page-node-id="b0gZXtwjb4VKV3rawvN3iH">
+    <span class="st blue" data-page-node-id="4DJvFAkJD1RNUmFf4cG5eU">GET /posts<br data-page-node-id="XxFGLzvWTD3qxOQvK4dBHb"><small data-page-node-id="MOKk8zJswQOuL6pdTfEIQP">100 条列表</small></span>
+    <span class="ar" data-page-node-id="hQ6fShU6FkATM5VDsxq3et">→</span>
+    <span class="st amber" data-page-node-id="dB5qv8I9I4mPOXBa3mXkjA">取第一条的 <code data-page-node-id="LddXIaAxfdOXtBSAeDL52z">id</code>（数组里取值）</span>
+    <span class="ar" data-page-node-id="FYCZt7HtZqB4FIjqwvIahS">→</span>
+    <span class="st green" data-page-node-id="ZNR4UMGBrbnrdfuBpiNkzW">GET /posts/{{postId}}<br data-page-node-id="2G9QCSAD8WDkAEjFPYDPuy"><small data-page-node-id="GS4IavbfZXspJ9FrVVvXDS">查这条详情</small></span>
+  </div>
+
+  <p data-page-node-id="70WunXBC8GovozfXaEA8f7">真实工作里更常见的是反过来（先创建再查），但这个链路最好演示，而且<b data-page-node-id="HNqTFRMCyLltAoquTmQ0nf">"从数组里取值"的写法你必须会</b>。</p>
+
+  <h3 data-page-node-id="N6XwHNaCT459YFmHX6S6VY">先看实测数据</h3>
+  <table class="tbl" data-page-node-id="XBokWq8lqQAjXOl8yBahZt">
+    <tr data-page-node-id="Ayd2zYqV2PVAaP11HCMeGm"><th data-page-node-id="78gzGW2grAfAPlcjqaeLdp">请求</th><th data-page-node-id="5XiNfaJiJNLqV9B4rSuJec">状态码</th><th data-page-node-id="6DkcJ4W4DXb1zy0tV3vXXU">返回</th></tr>
+    <tr data-page-node-id="ywq1DAe7ikqIz1961pSkaz"><td data-page-node-id="KT5zFXpxJfWHic5yKS67qW"><code data-page-node-id="pcpz5IC0ZyJG2VlsbRHEu8">GET /posts</code></td><td class="pass" data-page-node-id="SyiAgrtODF9dV6O4HJHPru">200</td><td data-page-node-id="8NHAGzB3t03OTlk5wJHpwc">数组，<b data-page-node-id="E0vH8SDJqfskscpRRoPyrf">100 条</b>，第一条 <code data-page-node-id="o3RLUJz3wWkGCYNDTjP13p">id = 1</code></td></tr>
+    <tr data-page-node-id="Vo7KetxN9znsFyZmCIO32o"><td data-page-node-id="S5CaxhTDNkU7Vwdom7Bhth"><code data-page-node-id="W5IgYgkXsAGrV5DOGmksa0">GET /posts/1</code></td><td class="pass" data-page-node-id="PSNx54NwhVB64zMFhXUhgY">200</td><td data-page-node-id="uS5ANgWR9uJ4GDXQjTLEsT"><code data-page-node-id="eCrMORBTtOk6JnY8U7bPjN">{"userId":1,"id":1,"title":"sunt aut facere...","body":"quia et suscipit..."}</code></td></tr>
+  </table>
+
+  <h3 data-page-node-id="gFpMncmbNSdr8RsZwyXqPO">请求 1：<code data-page-node-id="ZkJGZrzUvCA4UXzqyzUDhI">GET {{jp_url}}/posts</code></h3>
+  <p data-page-node-id="L2Jw8i2aAGAhTHJkQbmdaz">先在环境里加一个变量：<code data-page-node-id="Mdy2fgXqw7gV9Ne4lYTdcF">jp_url</code> = <code data-page-node-id="y10pdRivExDbl7Wo0Y33ol">https://jsonplaceholder.typicode.com</code>。</p>
+  <pre class="code" data-page-node-id="Zmb2eU9ssGBdZGGo14ibZ9">var body = pm.response.json();
+
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("返回的是数组，而且不为空", function () {
+    pm.expect(body).to.be.an("array").that.is.not.empty;
+});
+
+<span class="cm" data-page-node-id="zzZBhlskLsgCtklAARz0B4">// 取第一条的 id —— 注意数组是 body[0]，不是 body</span>
+var firstId = body[0].id;
+
+<span class="cm" data-page-node-id="FxsEzvn17dfcxrwHNOYr0n">// 存进集合变量（这个值只在本集合内用，所以用集合变量就够）</span>
+pm.collectionVariables.set("postId", firstId);
+
+console.log("存进去的 postId =", firstId);</pre>
+
+  <div class="warn note" data-page-node-id="WwMAeGjOCoIs1IadcRcRvp">
+    <p data-page-node-id="U8MxhRkoZ71rf8vM0NyQeQ"><b data-page-node-id="RFSGWYVkff5qizkqjWMKNm">写错对照：<code data-page-node-id="bw7Tp3HxaUH3ZyvV5wH9di">body.id</code> 和 <code data-page-node-id="F1ccOiJnQbaun6wkxNXh03">body[0].id</code> 的区别</b></p>
+    <p data-page-node-id="FY1r4NHDkNAef1HwXCerxZ">响应是<b data-page-node-id="G4bmgMWQNwDOsd1fBhBH82">数组</b>的时候，<code data-page-node-id="3ynbN9b7yTS4KwtCj5E0Wz">body.id</code> 是 <code data-page-node-id="pv8NMBblDiJbBTwqRU1RRu">undefined</code> —— 因为数组本身没有 <code data-page-node-id="mXrNsIAmEG5BZ7JLDc4q4q">id</code> 这个字段，只有它里面的元素才有。</p>
+    <p data-page-node-id="RKQ5dWItK6Xjvu0VyEiapR">这个错的表现是：变量存进去是空的（甚至直接报错），请求 2 用不了。<b data-page-node-id="iGB8Js3sPJSTbWsXlkRQDk">判断响应是对象还是数组，看响应体第一个字符</b>：<code data-page-node-id="5bKIBB352eYuT6R6K9NvdK">{</code> 是对象，<code data-page-node-id="GkQJ69NNFPhHXb6gRbECcy">[</code> 是数组。</p>
+  </div>
+
+  <h3 data-page-node-id="s5l3ES2JupZdzPNEOrwdoE">请求 2：<code data-page-node-id="JjoAr2MPcZqHlkY0GFFHrN">GET {{jp_url}}/posts/{{postId}}</code></h3>
+  <pre class="code" data-page-node-id="SUQHk2DG06tIzeEKy0VMCL">var post = pm.response.json();
+var savedId = pm.collectionVariables.get("postId");
+
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("查到的详情 id，和上一步存的 postId 一致", function () {
+    <span class="cm" data-page-node-id="QAJ0NPdtB5qI0esu01dGj2">// ⚠️ 关键：变量取出来是【字符串】，响应里是【数字】，必须转一下再比</span>
+    pm.expect(post.id).to.eql(Number(savedId));
+});
+
+pm.test("详情里的必填字段都在", function () {
+    pm.expect(post.title).to.be.a("string").and.not.empty;
+    pm.expect(post.body).to.be.a("string");
+});</pre>
+
+  <div class="danger note" data-page-node-id="LGmV3yr8BGcJuLVD1nz94e">
+    <p data-page-node-id="V9Rm3NtX3x2d0rBMbW1P20"><b data-page-node-id="nNEu5C4oxnw2kh2yNVwgIq">这里藏着第二个大坑：变量永远存成<u data-page-node-id="XYOezSzGLaifyDj5BFTilV">字符串</u></b></p>
+    <p data-page-node-id="MDxbBcTKq0vJMPfy0WQzVG">Postman 的变量<b data-page-node-id="cKsRvoNeUH1ppkpzAn6ZBe">不管你存进去的是数字还是布尔值，取出来永远是字符串。</b></p>
+    <p data-page-node-id="oTXsfWIHWXgZNkRj3ONW0n">所以：响应里的 <code data-page-node-id="3mNLzuaMxGwwwfavam5hky">post.id</code> 是数字 <code data-page-node-id="ap0B3iBBT8PboEBH6E0egz">1</code>，而 <code data-page-node-id="FMEPmU6rJhooQOhPFnnnlH">pm.collectionVariables.get("postId")</code> 取出来是字符串 <code data-page-node-id="IJXGfmh7J4Y5GbfGPzVwCB">"1"</code>。如果你直接 <code data-page-node-id="b3bKEW8bZysYxyT4AvJJ7Q">.to.eql(savedId)</code>，断言会<span class="fail" data-page-node-id="aKTAqGOLKCF3cQksOaqBvr">失败</span>，报错大概是：</p>
+    <pre class="code" data-page-node-id="45nO3cppTftwiF5rEWcvIj">AssertionError: expected 1 to deeply equal '1'</pre>
+    <p data-page-node-id="32jGpKl9IxP0cXb6DxHk64"><b data-page-node-id="UzLDcELMfw7NY0DtFzz1b0">两个值看起来一模一样，但它不公平。</b>解法就是上面那样加 <code data-page-node-id="xHRUMyFBOdtPzlw28RmHEs">Number()</code>，或者用 <code data-page-node-id="X0ULstK9S5PnzEUGFtNG0c">==</code> 而不是 <code data-page-node-id="E8XskqULPTSG6gCZW57tth">to.eql</code>。</p>
+    <p data-page-node-id="Kw4XgfcWavUvtV3aDiUQZL">这个坑如果你没听过，会以为是接口返回错了 —— 其实是你自己在类型上吃了亏。想确认类型，就在脚本里 <code data-page-node-id="HPmvbCHPEuG5fI0RlzdmGc">console.log(typeof savedId)</code>。</p>
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6" data-page-node-id="ra9JzK43PYumzf14YBSWcV">
+  <h2 data-page-node-id="MEEWOCcvjWvcs9ZZsI4WYn"><span class="n" data-page-node-id="Nszg0W4OowDfbyOeZlPUs0">6</span>取值写法速查表</h2>
+  <p class="sub" data-page-node-id="iPL8dInM9OHlEFjDx7tfpS">"取"这一步的所有常见写法，照着抄</p>
+
+  <table class="tbl" data-page-node-id="Gso1gH2QzOtwrD6Mz8aBt9">
+    <tr data-page-node-id="HdMhnhWcl5HQGKA7FlOSoN"><th data-page-node-id="aCfKoEAjSJ8WYzH2t8FW8v">想拿什么</th><th data-page-node-id="RElgNnW6BxFH0aGWQg3Mpc">怎么写</th></tr>
+    <tr data-page-node-id="bBiKTiD1whh19JjBtZzWmc"><td data-page-node-id="M4onDs6Wco9A1oikvtmTuy">整个响应体（解析成对象）</td><td data-page-node-id="vsMAetKRcxEaKiTw8nRvFY"><code data-page-node-id="wwI7ZGj3goAegaBj3EaOdR">var res = pm.response.json();</code></td></tr>
+    <tr data-page-node-id="iFnPBKJ1ozilgZqxUnuZim"><td data-page-node-id="ZmqdRhAb0LS2phCvWect0q">顶层字段</td><td data-page-node-id="DjTCGBDBiCHCCIeSffDUYf"><code data-page-node-id="8h8FqESFpC6srcL7uIy9gD">pm.response.json().token</code></td></tr>
+    <tr data-page-node-id="yV2zm4zFbpkj3tc9BcABGc"><td data-page-node-id="Jn5pPZKlFTAaRV83x9D6tv">嵌套对象（两层）</td><td data-page-node-id="eaYwdzEyzLO5LJ1wAU1bmQ"><code data-page-node-id="Edfb3lLEPJlDkZqeL948NB">pm.response.json().json.token</code></td></tr>
+    <tr data-page-node-id="4jsS4nUQ1UOB7w8lSX8xhl"><td data-page-node-id="hC5ESDVEqNSvz1rDINSQfb">数组第 1 个元素</td><td data-page-node-id="uPQsSU9lCvHGUiDFAAYvCd"><code data-page-node-id="5Hp8BdfB0XCMCYaKvV2dHH">pm.response.json()[0].id</code></td></tr>
+    <tr data-page-node-id="29Bkc7NmQv28BpsdnsOD58"><td data-page-node-id="e4AHcLNPvB7sVZZJ1H10Qo">数组长度</td><td data-page-node-id="yko2pDR57DzbqWkm7uAXAn"><code data-page-node-id="1JV7u1i5xxv5u9ttCGtj68">pm.response.json().length</code></td></tr>
+    <tr data-page-node-id="SSEtofn0R1dFbvQxYb0dAv"><td data-page-node-id="RA3sgE0kGyNFDz6jwDzSgJ">数组最后一个</td><td data-page-node-id="C0lfOiLpu1Osfg9WocrkKy"><code data-page-node-id="ZOYLMtjvZNWkDpKHr1h2Pv">var a = pm.response.json(); a[a.length - 1].id</code></td></tr>
+    <tr data-page-node-id="O1V1sdpPvnDhkYBI0wyz2b"><td data-page-node-id="1mhQ2Lez9sPhC7kmL6JAw2">数组里找符合条件的某一条</td><td data-page-node-id="kByW8RYJdDXHA7IQqIWTfq"><code data-page-node-id="LlwM758VyDlQwnUwHXMG5P">pm.response.json().find(function (x) { return x.id === 5; })</code></td></tr>
+    <tr data-page-node-id="2Wq56prq3Dl3VDUr6nyIRZ"><td data-page-node-id="9kKQIer36NQB1fauuCHRuu">响应头</td><td data-page-node-id="xaijGbBQxJdcW5UVZxrchE"><code data-page-node-id="W9znAdlK0b8EbzUgDBOVq2">pm.response.headers.get("Content-Type")</code></td></tr>
+    <tr data-page-node-id="KHJaxbd8smXvcAxrk9GO44"><td data-page-node-id="3ClMMhF9HJenxGcskYeUHm">状态码</td><td data-page-node-id="Q3IgwQCbjIrzpDTa9f8z1E"><code data-page-node-id="FqLkGJQMLQcs495iHsCZQN">pm.response.code</code></td></tr>
+    <tr data-page-node-id="agFVOGY0QsmgGuMxiQANgW"><td data-page-node-id="rW9qCoFOfE3H0NGxOxiEdl">响应时间（毫秒）</td><td data-page-node-id="KOpvUozvAoBZc9gBKdlaga"><code data-page-node-id="85R3h0tvEM4UBL4OBKnD4u">pm.response.responseTime</code></td></tr>
+    <tr data-page-node-id="t80AJto6S1QhWDcKbYwjme"><td data-page-node-id="IB5T9lXArqdLLrB7Ahfpmx">纯文本响应（不是 JSON 时）</td><td data-page-node-id="jIwXiUNhdmWbAVvmw2MjDs"><code data-page-node-id="8unkrW5Fz7TCDNkJxOsFWh">pm.response.text()</code></td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="fgAn2u5wEXFByvED0zFTEL">
+    <p data-page-node-id="kiyLJEvXxNpPu2OP3b7HVb"><b data-page-node-id="39IQP6KpOIKLvobUxCshq3">怎么知道路径该写几层？</b>看响应体的结构，一层一层数过去：</p>
+    <pre class="code" data-page-node-id="dJi6JNGYkdkjNLmG32foBN">{
+  "json": {            <span class="cm" data-page-node-id="z4Fi4hwFT66spGcxPt2aft">← 第一层：json</span>
+    "token": "abc123"  <span class="cm" data-page-node-id="bSVtoQdK1WazAnAErmBACL">← 第二层：token</span>
+  }
+}
+<span class="cm" data-page-node-id="CtQGuAZgqbVXNii2MzlSqo">// 所以写：res.json.token</span></pre>
+    <p data-page-node-id="6XUbEzD2YtzqH3tWNIPoTb">拿不准的时候，先 <code data-page-node-id="jMM7Obv0VATuBaEubqx8Bv">console.log(res)</code> 把整个响应打出来看一眼结构，比猜快十倍。</p>
+  </div>
+
+  <h3 data-page-node-id="xXqwQEct3v6mpY3Ei7DmVe">取不到值的时候，先查这几件事</h3>
+  <ol data-page-node-id="uno2CD1l0Wxs74S4eQNQWD">
+    <li data-page-node-id="tro4CewRo5YePeAC9ri4yQ"><b data-page-node-id="7CsuA1D1WOFdoVWF4cGfIW">路径写对了吗</b> —— 少一层、多一层都会变 <code data-page-node-id="4OzlGT8DxXYXCmHeeVVu1i">undefined</code></li>
+    <li data-page-node-id="oG1PlA1TSvq7i1d58Yskn2"><b data-page-node-id="N2bnITtsQOhQik9lZjUCxX">拼写对了吗</b> —— <code data-page-node-id="9Q51zC7EDyyBrFyG5bOP4a">token</code> 和 <code data-page-node-id="a5vv3WnAzOzMUfB0kScEYV">Token</code> 不一样，<b data-page-node-id="OuIyRt9yeGbHUm12wbtiEG">字段名大小写敏感</b></li>
+    <li data-page-node-id="cP8lDOcOoTLeI0Qb3UEQhq"><b data-page-node-id="JlS4RqrjOSm5d11MCBlonQ">响应真的回来了吗</b> —— 如果请求是 404/500，响应体里根本没有你要的字段</li>
+    <li data-page-node-id="MM26PXgeb99EcC0Cz3IwWA"><b data-page-node-id="DGgvKYx193hqn5i5eHn3Qa">是不是数组</b> —— 数组要带下标 <code data-page-node-id="E5oWAT9FRfyE2SiyI9EDof">[0]</code></li>
+    <li data-page-node-id="3i4s58qUVpFgpDLuwitMlt"><b data-page-node-id="1QYoxFyRib7WkNew3ve2ZQ">用 <code data-page-node-id="6SYCV9m8ehjTuKieI7FMiJ">console.log</code> 打出来看</b> —— 别靠眼睛猜</li>
+  </ol>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="c7" data-page-node-id="DD0QnYb7h9ibWjCZqfSIsi">
+  <h2 data-page-node-id="G2ZtX9MtQ64XDDgrCM57ft"><span class="n hot" data-page-node-id="ixroDDdN3vxKEW0VZ87kX5">7</span>关联链上最容易翻车的地方</h2>
+  <p class="sub" data-page-node-id="9TJrGGyGnB7cwnz67ge8BH">值没取到的时候，Postman 不会报错 —— 它会装作没事继续发</p>
+
+  <h3 data-page-node-id="dBJOGw1PnAIkN8peD13Sgj">你很可能撞上这个现象</h3>
+  <p data-page-node-id="yHIYNnopMprlFHvrUDJhGR">请求 1 因为某个原因没取到值（路径写错、字段拼错、接口返回了错误结构），变量是空的。这时候你跑请求 2，会收到 <b data-page-node-id="uYk6dVp7i54It1ttCuD0R6">401</b> 或者 <b data-page-node-id="dNM5rG0D33o9dmGLPDSvcX">404</b>。</p>
+  <p data-page-node-id="XLnj0XFbE3ooglK5Lr6O1O">然后你就开始查：接口是不是挂了？token 是不是过期了？网络是不是有问题？—— <b data-page-node-id="2ujJ3Faonv1PX9AEmQXGFq">全查错了方向。</b></p>
+
+  <div class="danger note" data-page-node-id="M49Ijd82Sw3rHq8Gf2VkER">
+    <p data-page-node-id="VJBFoUIGprVKF5Xa66ISGI"><b data-page-node-id="gOLD1KaVNEt1GTR7axHxeS">真正发生了什么</b></p>
+    <p data-page-node-id="DQ5bXT1ChSdmZR1odakAKl">如果 <code data-page-node-id="0eZ1xKzZX6UEvPu23vNemV">{{token}}</code> 这个变量<b data-page-node-id="cPUqKEJVFnOqfCHfmstTkQ">根本不存在或为空</b>，Postman <b data-page-node-id="8rd2msvzPxheCKClX0Tqk9">不会拦你、不会报错</b>，它会把这四个字符 <code data-page-node-id="l0CRWdoxuEgfOIK4pwDEDn">{{token}}</code> <b data-page-node-id="jAdGu3kxrtIrNCEeGiOura">原样发给服务器</b>。</p>
+    <p data-page-node-id="UEWuF8qQfpGeEuH6Nv6Uyy">于是服务器收到的请求头是：<code data-page-node-id="uVPE17ZqvF7qOgZRHB49bQ">Authorization: Bearer {{token}}</code> —— 一个语法都对、内容完全无意义的 token。服务器只能说：不认识，401。</p>
+    <p data-page-node-id="hmH2Er0GZJDOvxvk5rP4Zx"><b data-page-node-id="Z9TdcPNbfUzFi1H4h8WK5e">现象是"鉴权失败"，根因是"变量没取到"，中间隔了十万八千里。</b>这就是它难查的原因。</p>
+  </div>
+
+  <h3 data-page-node-id="KFTbZ7HB9Wcd3Pl0PBxGEy">怎么确认是这个原因</h3>
+  <p data-page-node-id="3VLYwt68PvBLPWZclBo644">在请求 2 的 <code data-page-node-id="BtGgWRMzx0NT6JbpEU1Y2F">After response</code> 里加一行，把变量打出来：</p>
+  <pre class="code" data-page-node-id="L4oCXcaOFUe1aIBhv3mZsK">console.log("环境里的 token =", pm.environment.get("token"));
+console.log("集合里的 postId =", pm.collectionVariables.get("postId"));</pre>
+  <p data-page-node-id="1imNEDj7rsHr1n9W3H5o5w">打开 <code data-page-node-id="V6ZwxKxGW0ICi5LoWlP1Pg">Console</code> 看输出：</p>
+  <table class="tbl" data-page-node-id="Q8d9n8vwknpkuP3EJs1wdm">
+    <tr data-page-node-id="CKCVg6Kry5m8F7IDjUJA3J"><th data-page-node-id="j4SXMfr74je4ql1DLwIUNQ">Console 显示</th><th data-page-node-id="i8Bp8Mgm6VkzPsogSvBFOs">说明</th><th data-page-node-id="EvXJz4rODnJuhoaR0aNpFu">怎么修</th></tr>
+    <tr data-page-node-id="p6aBbkWEFQpVc04kxTtnrO"><td data-page-node-id="wr6s3CIHPg4xFpO50Nn3s1"><code data-page-node-id="QaxNWCi89CP8FLGocwW7qC">undefined</code></td><td class="fail" data-page-node-id="lMgcP9afNnXGJovUMWmZf0">变量压根没存进去</td><td data-page-node-id="uJqGbcHma7fGXz3LOV5GB7">检查请求 1 的脚本、检查环境选没选中、检查存变量用对了方法（第 3 节）</td></tr>
+    <tr data-page-node-id="DA13gb6dGeHcil3wUAJNhp"><td data-page-node-id="fUJx3dZhMS0GuE1GzhE5q6">空字符串</td><td class="fail" data-page-node-id="AtrDMqQ3vPCguuQbIu6Aqr">存进去了，但值是空的</td><td data-page-node-id="XKMk82zqm4Ooii6Fkwld6a">检查"取"的路径对不对（第 6 节）</td></tr>
+    <tr data-page-node-id="xdtPUd0TYiFzCLkAgQLF1n"><td data-page-node-id="sjJFDMHiQexxYyEEhxh7qB">有值，但请求还是失败</td><td class="fail" data-page-node-id="EswDu11o61l8gP9lu3uF2M">值对了，用法错了</td><td data-page-node-id="5lv2ZIIHX4eRoPmVGYXJiY">检查 <code data-page-node-id="dJSCoNME3DGLps7N9HtpFk">{{ }}</code> 拼写、<code data-page-node-id="YZ6pFxsWOs44mBV8KOCXUo">Bearer</code> 后面那个空格</td></tr>
+  </table>
+
+  <h3 data-page-node-id="9VAlMRhMzl33lyr4pRw2Cm">治本的办法：每个"取"的地方都加一条断言</h3>
+  <div class="ok note" data-page-node-id="Gk9CTkBQxtgDPRcFD2cFYy">
+    <p data-page-node-id="QObnDYf7XhzHUuKnUHTLuE"><b data-page-node-id="vdnv1T8ROki6QV3U7RSNZY">规则：只要一个请求负责"产出值"，它就必须断言"我确实产出了"。</b></p>
+    <p data-page-node-id="UhZCZwPsDsf7V8F8wOzGeB">如果没有这条断言，请求 1 会显示绿勾（它自己确实成功了），请求 2 才崩 —— 报错点离故障点隔了一个请求，你就得两头跑着查。</p>
+    <p data-page-node-id="r3alPe0KZlocWAlDtUJ9Up">加了这条，<b data-page-node-id="OXfzwYepYsC6Sr7GoIx8uB">请求 1 当场就红</b>，你一眼知道问题在哪。这就是"在最靠近故障的地方失败"。</p>
+  </div>
+  <pre class="code" data-page-node-id="GJ0cNpuNgAhCKsandUNdcJ"><span class="cm" data-page-node-id="WwAMYPpDcWjTEbX76Ckhjk">// 通用的"取到值了没"断言模板，把变量名和值换掉就能用</span>
+pm.test("上一步要用的值取到了", function () {
+    pm.expect(token, "token").to.be.a("string").and.not.empty;
+});
+
+pm.test("要用的 id 是有效数字", function () {
+    pm.expect(Number(postId), "postId").to.be.above(0);
+});</pre>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="c8" data-page-node-id="1DD6D6q6cP5bJ6dTOKu1sD">
+  <h2 data-page-node-id="eRFiSvcS5etBCW6qd95Ti2"><span class="n" data-page-node-id="3ERSmzsmOg9x9fGbcfBrVK">8</span>每个请求分别该断言什么</h2>
+  <p class="sub" data-page-node-id="hDjN5i91bjeKD3OyUFMot3">一条关联链的完整断言清单</p>
+
+  <p data-page-node-id="2LVe3pRUmgQ4vy3RLUOTan">把第 4 节那条链拆开，每个请求的断言职责是不一样的：</p>
+  <table class="tbl" data-page-node-id="UxNRduO7XdppvBxAbIAtQw">
+    <tr data-page-node-id="pkG5n8IZ8sPWOKGvTTXYw5"><th data-page-node-id="ycT0TBNJnYTcuKJajibkGO">请求</th><th data-page-node-id="ZDwWzKv5vsWamOXZKIh0rl">断言什么</th><th data-page-node-id="grDGl5sae0xEXSDlprJGIm">为什么是这条</th></tr>
+    <tr data-page-node-id="gbwKNex7MaAd8aJqk4yGYJ"><td rowspan="2" data-page-node-id="aSAFuqouQZnVjTHk3IBktS">请求 1<br data-page-node-id="B4YFKYCBkn9CLHHwBzZnxQ">（产出值）</td><td data-page-node-id="rDOlbrMYChOGlmHvLnMeiG">状态码是 200</td><td data-page-node-id="x7tohsxBS8D5wKZJb4tyLA">登录/创建这个动作本身成功</td></tr>
+    <tr data-page-node-id="LwB3JRHn6MHiwclpw1xAsl"><td data-page-node-id="GQAbyVsmNNvGS9u9n1g1LS"><b data-page-node-id="FB8vNUSdAvp1CfgdO5QSrh">取到了值，且不为空</b></td><td data-page-node-id="5tpiC7Tpz4oSkskkaLhTTN"><b data-page-node-id="Bti2z4rAdj09Iha8KhyDFU">整条链的地基</b> —— 少了它，故障会跑到下一个请求才暴露</td></tr>
+    <tr data-page-node-id="tBIYuJesxuCVVRIjdjHLaJ"><td rowspan="3" data-page-node-id="TaOr0Ti3G9sizEccYRPotS">请求 2<br data-page-node-id="kFFF3xvctpfQkFMCyWkGGL">（消费值）</td><td data-page-node-id="Gq21gRFDA1bm6jfYT1FTmG">状态码是 200</td><td data-page-node-id="JF3rbZxUTJxviB6A9AigKT">带着这个值访问，被服务器接受了</td></tr>
+    <tr data-page-node-id="FAAsNAPzVottlALrRMToDs"><td data-page-node-id="zb20PKzEe98zIEEYfDwlzz">业务字段正确（如 <code data-page-node-id="B1snCbV7rbKBkiXvPaWvQ5">authenticated === true</code>）</td><td data-page-node-id="3aH2DJN106lOn9CJjy2fUB">不只是"通了"，是"业务判断对了"</td></tr>
+    <tr data-page-node-id="1mnEpYRf10N4A8hgc0StES"><td data-page-node-id="v6JfT9W9NSMfyx1kPnexWW"><b data-page-node-id="FqpCnCzmrISAlndeW2TEHI">回显值 == 我传的值</b></td><td data-page-node-id="Yz4dAzsXUCycCKWopL3UV8"><b data-page-node-id="Qt01EUSqhIgOtIiU8BqMtw">证明传的确实是我取到的那个</b>，而不是碰巧也能通</td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="ZzSD6NPXSP3vI2FDNcNadg">
+    <p data-page-node-id="qWoDFOolgjxfM2rApt4zew"><b data-page-node-id="0w51IxpVTjz8mfURNixioA">最后那条"回显值 == 我传的值"是最有价值的一条</b></p>
+    <p data-page-node-id="Atdmrg5QNtixsohe0XBNPJ">因为它是唯一能证明<b data-page-node-id="yGHpNI7AIIqaN8cLRxR5A7">关联真的成立</b>的断言。没有它，你可能传了个默认值/空值，接口照样返回 200，你还以为关联做对了。</p>
+    <p data-page-node-id="TQsarE2cjmd9W5THzrWhd5">这也解释了为什么第 4 节步骤 6 要手工把 token 改坏 —— <b data-page-node-id="Dioz86mxFXEtBSam2iRzVh">只有让"传的值"变了、结果跟着变，才能证明这条线是通的。</b></p>
+  </div>
+
+  <h3 data-page-node-id="b5fSw5EeOxE3Rbt8Q7m9N9">这条链的完整面目（串起来看）</h3>
+  <pre class="code" data-page-node-id="xavW5ZtddQBBA9IgWWFKGb">请求 1  POST {{hb_url}}/post
+  ├─ 断言：状态码 200
+  ├─ 断言：取到 token，非空
+  └─ 存：pm.environment.set("token", ...)
+                 ↓
+请求 2  GET {{hb_url}}/bearer      Headers: Authorization = Bearer {{token}}
+  ├─ 断言：状态码 200
+  ├─ 断言：authenticated === true
+  └─ 断言：回显 token === 环境变量里的 token</pre>
+</section>
+
+<!-- ================= 9 ================= -->
+<section id="c9" data-page-node-id="4tpzZRGjQLBdwrpls2RSom">
+  <h2 data-page-node-id="dseHA8D7GSGkF0Be4WKM9X"><span class="n" data-page-node-id="WzxoSRwCMgVFaNvIHatJN7">9</span>@JSONPlaceholder 的坑（必读）</h2>
+  <p class="sub" data-page-node-id="tpjzB1eOmIoYwKQJ2xW9Wa">不知道这个，你会白白浪费一小时</p>
+
+  <p data-page-node-id="xGCCnJhUulYgGTqf3mArIR">学关联，教材里最经典的例子是<b data-page-node-id="7dB3CaxRBNwLZaRKmWpb9v">"创建 → 用返回的 id 去查详情"</b>。你多半会想在 JSONPlaceholder 上试一遍：</p>
+  <div class="chain" data-page-node-id="lZIvLNg50AMUMzcR70rtVJ">
+    <span class="st blue" data-page-node-id="kEaKXA3Jtd5qF0DlPgPVQ8">POST /posts<br data-page-node-id="VtY3jhdMib23CNNEZnvdqS"><small data-page-node-id="iNX4Km1zcyIBKKgt7lI2zU">创建，返回 id: 101</small></span>
+    <span class="ar" data-page-node-id="w0dvGGjWXSFfOtJluKPPEE">→</span>
+    <span class="st amber" data-page-node-id="0uSjwGsmEGS8fZqu3W1mCD">存 id = 101</span>
+    <span class="ar" data-page-node-id="N05VUHagnhPpppUhtrcyND">→</span>
+    <span class="st red" data-page-node-id="BOqBn8gYf51leqKQZILMdY">GET /posts/101 → 404</span>
+  </div>
+
+  <div class="danger note" data-page-node-id="ABDJ3ZGHjvVHYPuQH5F8ZG">
+    <p data-page-node-id="vL83vxRnt2iTKmJMy5aWx8"><b data-page-node-id="dRdgvDtaqeamkKeKNdrEqw">这条路在 JSONPlaceholder 上跑不通，而且不是你的错</b></p>
+    <p data-page-node-id="InRNO5XHCchDkJ1eDc54B7">我实测过：<code data-page-node-id="CCxhjsiXzWT1AAMkt5VkNm">POST /posts</code> 返回 <code data-page-node-id="P11noiCkEOxzGYAEc3Xeno">{"id": 101}</code>，看起来创建成功了。但紧接着 <code data-page-node-id="B55IgIxVii2sn6FZ6VrVba">GET /posts/101</code> 返回 <b data-page-node-id="2aw212lvI3wjtorOkLDdGb">404 未找到</b>。</p>
+    <p data-page-node-id="3s9UMguUaxFcCrqibIEyao">原因：<b data-page-node-id="sJen0YxmRb9FN0Bmkmkqcx">JSONPlaceholder 是个假的演示接口，它不真的存数据。</b>所有写操作（POST / PUT / DELETE）都只是"演"给你看，返回一个像模像样的响应，然后忘掉。<b data-page-node-id="rOgAdNppSw1AckSvNbjVSG">你没有做错任何事。</b></p>
+  </div>
+
+  <table class="tbl" data-page-node-id="9ZlEjbVgh6tx4nRgxyhpFh">
+    <tr data-page-node-id="4JawJvEMjHNfkhRtQWmsQZ"><th data-page-node-id="3jhCdTcDhrPtrCM9szYMnH">你想练的链路</th><th data-page-node-id="vAQonfCV8N0TITkjOFiJqm">JSONPlaceholder 上能练吗</th><th data-page-node-id="BMNfUVshs0q5qHIYuWsXwF">去哪练</th></tr>
+    <tr data-page-node-id="y5u4umwvqO54Nks6txYBoG"><td data-page-node-id="UTpV4xdfIqkQrocYq119CU">列表 → 取 id → 查详情</td><td class="pass" data-page-node-id="GLPwkFuxB8B4pQ0ATd1dSW">能（本讲例子 B）</td><td data-page-node-id="6C0D1gR0KP9UV9ppGD1mQH">JSONPlaceholder</td></tr>
+    <tr data-page-node-id="0AMXp4W8iXUk0FwdFDmyfA"><td data-page-node-id="AGe9jIau6eJ3ILWblHnTu3">登录 → 取 token → 带 token 访问</td><td class="fail" data-page-node-id="UlATyJvNsCRHNjB8QpfYsD">不能（没有鉴权接口）</td><td data-page-node-id="uraDnHqxjzdgngiM8Bm7DR">httpbin（本讲例子 A）</td></tr>
+    <tr data-page-node-id="KYSQG6dDoQo4odZY3mW4hY"><td data-page-node-id="VbmYncjdo7sYP8LMAxtTYp"><b data-page-node-id="DobauG4phKnhwYpk9ZDSYC">创建 → 取新 id → 查这条</b></td><td class="fail" data-page-node-id="CrZAGQxcQKDSNeUT1JCl5S"><b data-page-node-id="nRbFHvVy1PbHMSWn7tuUAA">不能，会 404</b></td><td data-page-node-id="rcJ5cQh8SILysgGoQZ1HDP">需要真存数据的服务（下一步）</td></tr>
+  </table>
+
+  <h3 data-page-node-id="YYQayMNUPgRq2QBS5bo027">所以本讲的两个例子是这么分工的</h3>
+  <ul data-page-node-id="3miy2Q91JRmN9ffttralOb">
+    <li data-page-node-id="rQRCvaER7xDxifg20g8vCN"><b data-page-node-id="qJb4mgm7zcmCTsdH4Vs8oi">例子 A（httpbin）</b>：练"取嵌套字段 + 存环境变量 + 用在请求头" —— 最像真实工作的场景</li>
+    <li data-page-node-id="bizgyNEptMlyY6GPYKMLq7"><b data-page-node-id="ELaUayKwlFpNJBxXr3Yqeq">例子 B（JSONPlaceholder）</b>：练"从数组里取值 + 存集合变量 + 用在 URL 路径" —— 读接口的典型形态</li>
+  </ul>
+  <p data-page-node-id="0wGNkRqIuocKiHcVprYin6">两个合起来，四种"用"的位置（请求头、URL 路径）和两种"取"的形态（对象字段、数组元素）你都练到了。<b data-page-node-id="IBo6ALi7BX6R3PgvTcrlhT">真存数据的那条链，等你的 Postman 这一套练顺了，我们单独做一次。</b></p>
+</section>
+
+<!-- ================= 10 ================= -->
+<section id="c10" data-page-node-id="AlphMlANiOszLG918Sje2v">
+  <h2 data-page-node-id="X10eBq9okLup9ZWi8MSKKI"><span class="n hot" data-page-node-id="nV8hU2wE4AvZ8fI89DFc8E">10</span>面试话术 + 自测题</h2>
+  <p class="sub" data-page-node-id="PofnduovVUdu9FJjYO5HxA">先自己开口答，再展开对答案</p>
+
+  <div class="note" data-page-node-id="XGCTyzxu2ZGfzyoQPQXEuK">
+    <p data-page-node-id="FCsQ2ynDaXiGFLfRw5f9UT"><b data-page-node-id="N8jrRMuEpt47nrjPjkDvbZ">被问"接口关联你是怎么做的" —— 照着说</b></p>
+    <p data-page-node-id="HKlxV2xTLAVcd7IyigzwcX">"靠变量传递。上一个接口在 <b data-page-node-id="CLCvxnoE4kCe50XYnV8iRy">After response</b> 脚本里用 <code data-page-node-id="mHBEdIHg5aqsSPYs1C3AMt">pm.response.json()</code> 把需要的值取出来，用 <code data-page-node-id="GqPsD7XcR6hkftObsczwfW">pm.environment.set()</code> 存成环境变量；下一个接口在地址、请求头或者请求体里用双大括号引用这个变量，Postman 发送前会自动替换成真实值。"</p>
+    <p data-page-node-id="L1mPK4axbLFHYhJFFxP4Ft">"有两个点我会特别注意：<b data-page-node-id="LIvhxOSiec3n7cFW5NCqhO">一是不能用局部变量</b>，<code data-page-node-id="qUuKEQEUiWy6B6YKBEmn8Z">pm.variables.set()</code> 只在当前请求存活，跨不了请求；<b data-page-node-id="mPImi5kBTzm3tgMfrs5PVi">二是每个产出值的请求我都会加一条"取到值了吗"的断言</b>，否则值没取到的时候 Postman 会把 <code data-page-node-id="mZzrjuPxN30DRPFiBB1dqb">{{token}}</code> 原样发出去，报错点在下一个请求才暴露，很难查。"</p>
+    <p data-page-node-id="J0Qbl74gnBxvFj2JAP2BqW">"另外<b data-page-node-id="YkI8C2AuTjhlEupPLkfFTy">变量取出来永远是字符串</b>，跟响应里的数字直接比较会失败，要显式转一下类型。"</p>
+  </div>
+  <p data-page-node-id="3b6QGqKhakEbr1eTLrgJqM">这三段里，第二段和第三段是<b data-page-node-id="FDv65cAhbBoLPMvol7PqQD">别人答不出来的部分</b> —— 因为它们来自踩坑，不来自背文档。</p>
+
+  <h3 data-page-node-id="Sb1KSF7XkFwMQX94hEUdGa">自测题</h3>
+
+  <div class="qa" data-page-node-id="3uCwDeKZ5CY4EMtObJ4d2v">
+    <p class="q" data-page-node-id="HHJLed4vHy4efzbrULiOHM">1. 用一句话说清什么是接口关联。</p>
+    <details data-page-node-id="AYBcT63W3GhUG0UzHVEEoS">
+      <summary data-page-node-id="5AWRlitIQHZEPDmbrncEsm">看答题要点</summary>
+      <p class="a" data-page-node-id="2HiilNFjCX8YtKqIvVwGGc">上一个接口的响应内容，作为下一个接口的输入参数 —— 两个接口有先后依赖，必须串起来跑。</p>
+      <p class="a" data-page-node-id="0xVoYrVEcWS6bwMGtMSA2I"><b data-page-node-id="8uynppDvYhjY9ppMaF9HKK">加分说法</b>：它是"单接口测试"和"业务流测试"之间的那道门槛。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="2Cn4AOZp9VOSmO84BHH8zH">
+    <p class="q" data-page-node-id="g9BjCuqZHwNhktGHpi25m4">2. 关联的三个动作是什么？分别用什么代码？</p>
+    <details data-page-node-id="iI1ZLr875t4RYujHGRc66T">
+      <summary data-page-node-id="YR5uzHYqpTSf159cxkt5el">看答题要点</summary>
+      <p class="a" data-page-node-id="Puv6c09ydJAFkFrbyLvuwi"><b data-page-node-id="Mv68GkmHJMAqTPGTjsjliI">取</b>（<code data-page-node-id="7rDY6bJEOw23xklLILpHK7">pm.response.json()</code> 加字段路径）→ <b data-page-node-id="B7hGPC1EmRQb6YLt7PfMCm">存</b>（<code data-page-node-id="kegKsDUhvZ0SrWEPQEUciR">pm.environment.set("名", 值)</code>）→ <b data-page-node-id="5AtXsa0GUcdRM1e8lEjVnP">用</b>（下一个请求里写双大括号 <code data-page-node-id="Fz9a3h2rvZgt7KpSkyWBSz">{{名}}</code>）。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="YFn2TXOq8LGbgCc7dDokUF">
+    <p class="q" data-page-node-id="qUfPr9SgDbVz19ZcOrvK3y">3. <code data-page-node-id="qvaFpEtfXmmQ4ENLWOBI8t">pm.variables.set()</code> 能不能用来做关联？为什么？</p>
+    <details data-page-node-id="acXEOKTnhgQVBRGe8X0mES">
+      <summary data-page-node-id="bLtTW7rK8V5leO4mVNQA8O">看答题要点</summary>
+      <p class="a" data-page-node-id="4cdkokO73TJtosBALRMF8o"><b data-page-node-id="zSjAD4PtakBhgThx58ZSBU">不能。</b>它是局部变量，只在当前请求的执行过程中存活，脚本跑完就没了，<b data-page-node-id="zEoTS54Dm4r6Rk3Upr2UWl">跨不到下一个请求</b>。</p>
+      <p class="a" data-page-node-id="AD8ejKw2GjVZp8L3qnyQmM">做关联要用 <code data-page-node-id="Kx1wnjGtFZPc7mDtjAtN55">pm.environment.set()</code>（环境变量）、<code data-page-node-id="crpTJWFxFrg8TZnw49rRNk">pm.collectionVariables.set()</code>（集合变量）或 <code data-page-node-id="QxI4GpmATLmBlaRvUAUkjx">pm.globals.set()</code>（全局变量）。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="abpUwnOZiG84maMih2CEr4">
+    <p class="q" data-page-node-id="XFsl2kf0rNyPeTkWjmK7TK">4. 建了环境，为什么脚本还是报错说找不到环境？</p>
+    <details data-page-node-id="XqQJ4wIEsmbrp7OmTIcSiv">
+      <summary data-page-node-id="yXQ17BYgsOVG4uoZUShchn">看答题要点</summary>
+      <p class="a" data-page-node-id="2i4bP1ssHmVV3qfFbDeFFx">因为<b data-page-node-id="iGUmZrGud7YV6sE0pD0w8S">只是建了，没选中</b>。必须回右上角那个下拉框，把环境切换成你刚建的那个（原来是 <code data-page-node-id="sXDGweXkUeXfQcRbm1sG9E">No environment</code>）。</p>
+      <p class="a" data-page-node-id="5WiZSkHUjYyzKhBcwuOH8h">没选中的表现：<code data-page-node-id="xWjoycPsoDHFAOHgI5pBYI">pm.environment.set()</code> 报错，请求里 <code data-page-node-id="k364EFq4P7hIRFACn7rdP0">{{变量}}</code> 不被替换、原样显示。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="vDVZil9abayAae52IzH3CP">
+    <p class="q" data-page-node-id="gbubO1SKk5LYK1epc1VTxw">5. 变量里明明存了值，下一个请求却报 401，最常见的两个原因？</p>
+    <details data-page-node-id="gJ16RqouANTeRgPxCSdOtN">
+      <summary data-page-node-id="cCg8yvRu6WMWZ1eSw09m5g">看答题要点</summary>
+      <p class="a" data-page-node-id="gU9xsnvZq61pPMFlc59Az2"><b data-page-node-id="RkwUxtn99vifuX6KFIRh43">① 值压根没存进去</b>（存错了地方、环境没选中、取值的路径写错导致存进去是 undefined）。</p>
+      <p class="a" data-page-node-id="NA3wyAXKsf6nwN3S2vDozu"><b data-page-node-id="ZducR0feukDDbGAHiTPkPE">② 值存进去了，但引用时变量名拼错</b>（比如存的是 <code data-page-node-id="q5pwrhDVOmhl346bK0RDDq">token</code>，用的写成 <code data-page-node-id="g7tIWv2ps7CrolLhLCCyVf">{{Token}}</code>），Postman 把没解析的 <code data-page-node-id="NzZw0X93FV7Hpe9CqoXYDJ">{{...}}</code> 原样发出去，服务器自然不认。</p>
+      <p class="a" data-page-node-id="1ezukiieMwDG7gv4fgtFCr">排查方法：在 After response 里 <code data-page-node-id="fvA7IvCcfEWVFc15AbbUsp">console.log(pm.environment.get("token"))</code>，是 undefined 还是空字符串还是正常值，一眼定位。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="BYOftvWOcZe5BtgtiqX74x">
+    <p class="q" data-page-node-id="EOor6YT8Id0gi4ibGrnFq8">6. 为什么"产出值"的那个请求，必须加一条"取到值了吗"的断言？</p>
+    <details data-page-node-id="HGu9mXUvykLOQAarFNSAkS">
+      <summary data-page-node-id="HnaKpD25Dt1Zzoon5DlryJ">看答题要点</summary>
+      <p class="a" data-page-node-id="bq1XFAVK4hV1AHMYnWpFhu">因为如果不加，<b data-page-node-id="THvcWQzBV5rA0NqcKHBXpE">请求 1 会显示成功（它自己确实成功了），故障要等到请求 2 才爆发</b>，而请求 2 报的是 401/404 这种"看起来完全无关"的错，排查成本很高。</p>
+      <p class="a" data-page-node-id="usU7NGBGAHgYZUIekxRQG9">加了之后，故障在<b data-page-node-id="B1UVAWXt60eeb3sJpdzXxn">最靠近原因的地方</b>就暴露出来。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="vcrNdKXBAyHgls6CxgkCbd">
+    <p class="q" data-page-node-id="rLP2eRD3T8NqsS034IgSRi">7. 响应是数组时，想取第一条的 id，为什么 <code data-page-node-id="HISSRid1BGhHzlQWxMh4Jx">body.id</code> 取不到？</p>
+    <details data-page-node-id="2GrPD15B1RaAkKY016ktwY">
+      <summary data-page-node-id="kZwQmHg8JqTcfumymkDH7v">看答题要点</summary>
+      <p class="a" data-page-node-id="V4JoGuME22M4z3XEPGzFg7">因为 <code data-page-node-id="pVszE4F6NEQHNiiglovcy6">body</code> 是数组，数组本身没有 <code data-page-node-id="WLbhqkysQGofpGheCSlCQg">id</code> 字段，只有里面的元素有。要写 <code data-page-node-id="u4xrUzeHDCSNdoZoe08p8q">body[0].id</code>。</p>
+      <p class="a" data-page-node-id="GapArcTZNdunZjyRhBojq8">判断方法：响应体第一个字符是 <code data-page-node-id="AmAiBA3HuPpObh1YckDPQG">[</code> 就是数组，是 <code data-page-node-id="aeCT0rcSJ45clLTvB3OThP">{</code> 就是对象。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="rd44Z4FWOyGYikovtWiCQf">
+    <p class="q" data-page-node-id="ZSYmDiBr6NcDcAJLVvXPiu">8. 断言 <code data-page-node-id="5CHS1TazsHTXUGaYCBwAoz">pm.expect(post.id).to.eql(savedId)</code> 失败了，但两个值肉眼看一模一样，为什么？</p>
+    <details data-page-node-id="5ext6ULSeveuXcRYIxviAF">
+      <summary data-page-node-id="bRKKMw8TtYrcU0Eo8fH6uh">看答题要点</summary>
+      <p class="a" data-page-node-id="YFblpDPXoIaZLBq5hUciTQ">因为<b data-page-node-id="5CDhRXt8saTOlVCwgZPTGb">变量取出来永远是字符串</b>。响应里的 <code data-page-node-id="oFCno4ZtGpMeI6LETkvSyL">post.id</code> 是数字 <code data-page-node-id="eeYc65EUYMYkHkiCb1rC7j">1</code>，变量取出来是字符串 <code data-page-node-id="6Fq2WmkyW2PpHZdUnuwpNA">"1"</code>，<code data-page-node-id="lZXaRQwr3i2AQbFzwtfwgz">to.eql</code> 是严格比较，类型不同就不通过。</p>
+      <p class="a" data-page-node-id="wdX1C3m00X0FPNwkMeyYrP">解法：<code data-page-node-id="ozm6JH0nH05XLqQpnYGWcF">pm.expect(post.id).to.eql(Number(savedId))</code>，或改用 <code data-page-node-id="DJyRaKPshSQC6T30THlBDE">==</code> 比较。</p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="JrHxxdOtk4Gt7FTbFSv7SU">
+    <p class="q" data-page-node-id="POvlvZTtLMr9qiUzNNcJDD">9. 为什么不能在请求头里把 token 写死？说出两条后果。</p>
+    <details data-page-node-id="1eFWPZM9lk4vHIGO0ODQYt">
+      <summary data-page-node-id="2147TKHGAz5iVjOH1GzqGN">看答题要点</summary>
+      <p class="a" data-page-node-id="vT0cNqiQo0egtfPNznUddY"><b data-page-node-id="U1NDlYJxfFkZeGWk7Zca2X">①</b> token 会过期，过期后所有用例集体失败，得手工换一遍；<b data-page-node-id="oWymP9Zzqe79q7RFPrMDIy">②</b> 换环境（测试/预发）时不通用；<b data-page-node-id="iC5TcccnDKq9ciROJ2YYln">③</b> 没法接进 CI 自动跑。</p>
+      <p class="a" data-page-node-id="6CVTBifBBUCtG7Brwv1Wks">一句话总结：<b data-page-node-id="EiXWHZ1SDRoTzZfbRvZWgb">凡是会变的东西都不能写死。</b></p>
+    </details>
+  </div>
+
+  <div class="qa" data-page-node-id="ViFiEGv6t8rxZn01lQDghr">
+    <p class="q" data-page-node-id="iqGM5wtBF56z1dUlamshSP">10. 你想练"创建 → 用返回的 id 查详情"，在 JSONPlaceholder 上应该期待什么结果？为什么？</p>
+    <details data-page-node-id="tDr4eosFUP3O58bxuVSmKb">
+      <summary data-page-node-id="PfHWxSQH5XXiGTcsp3K0JQ">看答题要点</summary>
+      <p class="a" data-page-node-id="0tko5x0jkNtN5HjW0SEFCy">会拿到 <b data-page-node-id="F4x59gGmLexyi0Xof3xZXQ">404</b>。因为 JSONPlaceholder 是<b data-page-node-id="cs9CAQKFNio8QldGC1DNVr">假的演示接口，不真的存数据</b>：<code data-page-node-id="igXpNMvQZaTWRYZBQwUlnf">POST /posts</code> 返回假的 <code data-page-node-id="qzgKr8BoXEtYX8DhCADvSM">{"id": 101}</code>，但库里并没有这条记录，所以查不到。</p>
+      <p class="a" data-page-node-id="l7dygPm9u8ET8ik3FOD0k2">这不是你脚本的问题。要练这条链，需要找一个真存数据的服务。</p>
+    </details>
+  </div>
+</section>
+
+<div class="foot" data-page-node-id="jGl6m7EBJc5dmiCKdPmshp">
+  配套文件放在 <code data-page-node-id="xxQwbbibWQyS2QRnGb6o3b">api-test/</code> 目录下，与 <code data-page-node-id="IMDCrA8qyyxkg3u2PUdVdW">db-practice/</code>、<code data-page-node-id="HGWAvyoy6c877aNjig9ttQ">jira/</code> 同一套版式。<br data-page-node-id="tFyi736t3h7RgvZCgS2Mxe">
+  本文档中所有接口返回（401/200、嵌套字段路径、数组条数、404 行为）均已在用户本机真实请求验证，非推测。
+</div>
+
+</div>
+</body>
+</html>

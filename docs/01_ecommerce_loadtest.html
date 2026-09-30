@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>压测你自己的项目 · ecommerce-demo 首次压测报告</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+
+.result{margin:0 0 16px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.result .rh{
+  background:#f8f9fb;padding:7px 15px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);border-bottom:1px solid var(--line);
+}
+.result table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.result th,.result td{padding:7px 15px;text-align:left;border-bottom:1px solid #eef0f3}
+.result th{background:#fbfcfd;font-weight:500;color:var(--text-2);font-size:11.5px}
+.result tr:last-child td{border-bottom:none}
+.result td{color:var(--text-2)}
+.result td.hi{color:var(--red);font-weight:600}
+.result td.ok{color:var(--green);font-weight:600}
+
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details p{font-size:14px;margin-bottom:10px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .result table{font-size:11.5px}
+  .result th,.result td{padding:6px 9px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="kicker">JMeter 性能测试 · 第一次压自己的项目</div>
+  <h1>ecommerce-demo 压测报告</h1>
+  <p>这次压的不是教程里的练手接口，是你自己写的电商项目。下面每个数字都是跑出来的，标了出处；每个结论都能在面试里讲。</p>
+</div>
+
+<div class="toc">
+  <h3>目录</h3>
+  <ol>
+    <li><a href="#c0"><span class="n">0</span>这次压的是什么</a></li>
+    <li><a href="#c1"><span class="n">1</span>结果：三个接口横向对比</a></li>
+    <li><a href="#c2"><span class="n">2</span>结论一：并发不是线性关系</a></li>
+    <li><a href="#c3"><span class="n">3</span>结论二：拆开看才知道谁慢</a></li>
+    <li><a href="#c4"><span class="n">4</span>结论三：Connect Time 是 0 才对</a></li>
+    <li><a href="#c5"><span class="n">5</span>重要：dev 模式的 51 倍陷阱</a></li>
+    <li><a href="#c6"><span class="n">6</span>自测题</a></li>
+    <li><a href="#c7"><span class="n">7</span>下一步能做什么</a></li>
+  </ol>
+</div>
+
+<!-- ================= 0 ================= -->
+<section id="c0">
+  <h2><span class="n">0</span>这次压的是什么</h2>
+  <p class="sub">先明确靶子、规模和"为什么这么设计"。</p>
+
+  <div class="result">
+    <div class="rh">测试环境</div>
+    <table>
+      <tr><th>项目</th><td>ecommerce-demo（D:\ecommerce-demo）</td></tr>
+      <tr><th>技术栈</th><td>Next.js 16.3.4（App Router / Turbopack）+ Prisma 6 + MySQL 8</td></tr>
+      <tr><th>运行模式</th><td><b>dev 模式</b>（<code class="inline">next dev -p 3000</code>）← 后面第 5 节专门讲这个的影响</td></tr>
+      <tr><th>靶子地址</th><td>http://127.0.0.1:3000</td></tr>
+      <tr><th>数据</th><td>12 个商品、6 个分类、2 家店、3 个用户（seed 数据）</td></tr>
+      <tr><th>压测工具</th><td>Apache JMeter 5.6.3（JDK 21），命令行模式</td></tr>
+      <tr><th>并发规模</th><td>20 个并发用户 × 5 轮，三个接口各跑 100 次，合计 300 个请求</td></tr>
+    </table>
+  </div>
+
+  <h3>为什么选这三个接口</h3>
+  <p>它们代表三种完全不同的负载类型，放一起压才能看出区别：</p>
+  <ul>
+    <li><code class="inline">GET /api/health</code> —— <b>不查数据库</b>，只返回一段写死的 JSON。它的耗时几乎等于"框架本身的转发开销"，是天然的基线。</li>
+    <li><code class="inline">GET /api/products?page=1&amp;pageSize=10</code> —— <b>典型查库接口</b>。代码里是一次 <code class="inline">$transaction([count, findMany])</code>，同时算总数和取列表。</li>
+    <li><code class="inline">GET /</code> —— <b>首页 SSR</b>，最重的用户入口。整页服务端渲染，返回 <b>131 KB</b> HTML。</li>
+  </ul>
+
+  <div class="note">
+    <p><b>为什么压自己的项目，而不是随便找个网站？</b>两个原因。一是<b>压出问题你能改</b>——看到哪个接口慢，可以直接去翻代码；二是<b>想加多少并发都行</b>，本地服务压垮了也只是你自己的笔记本重启一下，不涉及任何第三方的生产系统。</p>
+  </div>
+</section>
+
+<!-- ================= 1 ================= -->
+<section id="c1">
+  <h2><span class="n">1</span>结果：三个接口横向对比</h2>
+  <p class="sub">这是 JMeter 聚合报告里那几行数据的原文。</p>
+
+  <div class="code-label">JMeter 命令行输出的总览</div>
+  <pre><code>summary =  300 in 00:00:16 =  18.7/s  Avg: 873  Min: 15  Max: 2419  Err: 0 (0.00%)</code></pre>
+
+  <div class="result">
+    <div class="rh">聚合报告（按接口分行）</div>
+    <table>
+      <tr>
+        <th>接口</th><th>请求数</th><th>平均响应</th><th>最快</th><th>最慢</th><th>错误率</th>
+      </tr>
+      <tr>
+        <td>/api/health</td><td>100</td><td>620 ms</td><td>15 ms</td><td>1484 ms</td><td class="ok">0.00%</td>
+      </tr>
+      <tr>
+        <td>/api/products</td><td>100</td><td>601 ms</td><td>20 ms</td><td>1524 ms</td><td class="ok">0.00%</td>
+      </tr>
+      <tr>
+        <td>/ 首页 SSR</td><td>100</td><td class="hi">1399 ms</td><td>178 ms</td><td class="hi">2419 ms</td><td class="ok">0.00%</td>
+      </tr>
+    </table>
+  </div>
+
+  <p>三个数字要一起读：</p>
+  <ul>
+    <li><b>300 个请求、16 秒跑完</b> → 吞吐量 <b>18.7 req/s</b>。这就是「每秒能处理多少请求」，面试里说的 TPS / QPS 就是这个位置。</li>
+    <li><b>错误率 0%</b> → 20 并发没有打崩你的服务。而且这个 0% 是<b>验过内容</b>的：每个接口都挂了断言（health 要含 <code class="inline">"status":"up"</code>，商品列表要含 <code class="inline">"total"</code>，首页要含 <code class="inline">&lt;!DOCTYPE html&gt;</code>），不是"请求发出去了没报错"就算过。</li>
+    <li><b>同一个"20 并发"，三个接口的平均响应差了 2.3 倍</b>（601 → 1399 ms）。往下看为什么。</li>
+  </ul>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2">
+  <h2><span class="n">2</span>结论一：并发不是线性关系</h2>
+  <p class="sub">这是性能测试里最反直觉、也最能体现你懂行的一条。</p>
+
+  <p>单发一个请求时，<code class="inline">/api/health</code> 只要 <b>38 毫秒</b>。加到 20 并发之后，它变成 <b>620 毫秒</b>——慢了 <b>16 倍</b>。</p>
+
+  <div class="result">
+    <div class="rh">同一个接口，不同压力下的表现</div>
+    <table>
+      <tr><th>场景</th><th>平均响应时间</th></tr>
+      <tr><td>单请求（1 个用户，无并发）</td><td>38 ms</td></tr>
+      <tr><td>20 个并发用户</td><td class="hi">620 ms</td></tr>
+    </table>
+  </div>
+
+  <p><b>为什么不是"20 倍压力 = 20 倍速度"？</b>因为服务端不是"20 个人各干各的"。Node.js 处理你的业务代码是<b>单线程</b>的：20 个请求同时到达，它们<b>排队</b>一个个被执行。第 20 个请求要等前面 19 个都处理完才开始——等待时间自然叠上去。</p>
+
+  <div class="note">
+    <p><b>这条经验的价值：</b>只看"单请求很快"是不能下结论的。一个接口单发 38ms，你可能觉得"性能很好"；但真实场景是几百个人同时刷，那时它是 620ms。<b>性能测试的全部意义就在于把并发加上去，看真实用户量下的表现。</b></p>
+    <p>面试被问到"你怎么判断一个接口有没有性能问题"，这就是标准回答路径：先测单请求基线 → 再加并发 → 看响应时间和错误率怎么变。</p>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3">
+  <h2><span class="n">3</span>结论二：拆开看才知道谁慢</h2>
+  <p class="sub">这里直接用到你上一讲学的 Connect Time / Latency / Load time 三个字段。</p>
+
+  <p>首页平均要 1399 毫秒，是 health 的 2.3 倍。但<b>"1399 毫秒"这一个数字说明不了任何问题</b>——是网络慢？是数据库慢？还是渲染慢？必须拆开。</p>
+
+  <div class="result">
+    <div class="rh">三个接口的耗时构成（平均值）</div>
+    <table>
+      <tr><th>接口</th><th>Connect Time</th><th>Latency<br>（到首字节）</th><th>Elapsed<br>（到末字节）</th><th>传输耗时<br>= Elapsed - Latency</th></tr>
+      <tr>
+        <td>/api/health</td><td>0.4 ms</td><td>620 ms</td><td>620 ms</td><td>0 ms</td>
+      </tr>
+      <tr>
+        <td>/api/products</td><td>0.0 ms</td><td>601 ms</td><td>601 ms</td><td>0 ms</td>
+      </tr>
+      <tr>
+        <td>/ 首页 SSR</td><td>0.0 ms</td><td>1254 ms</td><td class="hi">1399 ms</td><td class="hi">145 ms</td>
+      </tr>
+    </table>
+  </div>
+
+  <p>读出三件事：</p>
+  <ol>
+    <li><b>首页的大头在服务端</b>。1254 ms 的 Latency 意味着"服务器想了 1.25 秒才吐出第一个字节"——这段时间花在 React 服务端渲染 + 查数据库上。而最后那 145 ms 才是把 131 KB HTML 传给你的时间。</li>
+    <li><b>两个 JSON 接口的传输耗时几乎是 0</b>（响应体才 5 KB 上下，本地网络瞬间传完）。所以它们的耗时 <b>100% 是服务端处理</b>。</li>
+    <li><b>如果只盯着"总响应时间 1399ms"</b>，你可能会去优化网络、加 CDN、开压缩——全都优化错了地方。真正该看的是那 1254 ms 的服务端渲染。</li>
+  </ol>
+
+  <div class="note">
+    <p><b>这就是那三个字段的实战价值：</b>它把"一次请求"切成「建连接 / 服务器思考 / 数据传输」三段。哪段长，问题就出在哪。没有这个拆分，你只有一坨总数，根本不知道从哪下手。</p>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4">
+  <h2><span class="n">4</span>结论三：Connect Time 是 0 才对</h2>
+  <p class="sub">这条专门讲一个容易误判的地方。</p>
+
+  <p>看上面那张表：三个接口的平均 Connect Time 分别是 <b>0.4 ms / 0.0 ms / 0.0 ms</b>，几乎是零。新人第一反应往往是"这个字段是不是没采集到"或"数据坏了"。</p>
+
+  <p><b>不是坏了，这是正常且正确的。</b>看逐条样本就清楚了：</p>
+
+  <div class="code-label">/api/health 的前几条原始样本</div>
+  <pre><code>Connect=16   Latency=40    Elapsed=44
+Connect=1    Latency=15    Elapsed=15
+Connect=1    Latency=209   Elapsed=209
+Connect=0    Latency=114   Elapsed=114
+Connect=0    Latency=30    Elapsed=30
+Connect=0    Latency=371   Elapsed=371</code></pre>
+
+  <p><b>只有第一条有 Connect Time（16 ms），后面全是 0。</b>原因是 JMeter 默认开启 <code class="inline">keep-alive</code>（连接复用）：同一个线程第一次请求时建立 TCP 连接（所以有 16ms），之后这个连接<b>一直留着重复使用</b>，不再需要重新建连——所以 Connect Time 就是 0。</p>
+
+  <div class="warn note">
+    <p><b>反过来的场景要记住：</b>如果你压的是外网站点、或者每个请求都需要新建连接，Connect Time 就会明显起来。上一讲压 httpbingo.org 时它平均是 <b>730 ms</b>——因为那是真实的公网 TLS 握手。</p>
+    <p>所以判断标准是：<b>Connect Time 为 0 = 连接被复用了，这是好事</b>；突然变大 = 连接没有被复用，或者网络出问题了。这两种情况都是有意义的信号，需要能分辨。</p>
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5">
+  <h2><span class="n">5</span>重要：dev 模式的 51 倍陷阱</h2>
+  <p class="sub">这一节比前面所有数字都重要，它决定你会不会把时间花在错的地方。</p>
+
+  <p>压测开始前，我先单独访问了每个路由两遍。结果如下：</p>
+
+  <div class="result">
+    <div class="rh">同一个路由，连续访问两次</div>
+    <table>
+      <tr><th>路由</th><th>第 1 次访问</th><th>第 2 次访问</th><th>慢了多少倍</th></tr>
+      <tr><td>/api/health</td><td>2112 ms</td><td>8 ms</td><td class="hi">264×</td></tr>
+      <tr><td>/api/products</td><td>122 ms</td><td>32 ms</td><td>3.8×</td></tr>
+      <tr><td>/ 首页</td><td class="hi">8757 ms</td><td>171 ms</td><td class="hi">51×</td></tr>
+    </table>
+  </div>
+
+  <p>首页第一次要 <b>8.7 秒</b>，第二次只要 171 毫秒。<b>差的这 8.5 秒完全没有花在你的代码上</b>，而是 Turbopack 在编译这个路由。</p>
+
+  <div class="danger note">
+    <p><b>如果不预热就直接压，你会得到一份完全错误的报告。</b>第一个请求的 8.7 秒会把平均值拉高，然后你会得出"我的首页要好几秒"的结论，接着去优化数据库查询、优化 React 组件、加缓存——<b>而这些都是白费力气，因为真正的瓶颈是开发服务器的编译器。</b></p>
+    <p>所以本次压测的流程里<b>专门加了一步"预热"</b>：先手动把每个路由各访问一遍、等编译完成，再开始正式压测。上面那张对比表就是预热的依据。</p>
+  </div>
+
+  <h3>这不只是 dev 模式的问题</h3>
+  <p>"第一次慢、后面快"是所有服务端系统的通用现象，专业叫法是<b>冷启动（cold start）</b>。生产环境同样有，只是原因不同：</p>
+  <ul>
+    <li>JIT 编译器还没把热点代码编译成机器码（Java / JVM 系统尤其明显）</li>
+    <li>数据库连接池还没建立连接，第一个查询要现连</li>
+    <li>各种缓存（页面缓存、查询缓存、DNS 缓存）全是空的</li>
+  </ul>
+  <p>所以工业界的做法是：<b>压测报告里要注明"是否含预热"</b>，或者干脆丢掉最初的一批样本。你以后看别人的性能报告，第一件事就是确认这一条。</p>
+
+  <div class="warn note">
+    <p><b>关于本次数据的适用范围，必须说清楚：</b>上面所有数字（620ms / 601ms / 1399ms）都是 <b>dev 模式</b>下的。dev 模式为了快速热更新，关掉了大量生产优化，React 跑的是开发版本，页面体积也更大。<b>真实生产环境会比这个快得多。</b></p>
+    <p>所以这份数据的作用是<b>学会方法、看清趋势、找出相对最慢的接口</b>，不能当成"我这个项目性能就是 1399ms"的对外基线。要一个能写进汇报的基线，得用 <code class="inline">next build &amp;&amp; next start</code> 的生产模式重新压一次（见第 7 节）。</p>
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6">
+  <h2><span class="n">6</span>自测题</h2>
+  <p class="sub">盖住上面，先自己说一遍。这些就是面试会问的形状。</p>
+
+  <div class="ex">
+    <div class="ex-h">口述回答，每题 30 秒～1 分钟</div>
+    <ol>
+      <li>压测开始前，为什么一定要先预热一遍要压的路由？不预热会出现什么后果？</li>
+      <li>同一个接口，单请求 38 毫秒，20 并发下变成 620 毫秒。这个现象说明什么？为什么不是线性的？</li>
+      <li>首页跑了 1399 毫秒，你怎么判断这 1399 毫秒是"服务器慢"还是"网络传输慢"？看哪个字段？</li>
+      <li>聚合报告里 Connect Time 平均 0 毫秒，这是数据错了吗？如果它突然变成 500 毫秒，你会怎么判断？</li>
+      <li>如果你要给这个项目定一个能对外汇报的性能基线，现在这份数据能用吗？为什么？</li>
+    </ol>
+
+    <details>
+      <summary>想好了再点开对答案</summary>
+
+      <div class="ans-li">1. 为什么必须先预热？</div>
+      <p>因为服务端有"冷启动"开销——dev 模式下是编译器要在首次访问时编译路由（首页 8.7 秒 vs 171 毫秒，差 51 倍），生产环境是 JIT 编译、连接池建立、缓存未命中等。不预热的话，你测到的是<b>启动开销</b>而不是<b>服务真实性能</b>，会得出"我的接口很慢"的错误结论，然后去优化根本不存在的瓶颈。做法：正式压测前把每个目标路由各访问一两遍，等它稳定下来。</p>
+
+      <div class="ans-li">2. 38ms → 620ms 说明什么？</div>
+      <p>说明服务端处理能力有限，请求在<b>排队</b>。Node.js 执行业务代码是单线程的，20 个并发请求要依次被处理，后来的请求要等前面的完成，等待时间会累积。所以<b>并发数增加时响应时间不是线性增长，而是加速恶化</b>。这条经验的价值在于：只看单请求快不能说明性能好，必须把并发加上去测。</p>
+
+      <div class="ans-li">3. 1399ms 里服务器慢还是传输慢？</div>
+      <p>看 <code class="inline">Latency</code>（到第一个字节的时间）和 <code class="inline">Elapsed</code>（到最后一个字节的时间）的差。首页是 Latency 1254ms、Elapsed 1399ms，<b>差值 145ms 是传输 131KB HTML 的时间，剩下 1254ms 全是服务器在想</b>——即 React 服务端渲染加数据库查询。所以瓶颈在服务端渲染，不是网络。</p>
+
+      <div class="ans-li">4. Connect Time 是 0，正常吗？</div>
+      <p>正常。JMeter 默认开启 keep-alive 连接复用：每个线程第一次请求建立 TCP 连接（样本里能看到第一条是 16ms），之后这个连接被反复使用，不需要重新建连，所以 Connect Time 记为 0。如果它突然变成几百毫秒，说明连接没有被复用（比如服务端主动断开、或换了目标），那才是异常信号，要顺着查。</p>
+
+      <div class="ans-li">5. 这份数据能当对外基线吗？</div>
+      <p>不能。因为是 <b>dev 模式</b>的数字——dev 为了热更新关闭了大量生产优化，React 跑开发版本，页面体积更大。它的用途是学方法、看趋势、横向比较哪个接口最慢。要用生产模式（<code class="inline">next build</code> 然后 <code class="inline">next start</code>）重新压一遍，得到的才是能写进报告的基线。</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="c7">
+  <h2><span class="n">7</span>下一步能做什么</h2>
+  <p class="sub">三个方向，按价值排序。</p>
+
+  <h3>① 阶梯加压，找"拐点"</h3>
+  <p>这次只试了 20 并发一个点。真正的性能测试要做<b>阶梯加压</b>：10 → 20 → 50 → 100 并发各压一轮，观察响应时间和错误率在哪一档开始明显变坏。那个开始变坏的并发数，就是这套服务在当前配置下的<b>容量拐点</b>——这才是性能测试最值钱的产出。</p>
+
+  <h3>② 出一份生产模式的基线</h3>
+  <p>先 <code class="inline">npm run build</code>，再用 <code class="inline">npm start</code> 启动，然后重压一次。这次的数字会和 dev 模式差很多，那个才是真实性能。有了这个，你才敢说"我这个项目首页在 N 并发下平均 X 毫秒"。</p>
+
+  <h3>③ 压带业务逻辑的接口</h3>
+  <p>这次压的三个都是<b>读接口</b>（GET），不会改数据。往下可以压真正重的写链路——比如下单 <code class="inline">POST /api/orders</code>，它涉及事务、条件扣库存、幂等键抢占。但要注意两点：需要登录态（JMeter 要加 Cookie 管理器），而且<b>会真的写数据</b>，压完得清理。</p>
+
+  <div class="note">
+    <p><b>现在你手上有什么：</b>一套能反复使用的压测流程（启动项目 → 预热 → 压 → 看报告 → 关掉），三个已经写好的测试计划，以及这份记录了方法和坑的报告。下次想压，双击两个文件就行，具体见本文件所在目录的 <code class="inline">启动电商项目.bat</code> 和 <code class="inline">压测3-电商项目.bat</code>。</p>
+  </div>
+</section>
+
+<div class="foot">
+  ecommerce-demo 首次压测 · JMeter 5.6.3 · 2026-09-24<br>
+  所有数据均为本机实测，非估算
+</div>
+
+</div>
+</body>
+</html>

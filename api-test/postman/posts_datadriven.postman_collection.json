@@ -1,0 +1,61 @@
+{
+  "info": {
+    "_postman_id": "1f2a3b4c-5d6e-4f70-8a91-000000000001",
+    "name": "api-test-data-driven",
+    "description": "接口测试练习 - CSV 数据驱动。请求模板：GET /posts?userId={{userId}}，配合 posts_by_user.csv 用 Collection Runner 跑 8 次迭代。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "posts-by-user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://jsonplaceholder.typicode.com/posts?userId={{userId}}",
+          "protocol": "https",
+          "host": [
+            "jsonplaceholder",
+            "typicode",
+            "com"
+          ],
+          "path": [
+            "posts"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
+        },
+        "description": "按 userId 查询帖子列表。userId 由 CSV 数据文件的 userId 列提供。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var body = pm.response.json();",
+              "",
+              "var caseName  = pm.variables.get('caseName')             || 'single-run';",
+              "var expStatus = Number(pm.variables.get('expectedStatus') || 200);",
+              "var expCount  = Number(pm.variables.get('expectedCount')  || 10);",
+              "",
+              "pm.test(caseName + ' | status should be ' + expStatus, function () {",
+              "    pm.response.to.have.status(expStatus);",
+              "});",
+              "",
+              "pm.test(caseName + ' | count should be ' + expCount, function () {",
+              "    pm.expect(body.length).to.eql(expCount);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "variable": []
+}

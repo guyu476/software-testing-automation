@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JMeter · 录制、监控与命令行报告</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+/* ---- 页头 ---- */
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+/* ---- 目录 ---- */
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+/* ---- 章节 ---- */
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+/* ---- 代码块 ---- */
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+
+/* ---- 提示块 ---- */
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+
+/* ---- 预期结果 ---- */
+.result{margin:0 0 16px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.result .rh{
+  background:#f8f9fb;padding:7px 15px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);border-bottom:1px solid var(--line);
+}
+.result table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.result th,.result td{padding:6px 15px;text-align:left;border-bottom:1px solid #eef0f3}
+.result th{background:#fbfcfd;font-weight:500;color:var(--text-2);font-size:11.5px}
+.result tr:last-child td{border-bottom:none}
+.result td{color:var(--text-2)}
+.result .null{color:#b0b6bd;font-style:italic}
+
+/* ---- 练习 ---- */
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details pre{margin-bottom:12px}
+.hint{font-size:13px;color:var(--text-3);margin:0 0 10px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+/* ---- 页脚 ---- */
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="kicker">JMeter 第二讲 · 性能测试</div>
+  <h1>录制、监控与命令行报告</h1>
+  <p>这一讲解决三个问题：怎么把浏览器上的操作变成 JMeter 脚本、怎么在压测时看到指标、怎么生成那份能发给别人的网页报告。文末有一份「录制后必做的四步」清单和一个真实案例复盘 —— 里面有一半是他自己录出来的坑。</p>
+</div>
+
+<div class="toc">
+  <h3>目录</h3>
+  <ol>
+    <li><a href="#c0"><span class="n">0</span>先想清楚：录制到底给你什么</a></li>
+    <li><a href="#c1"><span class="n">1</span>录制器与证书：什么时候需要</a></li>
+    <li><a href="#c2"><span class="n">2</span>为什么浏览器录不到本地项目</a></li>
+    <li><a href="#c3"><span class="n">3</span>录到了什么：一次真实的录制复盘</a></li>
+    <li><a href="#c4"><span class="n">4</span>拿到脚本后的四步加工</a></li>
+    <li><a href="#c5"><span class="n">5</span>监控：监听器怎么选、挂在哪</a></li>
+    <li><a href="#c6"><span class="n">6</span>聚合报告：每个字段怎么读</a></li>
+    <li><a href="#c7"><span class="n">7</span>命令行跑压测 + 生成 HTML 报告</a></li>
+    <li><a href="#c8"><span class="n">8</span>面试问答：这一讲能考什么</a></li>
+  </ol>
+</div>
+
+<section id="c0">
+  <h2><span class="n">0</span>先想清楚：录制到底给你什么</h2>
+  <p class="sub">不想清楚这一点，录下来的东西基本都是废的</p>
+
+<p>录制的原理一句话：<b>JMeter 把自己变成一个代理服务器，浏览器的每个请求都得先经过它，它顺手抄一份下来。</b></p>
+
+<p>所以录制能给你的只有一件事 —— <b>请求骨架</b>：</p>
+<ul>
+  <li>URL 长什么样（路径、查询参数）</li>
+  <li>用什么方法（GET / POST）</li>
+  <li>请求头带了什么（Cookie、Content-Type、User-Agent）</li>
+  <li>POST 的请求体长什么样</li>
+</ul>
+
+<p>它<b>给不了</b>你的是：</p>
+<ul>
+  <li><b>判断对错的能力</b> —— 录下来的请求没有断言，JMeter 默认只看 HTTP 状态码</li>
+  <li><b>可变的数据</b> —— 录的时候参数是什么，跑的时候还是什么</li>
+  <li><b>干净的清单</b> —— 浏览器发什么它就抄什么，图片、JS、统计脚本一个不落</li>
+</ul>
+
+<div class="note warn">
+  <p><b>一句话总结：录制是「省手抄」，不是「省思考」。</b>该录的场景是「探索一个不熟悉的系统、快速拿到接口清单」；该手写的场景是「压测、要参数化、有接口文档」。你现在做的是压测 —— 所以录制的价值主要在<b>第一轮摸底</b>，最终还是要自己收拾干净。</p>
+</div>
+
+</section>
+
+<section id="c1">
+  <h2><span class="n">1</span>录制器与证书：什么时候需要</h2>
+  <p class="sub">这一个元件是自带的，那张证书是有条件的</p>
+
+<h3>元件本身：不用装任何插件</h3>
+<p><code class="inline">HTTP(S) 测试脚本记录器</code> 是 JMeter <b>自带元件</b>，跟「线程组」「HTTP 请求」是同一个级别的东西。装 JMeter 的时候它就在了。</p>
+
+<div class="note ok">
+  <p>这点跟 Fiddler 不一样：Fiddler 要看某种报文格式得去找查看器扩展，JMeter 的录制器开箱即用。</p>
+</div>
+
+<h3>证书：只有录 https 才需要</h3>
+
+<div class="result">
+  <div class="rh">录制的目标协议 vs 要不要装证书</div>
+  <table>
+    <tr><th>目标地址</th><th>要装证书吗</th><th>原因</th></tr>
+    <tr><td>http:// 开头</td><td>不需要</td><td>明文进出，代理直接可读</td></tr>
+    <tr><td>https:// 开头</td><td><b>需要</b></td><td>加密内容，代理必须先「冒充」目标站点，浏览器才肯解密交出</td></tr>
+  </table>
+</div>
+
+<p>「冒充」这件事靠的是：录制器<b>当场生成一张根证书</b>，再把这张根证书装进系统的「受信任的根证书颁发机构」。装了之后，浏览器才承认录制器临时签发的站点证书是合法的。</p>
+
+<p>这张证书<b>不用去外面下</b>。点录制器面板上 <b><code class="inline">State</code> 那一行的绿色「启动」按钮</b>时，JMeter 会弹一个提示框，同时把证书写到你 JMeter 的 <code class="inline">bin</code> 目录下。文件名和用途：</p>
+
+<div class="result">
+  <div class="rh">点「启动」后 bin 目录多出的文件</div>
+  <table>
+    <tr><th>文件</th><th>大小参考</th><th>是什么</th></tr>
+    <tr><td>ApacheJMeterTemporaryRootCA.crt</td><td>~1.6 KB</td><td><b>要装到系统里的就是它</b></td></tr>
+    <tr><td>ApacheJMeterTemporaryRootCA.usr</td><td>~1.6 KB</td><td>同一张证书的副本（JMeter 内部用）</td></tr>
+    <tr><td>proxyserver.jks</td><td>~8 KB</td><td>JMeter 自己的密钥库，<b>别删别动</b></td></tr>
+  </table>
+</div>
+
+<div class="note warn">
+  <p><b>弹窗里三条容易漏掉的信息（原文要点）：</b></p>
+  <p>1. 证书<b>有效期只有 7 天</b>。过期了要重新生成、重新装。<br>
+  2. 原文 <span style="font-family:var(--mono);font-size:13px">"if the created one is newer than the last one you installed, ensure you remove the old one and install the new one"</span> —— 意思是<b>这张证书是可以反复生成的</b>，如果你后来生成的比之前装的更新，就要先把旧的卸掉再装新的，否则系统里会堆一堆同名证书，以后排障很痛苦。<br>
+  3. 弹窗会给你三条核对信息：<code class="inline">CN=</code> 里带 <code class="inline">OU=Username: 你的用户名</code>、一串 <code class="inline">Fingerprint(SHA1)</code>、以及 <code class="inline">Created</code> 时间。<b>装之前核对这三项，确认装的是自己这台机器生成的证书。</b></p>
+</div>
+
+<div class="note danger">
+  <p>证书名字里那句全大写的 <b>INSTALL ONLY IF IT S YOURS</b> 不是客套话。装了别人机器生成的根证书，等于把那台机器能解密的所有流量都交出去 —— 你装之前会看到它。</p>
+</div>
+
+<h3>顺手记住：端口 8888 是共用的</h3>
+<p>JMeter 录制器默认监听 <b>8888</b>，这跟 Fiddler 是同一个端口。所以 <b>这两个工具不能同时开录制</b>，谁先启动谁占住，后开的那个会因为端口被占用起不来（或者悄悄失败）。</p>
+
+</section>
+
+<section id="c2">
+  <h2><span class="n">2</span>为什么浏览器录不到本地项目</h2>
+  <p class="sub">录本地是经典坑，不是你的操作问题</p>
+
+<p>假设你要录 <code class="inline">http://127.0.0.1:3000/</code>。录制器启动了、端口也配了、浏览器代理也设了 —— 结果录制器里<b>一条都不多</b>。</p>
+
+<p>原因不在 JMeter，在<b>「代理绕过列表」</b>。</p>
+
+<h3>两层绕过，都得注意</h3>
+
+<div class="result">
+  <div class="rh">localhost / 127.0.0.1 的两层特殊性</div>
+  <table>
+    <tr><th>层面</th><th>发生了什么</th></tr>
+    <tr><td>Windows 系统代理设置</td><td>「不对以下列表中的地址使用代理服务器」这一栏，默认就含 <code class="inline">localhost;127.0.0.1</code></td></tr>
+    <tr><td>浏览器自己的代理逻辑</td><td>浏览器普遍硬编码：指向本机的请求不走代理</td></tr>
+  </table>
+</div>
+
+<p>结果是请求<b>绕过 8888 直接发出去了</b>，录制器自然看不到。</p>
+
+<h3>绕开它：用 curl 强制走代理</h3>
+<p>要验证「录制器到底能不能记下东西」，最省事的办法是用 <code class="inline">curl</code>。<b>curl 不看系统的绕过列表</b>，你用 <code class="inline">-x</code> 指定了它就一定走。</p>
+
+<p class="hint">在命令行窗口里执行（本机 PATH 里没有 curl，所以写全路径）：</p>
+<pre><code>"C:\Windows\System32\curl.exe" -x http://127.0.0.1:8888 http://127.0.0.1:3000/api/products</code></pre>
+
+<p>执行完回到 JMeter，看左边元件树 —— 应该多出一条 <code class="inline">/api/products</code> 记录。</p>
+
+<div class="note">
+  <p><b>为什么推荐先用这一步？</b>因为它把三个变量一次性排除了：不用装证书、不用改浏览器代理、不用跟绕过列表较劲。你要先亲眼看到「<b>经过 8888 的请求会被记下来</b>」这一件事，才轮到解决「怎么让浏览器也走 8888」。</p>
+  <p>如果这时<b>一条都不多</b>，那问题在录制器本身（没启动成功 / 端口没监听），跟浏览器一点关系都没有。</p>
+</div>
+
+<h3>换一个不是 localhost 的靶子，问题自然消失</h3>
+<p>如果靶子是<b>服务器的 IP 或域名</b>（比如 <code class="inline">http://119.45.177.154:3000/</code>），那它既不在绕过列表里、也不是「指向本机」，代理设置直接生效，<b>这个坑整个不存在</b>。</p>
+
+<div class="note ok">
+  <p>结论：<b>想练浏览器录制，用远程地址最省事；非要在本地录，就得显式调整绕过列表，或者干脆放弃浏览器、改用 curl / Postman 直接发请求过代理。</b></p>
+</div>
+
+</section>
+
+<section id="c3">
+  <h2><span class="n">3</span>录到了什么：一次真实的录制复盘</h2>
+  <p class="sub">这是真事，不是假设的场景</p>
+
+<p>下面这份数据来自一次真实录制：靶子是本地某电商项目（Next.js 服务端渲染），用真实浏览器走了一遍商品详情页。</p>
+
+<div class="result">
+  <div class="rh">浏览器发出的请求 vs 其中的业务接口</div>
+  <table>
+    <tr><th>访问的页面</th><th>浏览器发出的请求数</th><th>其中 /api/* 业务接口</th><th>传输量</th></tr>
+    <tr><td>首页 /</td><td>34</td><td><b>0</b></td><td>1397 KB</td></tr>
+    <tr><td>商品详情 /products/1</td><td>27</td><td><b>0</b></td><td>1502 KB</td></tr>
+  </table>
+</div>
+
+<p>首页那 34 条的构成：<b>17 条前端框架的 JS/CSS 分包 + 16 条商品图片 + 1 条 HTML 文档</b>。</p>
+
+<p><b>一条业务接口都没有。</b>如果你直接拿这份录下来的东西去做压测，压的是「JS 和图片的分发」，跟你的业务逻辑没关系 —— 压出来的漂亮数字毫无意义。</p>
+
+<h3>为什么是 0 条：SSR 与 CSR 的区别</h3>
+
+<p>这是本讲最值得记住的一个概念。</p>
+
+<div class="result">
+  <div class="rh">服务端渲染 vs 客户端渲染：浏览器会调接口吗</div>
+  <table>
+    <tr><th>渲染方式</th><th>数据从哪来</th><th>浏览器打开页面时会调 /api/* 吗</th></tr>
+    <tr><td><b>服务端渲染（SSR）</b></td><td>服务器提前把数据取好，直接「烙」进 HTML</td><td><b>不会</b></td></tr>
+    <tr><td><b>客户端渲染（CSR）</b></td><td>浏览器加载后自己用 fetch 去要数据</td><td><b>会</b></td></tr>
+  </table>
+</div>
+
+<p>所以录制器能不能录到接口，取决于你访问的<b>是哪种页面</b>：</p>
+<ul>
+  <li>SSR 页面（首页、商品详情、店铺页）→ 录到的是 HTML + 一堆静态资源</li>
+  <li>CSR 页面（登录、购物车、订单、收藏）→ 能录到 <code class="inline">/api/*</code>，但通常<b>需要登录态</b></li>
+</ul>
+
+<div class="note warn">
+  <p><b>怎么自己判断一个页面是哪种？</b>不用看代码，看现象：打开页面，如果 URL 一进去内容就全了（没有「加载中」的一瞬间），多半是 SSR；如果先进去再「刷一下」内容才出来，那就是 CSR —— <b>这一下就是它在发接口请求</b>。</p>
+</div>
+
+</section>
+
+<section id="c4">
+  <h2><span class="n">4</span>拿到脚本后的四步加工</h2>
+  <p class="sub">录制只完成了一半，这四步才是测试的活</p>
+
+<p>假设你已经录到一份能跑的脚本。下面是必须做的四步，顺序别乱。</p>
+
+<h3>第一步：过滤静态资源</h3>
+<p>录制器面板里有一个 <b>「URL 模式」</b>相关的输入区（在面板中下部，标签含 <code class="inline">URL Patterns to Exclude</code>）—— 在这里填正则，把不想录的挡在外面。</p>
+
+<p class="hint">常见的几类该排除的：</p>
+<pre><code>图片  \.(png|jpg|jpeg|gif|svg|webp|ico)
+样式  \.css
+脚本  \.js
+字体  \.(woff2?|ttf|eot)</code></pre>
+
+<div class="note">
+  <p><b>已经录进来的怎么办？</b>不用一条条删。在元件树上按住 <b>Ctrl</b> 多选、或按住 <b>Shift</b> 选一片，然后右键 → <code class="inline">删除</code>。或者右键 → <code class="inline">禁用</code>（禁用比删除安全，出问题还能恢复）。</p>
+</div>
+
+<h3>第二步：参数化</h3>
+<p>录下来的参数是<b>字面量</b>。比如录的时候商品 ID 是 2，跑起来 100 次全都是 2 —— 这就不叫压力测试了，叫「对同一个商品查 100 次」。</p>
+
+<p>参数化的最小做法：把死值换成变量，再用 <code class="inline">CSV 数据文件设置</code> 喂不同的值。这属于第三讲的内容，这里先知道「必须做」就行。</p>
+
+<div class="note warn">
+  <p><b>一个真实的例子：</b>录制某项目的「加入购物车」请求，请求体长这样：<br>
+  <code class="inline">{"productId": 2, "quantity": 1}</code><br>
+  这两个数字都是录下来的那一刻的值。<b>productId 必须参数化</b>，否则你永远在压同一个商品。</p>
+</div>
+
+<h3>第三步：关联</h3>
+<p>上一个请求返回的东西，被下一个请求用上 —— 这个传递动作叫<b>关联</b>。</p>
+
+<p>典型场景：登录接口返回一个 token，后续所有接口都要在请求头里带这个 token。录的时候 token 是<b>当时那一个</b>，你直接跑，token 早就失效了 → 全部请求返回 401。</p>
+
+<p>做法是「三个动作」：<b>取出来（后置处理器）→ 存成变量 → 用的时候引用变量</b>。</p>
+
+<h3>第四步：加断言</h3>
+<p><b>这一步最容易被跳过，也最致命。</b></p>
+
+<div class="note danger">
+  <p><b>JMeter 默认只检查 HTTP 状态码。</b>服务器返回一个内容全错的页面，只要状态码是 200，JMeter 就判定「成功」。<br>
+  于是你的聚合报告上显示 <b>Error 0%</b> —— 这个数字是假的，它只说明「服务器还活着并且回了包」，什么都没证明。</p>
+</div>
+
+<p class="hint">加断言的路径（右键元件）：</p>
+<pre><code>右键「HTTP 请求」
+  → 添加
+    → 断言
+      → 响应断言</code></pre>
+
+<p>常用的两种断言字段：</p>
+
+<div class="result">
+  <div class="rh">响应断言的两个关键字段</div>
+  <table>
+    <tr><th>要测的字段</th><th>用途</th><th>测试模式填什么</th></tr>
+    <tr><td>响应文本</td><td>检查响应体里有没有某个关键词</td><td>比如 <code class="inline">"code":0</code></td></tr>
+    <tr><td>响应代码</td><td>检查状态码</td><td>比如 <code class="inline">200</code></td></tr>
+  </table>
+</div>
+
+<div class="note warn">
+  <p><b>填「响应文本」的判断串时，就填你在响应里能看到的原样字符</b>，不要加正则里的 <code class="inline">\b</code>、<code class="inline">.*</code> 这类符号 —— 那个输入框默认按「包含/匹配」处理文本，不按正则处理。多打两个字符，断言就会永远失败，而你会以为是服务器的问题。</p>
+</div>
+
+</section>
+
+<section id="c5">
+  <h2><span class="n">5</span>监控：监听器怎么选、挂在哪</h2>
+  <p class="sub">这就是「仪表盘」，是 JMeter 自带的元件</p>
+
+<p>性能测试里说的「监控」，在 JMeter 的语境下就是<b>监听器</b>：它负责收集取样结果、并把结果呈现出来。跟「线程组」「断言」是同一类元件。</p>
+
+<h3>先搞清楚挂在哪</h3>
+<p>元件树是有层级的，监听器挂的位置决定它能收到哪些请求：</p>
+
+<pre><code>测试计划
+└── 线程组
+    ├── HTTP 请求 1
+    ├── HTTP 请求 2
+    └── [监听器挂这层]        ← 最常用：能看到这个线程组的所有请求
+</code></pre>
+
+<div class="result">
+  <div class="rh">监听器的三种挂法</div>
+  <table>
+    <tr><th>挂在哪</th><th>效果</th></tr>
+    <tr><td>线程组下面（与请求平级）</td><td><b>只管这个线程组</b> —— 最常用，层次清楚</td></tr>
+    <tr><td>测试计划根下</td><td>管所有线程组 —— 多个线程组要汇总时用</td></tr>
+    <tr><td>某个请求下面</td><td><b>只管这一个请求</b> —— 想单独盯住某个接口时用</td></tr>
+  </table>
+</div>
+
+<h3>常用的几个，以及该什么时候用</h3>
+
+<div class="result">
+  <div class="rh">监听器选型</div>
+  <table>
+    <tr><th>监听器</th><th>看什么</th><th>什么时候用</th><th>开销</th></tr>
+    <tr><td><b>聚合报告</b></td><td>汇总数字表格</td><td><b>压测的主力</b>，几乎总开着</td><td>很小</td></tr>
+    <tr><td>查看结果树</td><td>每条请求的请求/响应全文</td><td>脚本还没跑通、断言失败了要排查</td><td><b>很大</b></td></tr>
+    <tr><td>响应时间图</td><td>响应时间随时间的曲线</td><td>找「什么时候开始变慢」的拐点</td><td>中</td></tr>
+    <tr><td>聚合图 / 汇总报告</td><td>与聚合报告类似的不同呈现</td><td>可选，别重复加</td><td>小</td></tr>
+  </table>
+</div>
+
+<div class="note warn">
+  <p><b>「查看结果树」是内存杀手。</b>它会把<b>每一个请求和每一个响应的完整内容</b>都留在内存里。跑几十个请求无所谓，一旦上到几万请求，JMeter 自己会先撑不住 —— 而「JMeter 卡住」和「服务器变慢」在结果里长得很像，你根本分不清。</p>
+  <p><b>做法：压测前右键它 → 禁用。</b>它是调试工具，不是压测工具。</p>
+</div>
+
+</section>
+
+<section id="c6">
+  <h2><span class="n">6</span>聚合报告：每个字段怎么读</h2>
+  <p class="sub">这张表是性能测试的核心，读不懂它等于白压</p>
+
+<p>聚合报告是一张多列表格，每行一个请求标签，最后一行是总体。列的含义：</p>
+
+<div class="result">
+  <div class="rh">聚合报告字段速查</div>
+  <table>
+    <tr><th>列名</th><th>含义</th><th>怎么用</th></tr>
+    <tr><td>Label</td><td>取样器的名字</td><td>建议自己改成有意义的名字，否则报告没法读</td></tr>
+    <tr><td># Samples</td><td>这个标签发了多少个请求</td><td>校验规模对不对</td></tr>
+    <tr><td>Average</td><td>平均响应时间（ms）</td><td>最直观，但<b>容易被极端值拉偏</b></td></tr>
+    <tr><td>Median</td><td>中位数（50% 的请求快于它）</td><td>比平均值更抗干扰</td></tr>
+    <tr><td><b>90% Line</b></td><td>90% 的请求快于这个值</td><td><b>关键指标</b>：平均值好看但 90% 线难看，说明有相当一部分用户很慢</td></tr>
+    <tr><td>95% / 99% Line</td><td>同上，不同分位</td><td>高要求场景看这个</td></tr>
+    <tr><td>Min / Max</td><td>最快 / 最慢</td><td>看波动幅度</td></tr>
+    <tr><td><b>Error %</b></td><td>失败比例</td><td><b>不加断言时这个数字没有意义</b></td></tr>
+    <tr><td><b>Throughput</b></td><td>吞吐量，右侧标注单位</td><td><b>这就是 TPS/RPS</b>，压测的核心产出</td></tr>
+    <tr><td>Received KB/sec</td><td>每秒收到的数据量</td><td>带宽是不是瓶颈</td></tr>
+  </table>
+</div>
+
+<div class="note">
+  <p><b>两个最实用的判读习惯：</b></p>
+  <p>1. <b>先看 Error % 再说别的。</b>错误率高的时候，所有的响应时间数字都没意义（快速失败也是一种「快」）。<br>
+  2. <b>Throughput 那一列有三个同名项</b>，是同一指标按「每秒 / 每分钟 / 每小时」三种口径给出的，读的时候确认单位，别当成三个指标。</p>
+</div>
+
+<h3>平均值 vs 90% Line：一个必须讲清的例子</h3>
+<table class="tbl">
+  <tr><td><b>平均值 200ms</b></td><td>听起来很好</td></tr>
+  <tr><td><b>90% Line 1500ms</b></td><td>但有 10% 的用户等了 1.5 秒以上 —— 换个说法：100 个人里有 10 个人觉得很卡</td></tr>
+</table>
+
+<div class="note ok">
+  <p><b>面试点：</b>「为什么不能只看平均响应时间？」—— 答「平均值会被少数极端值拉偏，也掩盖了长尾；要看 90%/95% 分位，才能知道差的那部分用户体验有多差」。</p>
+</div>
+
+</section>
+
+<section id="c7">
+  <h2><span class="n">7</span>命令行跑压测 + 生成 HTML 报告</h2>
+  <p class="sub">官方要求的做法，也是生成那份报告的唯一途径</p>
+
+<h3>为什么必须用命令行</h3>
+<p>JMeter 官方文档原话：</p>
+<blockquote style="margin:0 0 16px;padding:13px 17px;background:var(--blue-bg);border-left:3px solid var(--blue-line);border-radius:0 8px 8px 0;font-size:14px;color:#123a63">
+  GUI mode should only be used for creating the test script, CLI mode (NON GUI) must be used for load testing.
+</blockquote>
+
+<p><b>道理很实在：</b>界面本身开着图形面板、实时画图，<b>它自己要吃掉一部分 CPU 和内存</b>。压测的时候，你分不清响应时间变长是因为服务器扛不住了，还是因为你自己的 JMeter 界面卡住了。<b>测量工具不能干扰被测对象。</b></p>
+
+<p>所以分工是：<b>GUI 只用来搭脚本和调试，真压的时候用命令行。</b></p>
+
+<h3>四个参数</h3>
+<pre><code>"D:\selenium\jmeter\bin\jmeter.bat" -n -t "计划文件.jmx" -l "结果.jtl" -e -o "报告目录"</code></pre>
+
+<div class="result">
+  <div class="rh">命令行参数</div>
+  <table>
+    <tr><th>参数</th><th>含义</th></tr>
+    <tr><td><code class="inline">-n</code></td><td>非 GUI 模式（Non-GUI），不弹窗口</td></tr>
+    <tr><td><code class="inline">-t</code></td><td>指定测试计划文件（.jmx）</td></tr>
+    <tr><td><code class="inline">-l</code></td><td>结果写到这个文件（.jtl）。<b>文件必须不存在</b>，已存在会报错，这是防覆盖</td></tr>
+    <tr><td><code class="inline">-e</code></td><td>跑完后生成 HTML 报告</td></tr>
+    <tr><td><code class="inline">-o</code></td><td>报告输出目录。<b>目录必须不存在或为空</b>，否则报错</td></tr>
+  </table>
+</div>
+
+<div class="note warn">
+  <p><b>为什么「文件必须不存在」这条要单独记？</b>因为重复跑的时候最容易踩：第二次跑你会看到类似「文件已存在」的错误而不知道发生了什么。做法是每次生成<b>带时间戳的新文件名</b>，比如 <code class="inline">result_015307.jtl</code>。</p>
+</div>
+
+<h3>屏幕上那个 summary 行</h3>
+<p>命令行跑的时候，屏幕上会不断刷新这样一行：</p>
+
+<pre><code>summary =    100 in 00:00:08 =   12.0/s  Avg:   367  Min:    13  Max:   702  Err:     0 (0.00%)</code></pre>
+
+<p>逐个读：</p>
+<ul>
+  <li><code class="inline">100</code> —— 一共发了 100 个请求</li>
+  <li><code class="inline">in 00:00:08</code> —— 用了 8 秒</li>
+  <li><code class="inline">12.0/s</code> —— 吞吐量，每秒 12 个请求（<b>就是 TPS</b>）</li>
+  <li><code class="inline">Avg: 367</code> —— 平均响应时间 367 毫秒</li>
+  <li><code class="inline">Min: 13 / Max: 702</code> —— 最快 13 毫秒、最慢 702 毫秒</li>
+  <li><code class="inline">Err: 0 (0.00%)</code> —— 失败 0 个，错误率 0%</li>
+</ul>
+
+<h3>HTML 报告长什么样</h3>
+<p>加 <code class="inline">-e -o</code> 之后，目标目录里会生成一个完整的小网站，主文件是 <code class="inline">index.html</code>。直接双击用浏览器打开，左侧是菜单：</p>
+
+<ul>
+  <li><b>Dashboard</b> —— 首页概览（测试信息 + 几条核心曲线）</li>
+  <li><b>Charts → Over Time</b> —— 响应时间随时间的曲线、活跃线程数、吞吐量曲线</li>
+  <li><b>Charts → Throughput</b> —— 吞吐量</li>
+  <li><b>Charts → Response Times</b> —— 响应时间分布（含分位数）</li>
+</ul>
+
+<div class="note">
+  <p><b>这套报告的价值在于「能发给别人」。</b>它是一堆静态文件，打包发给同事、或者挂到内部服务器上，对方直接点开就能看 —— 不需要装 JMeter，也不需要懂怎么操作。<b>这就是性能测试的交付物。</b></p>
+</div>
+
+</section>
+
+<section id="c8">
+  <h2><span class="n">8</span>面试问答：这一讲能考什么</h2>
+  <p class="sub">口述一遍，这些是真实面试会问的</p>
+  <div class="ex">
+    <div class="ex-h">自测题（先自己口述一遍，再展开答案）</div>
+    <ol>
+    <li>录制器能把浏览器操作变成 JMeter 脚本，它的原理是什么？</li>
+    <li>用 JMeter 录 https 站点，为什么必须装那张根证书？</li>
+    <li>录本地项目（127.0.0.1）时，录制器里一条都没有，最可能是什么原因？</li>
+    <li>录一个页面录到了 30 多条请求，但一条业务接口都没有，为什么？</li>
+    <li>JMeter 显示 Error 0%，是不是说明这个接口完全没问题？</li>
+    <li>为什么官方要求压测必须用命令行、不许用 GUI？</li>
+    <li>聚合报告里 Average 和 90% Line 都表示响应时间，为什么要两个？</li>
+    <li>命令行参数 -l 指定结果文件时，如果文件已经存在会怎样？</li>
+    </ol>
+    <details>
+      <summary>展开参考答案</summary>
+    <div class="ans-li">第 1 题</div>
+    <p>它把自己变成一个代理服务器（默认 8888），所有请求都得先经过它，它顺手把请求抄下来生成取样器。</p>
+    <div class="ans-li">第 2 题</div>
+    <p>因为内容是加密的。录制器要「冒充」目标站点给浏览器签发一张临时证书，浏览器才肯按协议把内容交给它。而浏览器只信任系统根证书库里的颁发者，所以要把录制器生成的根证书装进「受信任的根证书颁发机构」，这张「冒充」才成立。</p>
+    <div class="ans-li">第 3 题</div>
+    <p>请求绕过了代理。Windows 系统代理的「绕过列表」默认包含 localhost / 127.0.0.1，浏览器也普遍对本机地址不走代理。请求直接发出去了，录制器看不到。<b>跟证书无关。</b></p>
+    <div class="ans-li">第 4 题</div>
+    <p>那多半是服务端渲染（SSR）的页面。数据是服务器提前取好、直接写进 HTML 的，浏览器打开页面时不需要再调接口，所以只能录到 HTML 文档和静态资源。要录到接口得去客户端渲染（CSR）的页面，比如登录、购物车。</p>
+    <div class="ans-li">第 5 题</div>
+    <p><b>不一定，甚至经常是假的。</b>JMeter 默认只检查 HTTP 状态码，不加断言的话，服务器返回内容全错的页面但状态码 200，也会被判成功。<b>必须先加断言，错误率才有参考价值。</b></p>
+    <div class="ans-li">第 6 题</div>
+    <p>GUI 本身的图形面板、实时图表会消耗 CPU 和内存，会污染测量结果 —— 你分不清变慢是服务器的问题还是自己工具的问题。<b>测量工具不能干扰被测对象。</b>GUI 只用于搭脚本和调试。</p>
+    <div class="ans-li">第 7 题</div>
+    <p>平均值会被少数极端值拉偏、也会掩盖长尾。90% Line 表示「90% 的请求快于这个值」，能暴露那部分慢的请求。两者差异很大（比如 Avg 200ms 但 90% Line 1500ms）说明有相当比例的用户体验很差，只看平均值会漏掉这个问题。</p>
+    <div class="ans-li">第 8 题</div>
+    <p>会报错退出。JMeter 故意不允许覆盖，防止你把上次的结果冲掉。做法是每次用带时间戳的新文件名，或者先把旧文件移走。</p>
+    </details>
+  </div>
+
+</section>
+
+
+<div class="foot">
+  JMeter 性能测试 · 第二讲 · 录制 / 监控 / 命令行报告
+</div>
+
+</div>
+</body>
+</html>

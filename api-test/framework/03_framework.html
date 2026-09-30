@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pytest + requests 第三讲 · 从单文件长成三层小框架</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+.cmd{
+  margin:0 0 16px;background:#1f2328;border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+.cmd code{font-family:var(--mono);font-size:13px;line-height:1.68;color:#e6edf3;background:none;padding:0}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+.note pre{background:#ffffff;border-color:var(--blue-line);margin:10px 0 0}
+
+.map{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+.map th,.map td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.map th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px}
+.map td:first-child{color:var(--text-2)}
+.map code{font-family:var(--mono);font-size:12px;color:#0a3069}
+.map tr:last-child td{border-bottom:none}
+
+.result{margin:0 0 16px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.result .rh{
+  background:#f8f9fb;padding:7px 15px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);border-bottom:1px solid var(--line);
+}
+.result table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.result th,.result td{padding:6px 15px;text-align:left;border-bottom:1px solid #eef0f3}
+.result th{background:#fbfcfd;font-weight:500;color:var(--text-2);font-size:11.5px}
+.result tr:last-child td{border-bottom:none}
+.result td{color:var(--text-2)}
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+
+.flow{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px;
+}
+.flow > div{
+  border:1px solid var(--line);border-radius:9px;padding:14px 15px;background:#fbfcfd;
+}
+.flow .ft{font-family:var(--mono);font-size:12.5px;color:var(--blue);font-weight:600;margin-bottom:6px}
+.flow .fd{font-size:13px;color:var(--text-2);line-height:1.6}
+
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details pre{margin-bottom:12px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .flow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <span class="kicker">接口自动化 · 第三讲</span>
+    <h1>从单文件，长成一个三层小框架</h1>
+    <p>前两讲你写的是一条条代码。这一讲把它拆成「发请求 / 放数据 / 写断言」三层，再加一个配置层。拆完你会得到 5 条跑得动的用例、一份报告，以及一个能往上加接口的骨架。</p>
+  </div>
+
+  <div class="toc">
+    <h3>本讲目录</h3>
+    <ol>
+      <li><a href="#s1"><span class="n">1</span>先说清楚：你已经完成一半了</a></li>
+      <li><a href="#s2"><span class="n">2</span>为什么要分层</a></li>
+      <li><a href="#s3"><span class="n">3</span>三个目录，三种职责</a></li>
+      <li><a href="#s4"><span class="n">4</span>逐层读代码</a></li>
+      <li><a href="#s5"><span class="n">5</span>这 5 条用例是怎么设计出来的</a></li>
+      <li><a href="#s6"><span class="n">6</span>接口关联的代码版：session</a></li>
+      <li><a href="#s7"><span class="n">7</span>实测说了算：account 填邮箱</a></li>
+      <li><a href="#s8"><span class="n">8</span>跑起来</a></li>
+      <li><a href="#s9"><span class="n">9</span>自测题（口述优先）</a></li>
+      <li><a href="#s10"><span class="n">10</span>面试怎么讲这一块</a></li>
+    </ol>
+  </div>
+
+  <!-- ========== 1 ========== -->
+  <section id="s1">
+    <h2><span class="n">1</span>先说清楚：你已经完成一半了</h2>
+    <p class="sub">别被「框架」两个字吓到</p>
+
+    <p>你截的这四张卡片，我一条条对一遍，标出哪些你其实已经会了：</p>
+
+    <table class="map">
+      <tr><th style="width:38%">卡片上写的</th><th style="width:16%">状态</th><th>说明</th></tr>
+      <tr>
+        <td>Pytest 断言：用 assert 判断接口返回是否符合预期</td>
+        <td class="pass">已经会了</td>
+        <td>第一讲的 <code>assert resp.status_code == expected_status</code> 就是这个</td>
+      </tr>
+      <tr>
+        <td>一条用例就是一个函数</td>
+        <td class="pass">已经会了</td>
+        <td><code>def test_posts_by_user(...)</code> 就是一条用例</td>
+      </tr>
+      <tr>
+        <td>生成 HTML 测试报告</td>
+        <td class="pass">已经会了</td>
+        <td>第二讲的 <code>--html=report.html --self-contained-html</code></td>
+      </tr>
+      <tr>
+        <td>跑完 5 条用例</td>
+        <td class="pass">已经会了</td>
+        <td>你现在能跑 8 条，参数化怎么展开你懂了</td>
+      </tr>
+      <tr>
+        <td><b>框架结构：api/ testcases/ data/ 分层</b></td>
+        <td class="fail">新东西</td>
+        <td><b>这一讲真正要学的，只有这一格</b></td>
+      </tr>
+    </table>
+
+    <div class="note ok">
+      <p><b>所以这一讲不是「学一门新东西」，是「把已经会的东西重新摆一遍位置」。</b></p>
+      <p>四格里三格你已经有了。<b>真正的新增知识只有一件事：为什么要分三层、怎么分。</b>剩下的全是把前两讲的能力搬进新目录。</p>
+    </div>
+
+    <p>另外补充一个前面没说的事：卡片里 <code class="inline">data/ 放 YAML 测试数据</code>。你上一讲用的是 CSV，我说过「你这 8 条扁平用例，CSV 就够了，不用换」——这句话现在依然成立。</p>
+    <p>那为什么这一讲换成 YAML？因为<b>这一讲的目的之一是让你认识 YAML 这种格式</b>——真实项目里它比 CSV 更常见（能写注释、能表达层级、可读性好），面试也会问到。所以这里不是「CSV 不行了」，是「多学一种，两种都会用」。装它只要几秒。</p>
+  </section>
+
+  <!-- ========== 2 ========== -->
+  <section id="s2">
+    <h2><span class="n">2</span>为什么要分层</h2>
+    <p class="sub">不分层也能跑，那分层的意义在哪</p>
+
+    <p>第一讲那个 <code class="inline">test_posts_by_user.py</code>，一个文件装下了所有东西：地址、数据读取、发请求、断言。它能跑，8 条全绿。</p>
+    <p>但那是因为它太简单了——只有 1 个接口、1 种请求方式。一旦接口变多，这个写法会立刻开始疼：</p>
+
+    <table class="map">
+      <tr><th style="width:30%">迟早会发生的事</th><th>单文件写法下你要做什么</th></tr>
+      <tr>
+        <td>换测试环境（线上 → 本地）</td>
+        <td>去每个测试文件里把地址改一遍，漏一个就有一条用例在打错的地址</td>
+      </tr>
+      <tr>
+        <td>登录逻辑要复用</td>
+        <td>复制粘贴一遍「拼 payload + 发 POST + 取 cookie」，粘贴 3 处后改一处忘两处</td>
+      </tr>
+      <tr>
+        <td>加一条用例</td>
+        <td>复制一个函数、改里面的数据、改断言——数据和代码黏在一起</td>
+      </tr>
+      <tr>
+        <td>接口改了字段名</td>
+        <td>全项目搜字段名，逐个改</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <p><b>分层的根本理由就一句话：</b></p>
+      <p><b>把「变化原因不同的东西」分开放。</b></p>
+      <p>地址会变 → 单独一层（<code class="inline">config.py</code>）<br>
+      接口本身会变（字段名、路径）→ 单独一层（<code class="inline">api/</code>）<br>
+      测试数据会变（加用例、改账号）→ 单独一层（<code class="inline">data/</code>）<br>
+      判断标准会变（期望值、断言方式）→ 单独一层（<code class="inline">testcases/</code>）</p>
+      <p>它们的变化原因不同，所以放不同文件。<b>结果是：改任何一样，只需要打开一个文件。</b></p>
+    </div>
+  </section>
+
+  <!-- ========== 3 ========== -->
+  <section id="s3">
+    <h2><span class="n">3</span>三个目录，三种职责</h2>
+    <p class="sub">边界清楚，才知道新代码该放哪</p>
+
+    <p class="code-label">目录结构（实际建好的）</p>
+<pre><code>D:\selenium\api-test\framework\
+├── config.py                 ← 配置层：地址、超时。换环境只改这里
+├── pytest.ini                ← pytest 的配置（testpaths / pythonpath / 中文用例名）
+├── api/                      ← 请求层：怎么发请求
+│   ├── __init__.py
+│   └── login_api.py
+├── data/                     ← 数据层：用什么数据发
+│   └── login_cases.yaml
+├── testcases/                ← 用例层：发了之后对不对
+│   └── test_login.py
+└── report.html               ← 跑完生成的报告</code></pre>
+
+    <div class="flow">
+      <div>
+        <div class="ft">api/</div>
+        <div class="fd">把请求发出去，把响应<b>原样返回</b>。<br><b>绝不做断言</b>、绝不判断通过失败。</div>
+      </div>
+      <div>
+        <div class="ft">data/</div>
+        <div class="fd">用例的输入数据。<br>新增用例只改这里，<b>代码一个字不动</b>。</div>
+      </div>
+      <div>
+        <div class="ft">testcases/</div>
+        <div class="fd">调 api 拿响应，然后<b>断言</b>。<br>这里是唯一出现 <code class="inline">assert</code> 的地方。</div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <p><b>最容易搞混的一条边界：<code class="inline">api/</code> 里不许写 assert。</b></p>
+      <p>为什么？因为同一个接口在不同用例里，期望值可能不一样。比如登录接口：</p>
+      <ul>
+        <li>用例「正常登录」期望 <code class="inline">code == 0</code></li>
+        <li>用例「密码错误」期望 <code class="inline">code == 40102</code></li>
+      </ul>
+      <p>如果 <code class="inline">login_api.py</code> 里写了 <code class="inline">assert code == 0</code>，那第二条用例根本没法写。</p>
+      <p><b>api 层只负责「把请求发出去」这个动作，对错留给调用它的人判断。</b>这就是职责单一。</p>
+    </div>
+  </section>
+
+  <!-- ========== 4 ========== -->
+  <section id="s4">
+    <h2><span class="n">4</span>逐层读代码</h2>
+    <p class="sub">从最底下那层往上看</p>
+
+    <h3>第 0 层：<code class="inline">config.py</code></h3>
+    <p>你 Postman 那条线学过一句话——<b>「凡是会『变』的东西，都不能写死」</b>。这个文件就是那句话的落地：</p>
+<pre><code># 被测服务地址（就是你 JMeter 压的那个 ecommerce-demo）
+BASE_URL = "http://119.45.177.154:3000"
+
+# 单个请求的超时时间（秒）
+TIMEOUT = 10</code></pre>
+    <p>以后要测本地环境，你只改 <code class="inline">BASE_URL</code> 一行，全项目跟着变。<b>这就是把「变化」集中到一个点的价值。</b></p>
+
+    <h3>第 1 层：<code class="inline">api/login_api.py</code></h3>
+    <p class="code-label">api/login_api.py（节选）</p>
+<pre><code>def new_session():
+    """开一个会话。它会把服务器返回的 Cookie 自动存下来，
+    并在后续请求里自动带回去 —— 这就是「登录状态」能保持住的原因。"""
+    return requests.Session()
+
+
+def login(account, password, session=None):
+    """调用登录接口。返回 response 对象（原样返回，不解析、不断言）"""
+    payload = {}
+    if account is not None:
+        payload["account"] = account
+    if password is not None:
+        payload["password"] = password
+
+    http = session or requests
+    return http.post(BASE_URL + LOGIN_PATH, json=payload, timeout=TIMEOUT)</code></pre>
+
+    <p>三个设计点，都值得记住：</p>
+    <ul>
+      <li><b>参数传 <code class="inline">None</code> 表示「这个字段根本不传」</b>。这样「缺少 password 字段」这种异常用例才能测——如果写成默认空字符串，那测的就是「空密码」而不是「没有密码字段」了，两个是不同的场景。</li>
+      <li><b><code class="inline">http = session or requests</code></b>：给了会话就用会话（保持登录态），没给就单次请求。一个函数覆盖两种用法。</li>
+      <li><b>返回原始 response</b>，不返回 <code class="inline">resp.json()</code>。因为有些用例要断言状态码、有些要断言响应体，把完整的响应交出去，选择权留给上层。</li>
+    </ul>
+
+    <h3>第 2 层：<code class="inline">data/login_cases.yaml</code></h3>
+    <p class="code-label">data/login_cases.yaml（节选）</p>
+<pre><code>test_account:
+  account: "pytest_demo@example.com"
+  password: "Test123456"
+
+cases:
+  - id: 正常_正确账号密码
+    account: "pytest_demo@example.com"
+    password: "Test123456"
+    expect_status: 200
+    expect_code: 0
+
+  - id: 异常_缺少password字段
+    account: "pytest_demo@example.com"
+    password: ~          # 波浪号 = null = 这个字段根本不传
+    expect_status: 422
+    expect_code: 422</code></pre>
+
+    <p><b>YAML 和 CSV 的一个实际差别</b>：CSV 读出来全是字符串，所以要 <code class="inline">int(row["expectedStatus"])</code> 手动转换；YAML 会自己认类型，<code class="inline">200</code> 就是数字 <code class="inline">200</code>。少一步转换、少一类坑。</p>
+    <p>另一个差别是 <b>YAML 能写注释</b>（<code class="inline">#</code> 开头）。别小看这个——真实项目里，「这条用例为什么期望 422」这种信息，写不了注释就只能靠人记。</p>
+
+    <h3>第 3 层：<code class="inline">testcases/test_login.py</code></h3>
+    <p>这一层只有两个动作：<b>调 api、断言</b>。</p>
+    <p class="code-label">testcases/test_login.py（节选）</p>
+<pre><code>@pytest.mark.parametrize("case", DATA["cases"], ids=lambda c: c["id"])
+def test_login(case):
+    resp = login(case["account"], case["password"])
+
+    # 断言 1：HTTP 状态码
+    assert resp.status_code == case["expect_status"]
+
+    # 断言 2：响应体里的业务码
+    assert resp.json()["code"] == case["expect_code"]</code></pre>
+
+    <p>对比第一讲，这里有个重要进步：<b>第一讲断言的是「返回几条」，这一讲断言的是「业务码」。</b></p>
+    <div class="note">
+      <p><b>为什么业务码比「返回几条」更值得断言？</b></p>
+      <p>因为真实接口普遍是<b>两层状态</b>：HTTP 状态码 + 响应体里的业务码。<code class="inline">{code, message, data}</code> 就是这种结构的典型（你测的这个项目就是）。</p>
+      <p>有些接口设计得糙一点：HTTP 永远返回 200，对错全看 <code class="inline">code</code>。<b>只断言 HTTP 状态码就会漏掉大量 bug</b>——请求明明失败了，状态码还是 200，测试却绿了。</p>
+      <p>所以：<b>两个都断言。</b>HTTP 码确认「通信层通了」，业务码确认「业务层对了」。</p>
+    </div>
+  </section>
+
+  <!-- ========== 5 ========== -->
+  <section id="s5">
+    <h2><span class="n">5</span>这 5 条用例是怎么设计出来的</h2>
+    <p class="sub">不是随手凑 5 条，是有覆盖思路的</p>
+
+    <p>先看运行结果，再讲怎么来的：</p>
+
+    <div class="result">
+      <div class="rh">实际运行结果 · 你的机器实测</div>
+      <table>
+        <tr><th>用例</th><th>结果</th></tr>
+        <tr><td>test_login[正常_正确账号密码]</td><td class="pass">PASSED</td></tr>
+        <tr><td>test_login[异常_密码错误]</td><td class="pass">PASSED</td></tr>
+        <tr><td>test_login[异常_缺少password字段]</td><td class="pass">PASSED</td></tr>
+        <tr><td>test_login[异常_账号密码为空]</td><td class="pass">PASSED</td></tr>
+        <tr><td>test_login_then_get_me（接口关联）</td><td class="pass">PASSED</td></tr>
+      </table>
+    </div>
+
+    <p class="code-label">实测输出</p>
+<pre><code>collected 5 items
+5 passed in 0.75s</code></pre>
+
+    <h3>设计思路：先划「参数的取值范围」，每个区间取一条</h3>
+<pre><code>account + password 的组合空间：
+
+  ┌─ 都正确、且账号存在          → 用例 1  正常_正确账号密码
+  │
+  ├─ 都传了，但密码不对          → 用例 2  异常_密码错误
+  │
+  ├─ account 传了、password 没传 → 用例 3  异常_缺少password字段
+  │   （字段缺失 = 结构不对）
+  │
+  └─ 都传了，但都是空字符串      → 用例 4  异常_账号密码为空
+      （字段存在但值为空 = 值不对）</code></pre>
+
+    <p><b>用例 3 和用例 4 为什么算两条，而不是重复？</b>这是最值一问：</p>
+
+    <table class="map">
+      <tr><th></th><th>用例 3：缺少 password 字段</th><th>用例 4：password 是空字符串</th></tr>
+      <tr><td>请求体长什么样</td><td><code>{"account": "x"}</code></td><td><code>{"account": "", "password": ""}</code></td></tr>
+      <tr><td>问题类型</td><td><b>结构错了</b>——字段压根没有</td><td><b>值错了</b>——字段在，但内容不合法</td></tr>
+      <tr><td>实测返回</td><td><code>422</code> 提示 <code>expected string, received undefined</code></td><td><code>422</code> 提示「请输入账号 / 请输入密码」</td></tr>
+      <tr><td>谁会踩到</td><td>前端漏传字段（代码 bug）</td><td>用户两手一摊直接点登录</td></tr>
+    </table>
+
+    <div class="note ok">
+      <p>注意最后两行：<b>两条用例的 HTTP 状态码都是 422，但响应体里的提示语完全不同。</b></p>
+      <p>「字段没有」服务器会说 <code class="inline">expected string, received undefined</code>（技术语言）；「值是空的」服务器会说「请输入账号」（给人看的语言）。<b>这是两套不同的校验分支，必须分别覆盖</b>——只测一条，另一条永远没人验。</p>
+      <p>这就是「用例要讲究覆盖，不要凑数」的意思：<b>区分标准不是「看起来不一样」，而是「走的是不是不同的代码分支」。</b></p>
+    </div>
+
+    <h3>那第 5 条（接口关联）为什么单独写，不放进 YAML？</h3>
+    <p>因为它<b>不是「一次请求 + 一次断言」</b>，而是「两次请求 + 两次断言，且第二次依赖第一次的结果」。参数化的模型是「一组数据 → 一条用例」，装不下这种有先后依赖的流程。</p>
+    <p>所以规矩是：<b>独立的单接口用例走数据驱动；有前后依赖的流程用例单独写成函数。</b></p>
+  </section>
+
+  <!-- ========== 6 ========== -->
+  <section id="s6">
+    <h2><span class="n">6</span>接口关联的代码版：session</h2>
+    <p class="sub">你 Postman 学过「取 → 存 → 用」，这里把它写成代码</p>
+
+    <p class="code-label">testcases/test_login.py · 第 5 条用例</p>
+<pre><code>def test_login_then_get_me():
+    """接口关联：先登录拿到会话，再用同一个会话问「我是谁」"""
+    account = DATA["test_account"]["account"]
+    password = DATA["test_account"]["password"]
+
+    session = new_session()                          # ① 开一个会话
+
+    login_resp = login(account, password, session=session)   # ② 登录，会话记住了 Cookie
+    assert login_resp.status_code == 200
+
+    me_resp = get_me(session)                        # ③ 带着会话去问「我是谁」
+    assert me_resp.status_code == 200
+    assert me_resp.json()["data"] is not None        # 拿到用户信息 = 关联生效</code></pre>
+
+    <h3>和你 Postman 里的做法对照</h3>
+    <table class="map">
+      <tr><th>步骤</th><th>Postman 里你怎么做</th><th>代码里怎么做</th></tr>
+      <tr><td>取</td><td>在 Tests 里写 <code>pm.response.json().data.token</code></td><td><b>不用手动取</b>——Session 自动把 Set-Cookie 存进 <code class="inline">session.cookies</code></td></tr>
+      <tr><td>存</td><td><code>pm.environment.set("token", token)</code></td><td>同上，Session 内部存着</td></tr>
+      <tr><td>用</td><td>请求头填 <code>Authorization: Bearer {{token}}</code></td><td><b>不用手动填</b>——用同一个 session 发的请求会自动带上</td></tr>
+    </table>
+
+    <div class="note">
+      <p><b>差别来自两种不同的鉴权机制，两种都要认识：</b></p>
+      <p><b>Token 制</b>：服务器把 token 放在<b>响应体</b>里给你 → 你得自己取出来、存下来、塞进请求头。Postman 的 <code class="inline">{{token}}</code> 就是干这个的。</p>
+      <p><b>Cookie 会话制</b>：服务器通过 <code class="inline">Set-Cookie</code> 响应头发 Cookie → 浏览器/客户端<b>自动存、自动带</b>，你不用管。代码里用一个 <code class="inline">requests.Session()</code> 就全办了。</p>
+      <p>你测的这个项目走的是 <b>Cookie 会话</b>——实测带 <code class="inline">Authorization: Bearer</code> 是无效的，必须用会话。</p>
+    </div>
+
+    <div class="note warn">
+      <p><b>关键理解：session 不是「语法糖」，它是「身份」。</b></p>
+      <p>换个新 session 去调 <code class="inline">/api/auth/me</code>，拿到的就是 <code class="inline">data: null</code>——因为新 session 没登录过，服务器不认识它。</p>
+      <p>所以关联的本质是：<b>让第二个请求，带着第一个请求挣来的身份。</b></p>
+    </div>
+
+    <p>顺带一提：<code class="inline">/api/auth/me</code> 在未登录时不返回 401，而是返回 <code class="inline">200</code> + <code class="inline">data: null</code>。这叫<b>软失败</b>——接口不报错，用空数据表达「你没登录」。</p>
+    <p>这种设计对前端友好（不用写异常处理），但对测试不友好：<b>如果你只断言状态码是 200，这个接口测得再多次也发现不了「没登录」的问题。</b>所以这里必须断言 <code class="inline">data is not None</code>。</p>
+  </section>
+
+  <!-- ========== 7 ========== -->
+  <section id="s7">
+    <h2><span class="n">7</span>实测说了算：account 填邮箱</h2>
+    <p class="sub">这一节是本讲最值钱的思维</p>
+
+    <p>建这个框架时撞到一个意外，值得单独讲。看两组实测：</p>
+
+    <table class="map">
+      <tr><th>请求</th><th>实测返回</th></tr>
+      <tr>
+        <td>注册：<code>{"nickname": "pytest_demo", "password": "...", "email": "..."}</code></td>
+        <td class="pass">200 <code>{"code":0,"message":"注册成功"}</code></td>
+      </tr>
+      <tr>
+        <td>登录：<code>{"account": <b>邮箱</b>, "password": "..."}</code></td>
+        <td class="pass">200 <code>{"code":0,"message":"登录成功","data":{"id":5,"nickname":"pytest_demo","role":"USER"}}</code></td>
+      </tr>
+      <tr>
+        <td>登录：<code>{"account": <b>昵称</b>, "password": "..."}</code></td>
+        <td class="fail">401 <code>{"code":40102,"message":"账号或密码错误"}</code></td>
+      </tr>
+    </table>
+
+    <p><b>看明白了吗：注册时用的是「昵称」，但登录时的 <code class="inline">account</code> 必须填「邮箱」。</b>拿昵称去登录，服务器告诉你「账号或密码错误」——你不会想到是「格式不对」，只会以为密码错了。</p>
+
+    <div class="note danger">
+      <p><b>这就是「账号或密码错误」这句提示的陷阱。</b></p>
+      <p>它把「账号不存在」「密码不对」「账号格式不对」三种情况合并成了一句模糊的话——为了安全（不让人枚举出哪些账号存在），这在真实系统里很常见。</p>
+      <p>但对测试来说，<b>这句提示基本没有定位价值</b>。你只能靠别的办法缩小范围。我做的是一组对照实验：</p>
+      <ol>
+        <li>昵称登录 → 401</li>
+        <li>邮箱登录 → 200（同一个密码！）</li>
+      </ol>
+      <p>两次只有「账号格式」这一个变量不同，结论就锁死了：<b>问题出在账号格式，不在密码。</b></p>
+    </div>
+
+    <h3>从这件事里提炼两条方法论</h3>
+
+    <table class="map">
+      <tr><th style="width:34%">方法</th><th>怎么用</th></tr>
+      <tr>
+        <td><b>控制变量</b></td>
+        <td>两次请求只改一个因素，才能把原因锁定到那个因素上。这跟你在这个项目里一直用的「拿应该的样子和实际的样子对比」是同一件事——只不过对比的对象从「页面」换成了「两次请求」。</td>
+      </tr>
+      <tr>
+        <td><b>接口文档不写的地方，实测说了算</b></td>
+        <td>字段叫 <code>account</code>，文档/命名不会告诉你它到底是邮箱、手机号还是昵称。<b>测试的价值有一部分就体现在这：你是第一个把「说的和做的」对一遍的人。</b></td>
+      </tr>
+    </table>
+
+    <div class="note ok">
+      <p><b>顺便说一句：这个测试账号是我用注册接口建的</b>（<code class="inline">pytest_demo@example.com</code> / <code class="inline">Test123456</code>）。</p>
+      <p>为什么不用你日常在用的账号？因为自动化用例会反复跑、会故意输错密码、密码错了就反复触发失败登录——<b>专门开一个测试账号，才不会把你的日常账号搞出异常记录。</b>这是测试岗的标准做法，面试可以直接讲。</p>
+    </div>
+  </section>
+
+  <!-- ========== 8 ========== -->
+  <section id="s8">
+    <h2><span class="n">8</span>跑起来</h2>
+    <p class="sub">两条命令，记住就行</p>
+
+    <p class="code-label">跑测试（在 D:\selenium 目录下）</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\framework -v</code></div>
+
+    <p>因为你已经配好了 <code class="inline">pytest.ini</code>（<code class="inline">testpaths = testcases</code>），进到 framework 目录里，敲最短的那个也行：</p>
+    <div class="cmd"><code>D:\selenium\.venv\Scripts\python.exe -m pytest</code></div>
+
+    <p class="code-label">出 HTML 报告</p>
+    <div class="cmd"><code>.venv\Scripts\python.exe -m pytest api-test\framework --html=api-test\framework\report.html --self-contained-html</code></div>
+
+    <h3>想练手的话，做这三件事</h3>
+    <div class="ex">
+      <div class="ex-h">动手题</div>
+      <ol>
+        <li><b>只改数据，加一条用例。</b>在 <code class="inline">data/login_cases.yaml</code> 的 <code class="inline">cases:</code> 下面加一条「密码为空字符串、账号正常」的用例（期望 422 / 422）。<b>注意：不要动 testcases 里一行代码。</b>然后跑一遍，你应该看到 6 条。</li>
+        <li><b>加一个新接口。</b>照着 <code class="inline">login_api.py</code> 的样子，在 <code class="inline">api/</code> 下新建 <code class="inline">product_api.py</code>，封装商品列表接口：<code class="inline">GET /api/products</code>，参数 <code class="inline">page</code> / <code class="inline">pageSize</code>。先只做到「能发出请求、能拿到响应」，断言先不写。</li>
+        <li><b>换环境试试。</b>把 <code class="inline">config.py</code> 里的 <code class="inline">BASE_URL</code> 改成 <code class="inline">http://127.0.0.1:3000</code>（你本机那个同样的项目），看看会发生什么，再改回来。<b>体会一下「改一行、全项目跟着变」。</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== 9 ========== -->
+  <section id="s9">
+    <h2><span class="n">9</span>自测题（口述优先）</h2>
+    <p class="sub">先自己说一遍，再展开对照</p>
+
+    <div class="ex">
+      <div class="ex-h">口述题</div>
+      <ol>
+        <li>为什么要分 api / testcases / data 三层？不分层会疼在哪？</li>
+        <li><code>api/</code> 层里为什么不许写 <code>assert</code>？举个例子说明。</li>
+        <li>用例 3（缺少 password 字段）和用例 4（password 是空字符串）为什么不能合并成一条？</li>
+        <li>Postman 里做接口关联要「取 → 存 → 用」三步，代码里为什么一步都不用做？</li>
+        <li>同一个登录接口，返回 200 就代表登录成功了吗？你怎么断言才算测到位？</li>
+        <li>「账号或密码错误」这句提示，为什么它本身没有定位价值？你会怎么把范围缩小？</li>
+      </ol>
+
+      <details>
+        <summary>展开参考答案</summary>
+
+        <p class="ans-li">1. 为什么分三层？</p>
+        <p>核心是<b>把「变化原因不同的东西」分开放</b>。<br>
+        · 地址会变（换环境）→ <code>config.py</code><br>
+        · 接口本身会变（路径、字段名）→ <code>api/</code><br>
+        · 测试数据会变（加用例、改账号）→ <code>data/</code><br>
+        · 判断标准会变（期望值）→ <code>testcases/</code><br>
+        不分层的话：换环境要翻遍每个测试文件；加一条用例要复制粘贴函数再改数据；接口改个字段名要全项目搜。分层之后，<b>改任何一样都只打开一个文件</b>。</p>
+
+        <p class="ans-li">2. api 层为什么不许写 assert？</p>
+        <p>因为<b>同一个接口在不同用例里期望值不同</b>。登录接口：正常登录期望 <code>code == 0</code>，密码错误期望 <code>code == 40102</code>。如果 <code>login_api.py</code> 里写死了 <code>assert code == 0</code>，那「密码错误」这条用例根本没法写——它必然失败。<br>
+        api 层只负责「把请求发出去」这一个动作，对错由调用它的人判断。这就是职责单一。</p>
+
+        <p class="ans-li">3. 用例 3 和用例 4 为什么不能合并？</p>
+        <p>因为它们<b>走的是服务器两套不同的校验分支</b>：<br>
+        · 用例 3 请求体是 <code>{"account": "x"}</code>，<b>结构不对</b>（字段缺失）→ 服务器报 <code>expected string, received undefined</code><br>
+        · 用例 4 请求体是 <code>{"account": "", "password": ""}</code>，<b>值不对</b>（字段在但内容非法）→ 服务器报「请输入账号」<br>
+        虽然 HTTP 码都是 422，但提示语完全不同 = 不同的代码路径。只测一条，另一条分支永远没人验。<br>
+        判断两条用例是否重复，标准是<b>「走的代码分支是否相同」</b>，不是「看起来像不像」。</p>
+
+        <p class="ans-li">4. 代码里为什么不用「取 → 存 → 用」？</p>
+        <p>因为鉴权机制不同。<br>
+        · <b>Token 制</b>：token 在响应体里，得自己取、存、塞进请求头 —— 这就是 Postman 的 <code>{{token}}</code>。<br>
+        · <b>Cookie 会话制</b>：服务器用 <code>Set-Cookie</code> 响应头发 Cookie，客户端<b>自动存、自动带</b>。<code>requests.Session()</code> 把这三步全办了，所以代码里看着「什么都没做」。<br>
+        你测的这个项目是 Cookie 会话制（实测带 Bearer 无效）。所以不是代码省略了步骤，是<b>机制本身就不需要手工传递</b>。</p>
+
+        <p class="ans-li">5. 返回 200 就代表登录成功吗？</p>
+        <p>不代表。真实接口普遍有<b>两层状态</b>：HTTP 状态码 + 响应体里的业务码。<br>
+        更要注意的是「软失败」设计：<code>/api/auth/me</code> 未登录时返回的是 <code>200 + data: null</code>，不是 401。这种接口<b>只断言状态码永远测不出问题</b>。<br>
+        所以要两个都断言：<code>status_code == 200</code> <b>且</b> <code>code == 0</code>；涉及数据的还要断言 <code>data</code> 不为空。</p>
+
+        <p class="ans-li">6. 「账号或密码错误」为什么没有定位价值？</p>
+        <p>因为它把「账号不存在」「密码不对」「账号格式不对」三种情况合并成了一句模糊提示——这是有意为之，为了防止别人枚举出系统里有哪些账号。<br>
+        但对测试来说，这句话不能帮你缩小范围。做法是<b>控制变量</b>：<br>
+        ① 用昵称登录 → 401<br>
+        ② 用邮箱登录（密码一模一样）→ 200<br>
+        两次只改了「账号格式」一个变量，结论就锁死了：问题在账号格式，不在密码。</p>
+
+      </details>
+    </div>
+  </section>
+
+  <!-- ========== 10 ========== -->
+  <section id="s10">
+    <h2><span class="n">10</span>面试怎么讲这一块</h2>
+    <p class="sub">你亲手搭的，讲起来比背答案有说服力</p>
+
+    <table class="map">
+      <tr><th style="width:32%">可能被问到</th><th>你可以这样答</th></tr>
+      <tr>
+        <td>你的接口自动化框架怎么分层的？</td>
+        <td>三层：<code>api/</code> 封装请求、<code>testcases/</code> 写用例和断言、<code>data/</code> 放 YAML 测试数据，另外把环境地址抽到 <code>config.py</code>。<b>分层的依据是「变化原因不同」</b>——换环境改 config，加用例改 data，接口字段变了改 api，互相不牵连。</td>
+      </tr>
+      <tr>
+        <td>为什么 api 层不写断言？</td>
+        <td>同一个接口在不同用例里期望值不一样（正常登录期望 code 0，密码错误期望 code 40102），断言写在 api 层就没法复用了。api 层只负责发请求并原样返回响应。</td>
+      </tr>
+      <tr>
+        <td>接口返回值你怎么断言？</td>
+        <td>两层都断：HTTP 状态码 + 响应体业务码。特别要提软失败的情况——有些接口未登录也返回 200，只是 data 为 null，只断状态码会漏问题。</td>
+      </tr>
+      <tr>
+        <td>怎么测有依赖的接口（比如先登录）？</td>
+        <td>用 <code>requests.Session()</code> 保持会话。登录成功后 Session 自动持有 Cookie，后续请求用同一个 Session 发就带上了身份。Token 制的接口则要手动取 token 放进请求头。</td>
+      </tr>
+      <tr>
+        <td>测试账号怎么管？</td>
+        <td>专门的测试账号，不用真人账号。<b>因为自动化会反复跑、故意输错密码，会污染真人账号的失败登录记录。</b>账号数据放在 data 里，不硬编码在代码里。</td>
+      </tr>
+      <tr>
+        <td>测试数据为什么用 YAML？</td>
+        <td>YAML 能写注释、能表达层级、可读性好，真实项目更常见。扁平的简单数据用 CSV 也完全可以，选型看数据形状。</td>
+      </tr>
+    </table>
+
+    <div class="note ok">
+      <p><b>你现在手里握着两个别人背不出来的细节，面试时说出来会很不一样：</b></p>
+      <p>① 「我为了给登录接口做自动化，专门注册了一个测试账号，没有用真人账号」<br>
+      ② 「我发现登录字段叫 account，但实际要填邮箱不是昵称——拿昵称登会返回 40102 账号或密码错误，这句提示没有区分度，我是用控制变量法试出来的」</p>
+      <p><b>第二句尤其值钱。</b>它同时证明了你会用控制变量、你会怀疑模糊错误信息、你做事是实测驱动而不是猜。<b>这种细节，只有真动手的人讲得出来。</b></p>
+    </div>
+  </section>
+
+  <div class="foot">
+    接口自动化学习 · 第三讲 &nbsp;|&nbsp; 配套目录：<code>api-test/framework/</code>
+  </div>
+
+</div>
+</body>
+</html>

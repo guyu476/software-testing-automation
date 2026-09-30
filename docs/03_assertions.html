@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="uRRXftOmzav1VGxsskijZ1">
+<head data-page-node-id="BUlHbkrLwIrVWHujM5RQgT">
+<meta charset="UTF-8" data-page-node-id="QiUya2JnxU9qsV8jme9jXo">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="RNrRMODxeKNB2EgWUNp79J">
+<title>接口测试 · Scripts / After response 断言详解</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0 0 10px;color:var(--text-2);font-size:14.5px;max-width:680px}
+.header p:last-child{margin-bottom:0}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+h2 .n.hot{background:var(--amber)}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code{font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;}
+b,strong{font-weight:600}
+
+pre.code{
+  background:#f6f8fa;border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;margin:0 0 16px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#0a3069;
+}
+pre.code .cm{color:#6e7781}
+pre.code .st{color:#0a7d4e}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top;line-height:1.6}
+table.tbl th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px;white-space:nowrap}
+table.tbl td{color:var(--text-2)}
+table.tbl td:first-child{color:var(--text)}
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:4px 0 22px}
+.flow .step{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:10px;padding:12px 12px 11px}
+.flow .step.first{border-color:var(--amber-line);background:var(--amber-bg)}
+.flow .step b{display:block;font-size:13.5px;margin-bottom:2px}
+.flow .step.first b{color:#5c3708}
+.flow .step em{display:block;font-style:normal;font-size:12px;color:var(--text-2);line-height:1.5}
+
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}
+.chain .st{
+  font-size:13px;padding:5px 12px;border-radius:7px;
+  background:#f0f2f5;border:1px solid var(--line);color:var(--text);white-space:nowrap;
+}
+.chain .st.blue{background:var(--blue-bg);border-color:var(--blue-line);color:#123a63}
+.chain .st.amber{background:var(--amber-bg);border-color:var(--amber-line);color:#5c3708}
+.chain .st.green{background:var(--green-bg);border-color:var(--green-line);color:#2c5309}
+.chain .st.red{background:var(--red-bg);border-color:var(--red-line);color:#7c2020}
+.chain .ar{color:var(--text-3);font-size:13px}
+
+.qa{border:1px solid var(--line);border-radius:10px;padding:15px 18px;margin:0 0 12px;background:#fbfcfd}
+.qa .q{font-weight:600;font-size:14px;margin:0 0 7px}
+.qa .a{font-size:13.5px;color:var(--text-2);margin:0}
+.qa .a b{color:var(--text)}
+
+details{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s;}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+
+.foot{text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .flow{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body data-page-node-id="hZdALkBwGkvJgsllWhHIJZ">
+<div class="wrap" data-page-node-id="fyTG0zrXPn25WsfqNklcUV">
+
+<div class="header" data-page-node-id="YxD6FMuV6bGXl8PzYzRRoj">
+  <div class="kicker" data-page-node-id="5TAZ0fyqEIeDZYIEuGYLFC">接口测试 · 断言脚本详解</div>
+  <h1 data-page-node-id="CO5UUm5RYQjR6UfPz4Md7y">Scripts → After response：断言怎么写</h1>
+  <p data-page-node-id="jGSzmugxQhqTv0k5O9FuEl">B 站教程里那个 <code data-page-node-id="QATmlXfPIf0bPGx7VBUsld">Tests</code> 标签，在你的版本里叫 <b data-page-node-id="N1hqKHHC79hFVUXfWoPzAK">Scripts</b>，点开后左边那一列里的 <b data-page-node-id="UjzuFwL4tmSkByhAhR6nLL">After response</b>。这份文件专门讲这一页：怎么用、能断言什么、写错了长什么样。</p>
+  <p data-page-node-id="zUiIQuyFodrUEcR6BNVsIK">内容全部基于你自己的 Postman 版本界面写的，每一步都指明点哪里。练习对象仍是公开 API <code data-page-node-id="0mkCLOtJ4nAYPpItyvhfMc">JSONPlaceholder</code>，不用注册。</p>
+</div>
+
+<div class="toc" data-page-node-id="hRfzlrgoyYs0OA67pITZyn">
+  <h3 data-page-node-id="atfFy2scbgXGoIhRle1nfD">这一讲的十个部分</h3>
+  <ol data-page-node-id="ybXmKsXMVsXnuPQ0xZdCD0">
+    <li data-page-node-id="vXNEw4GQOZLBsRDZCJrGEd"><a href="#c1" data-page-node-id="3K7nDpgTfVRhwPRzkCAWGX"><span class="n" data-page-node-id="E4S0i9AIzEBQWIuCCMvoVf">1</span>这一页是什么、什么时候跑</a></li>
+    <li data-page-node-id="T9ye0z2XDuz24fYwZTgmp1"><a href="#c2" data-page-node-id="k4NVCnP7YuiTG15t9enRZm"><span class="n" data-page-node-id="jKSPyqi9QKZFml3DiAdvJs">2</span>先跑通第一条断言</a></li>
+    <li data-page-node-id="2wI87CIi7N8Cpv0jFZ1Uot"><a href="#c3" data-page-node-id="pw40kM7kdUKJE4NzQ8bEOI"><span class="n" data-page-node-id="sDGro5vafXd6yF8fp2TkbR">3</span>pm.test 的结构</a></li>
+    <li data-page-node-id="ycVx11FbqfTRfA76LfrjRe"><a href="#c4" data-page-node-id="AsroxaLtc0HtBGOisdvwPp"><span class="n" data-page-node-id="5X3FEDKO1BjSyCDvrH13v3">4</span>能断言什么：全景表</a></li>
+    <li data-page-node-id="rBIXsKMGE2Ewae6kKJ7oEC"><a href="#c5" data-page-node-id="bK8gbxEYMxxQvTpHLd0sH8"><span class="n" data-page-node-id="N9EMKdymnbMlTCyrdGhDXB">5</span>pm.expect 速查</a></li>
+    <li data-page-node-id="EH5rV4AZpVRNLBmig6hSRN"><a href="#c6" data-page-node-id="j4Tqko0wAG24GGC1Fvn03Y"><span class="n" data-page-node-id="lkDBU6AEnpOqRLdZgDuejB">6</span>完整脚本：5 条断言</a></li>
+    <li data-page-node-id="5Uet4HLTGkSE9ZblfU6ylJ"><a href="#c7" data-page-node-id="UegclzwgxN4dEb1hxtzFCh"><span class="n" data-page-node-id="tYorjRguIzIowAeFc1bDMk">7</span>怎么看结果 + Console 调试</a></li>
+    <li data-page-node-id="aGo2cVJIKLMaKwnRt74uwC"><a href="#c8" data-page-node-id="LCUJsuL2dXb9AiqFdeuhNH"><span class="n" data-page-node-id="31ZuBN9jrnPVMSE6HJdsvL">8</span>Snippets 与批量跑</a></li>
+    <li data-page-node-id="M1Oop7oEVDHca5eHJV3cjh"><a href="#c9" data-page-node-id="9e2GfJDQlF6UHISlfA4vYe"><span class="n" data-page-node-id="PDbuO87JZHNTTlw2raZhIZ">9</span>九个常见的坑</a></li>
+    <li data-page-node-id="JmGG4Xg3KaSIDoiig0MCSz"><a href="#c10" data-page-node-id="rdkALyo6sNyLE6ywgOXmIA"><span class="n" data-page-node-id="etzxUqG3GBmfwU2UQod0B8">10</span>自测题</a></li>
+  </ol>
+</div>
+
+<!-- ================= 1 ================= -->
+<section id="c1" data-page-node-id="A8u2QSoFyBMFHZFRQwtpOJ">
+  <h2 data-page-node-id="oHyPG7SdlC8nW9c3XH1Ff5"><span class="n" data-page-node-id="0E0N1DQaegUuTYKVDao5Ew">1</span>这一页是什么、什么时候跑</h2>
+  <p class="sub" data-page-node-id="1Gpx0zGGQq8dNSxBQFqFHt">先搞清楚执行时机，才知道为什么断言写在这里</p>
+
+  <p data-page-node-id="GARHzrYOAPwpiwlooRherx"><b data-page-node-id="k1kjZNsOlnSDmgJuUflKG0">位置</b>：请求区的标签行 → <code data-page-node-id="4P6o6CyzXiXBe26kyEdSyD">Scripts</code> → 左边一列里的 <code data-page-node-id="tnEAOSvKcOCv5X9CuvP7RJ">After response</code>。</p>
+
+  <div class="note">
+    <p><b>不同版本的叫法不一样，别被教程绕晕</b></p>
+    <p>同一个功能，Postman 前后改过三次名字：</p>
+    <ul>
+      <li><code>Tests</code> —— 老版本，B 站教程大多是这种</li>
+      <li><code>Post-response</code> —— 中间版本</li>
+      <li><code>After response</code> —— <b>你的版本，认这个</b></li>
+    </ul>
+    <p>对应的，请求前脚本那一页也改过名：<code>Pre-request Script</code> → <code>Before request</code>。</p>
+    <p><b>找的时候认特征，别认位置</b>：<code>Scripts</code> 点开后，<b>左边那一列</b>就是这两个子页。带 <code>response</code> 或 <code>test</code> 字样的那个，就是写断言的地方。</p>
+  </div>
+
+  <p data-page-node-id="lSJmoey5Uq9RDWw58bbhnH"><b data-page-node-id="lEqD7cYDAKOzgx2CewOx1S">它是什么</b>：一段 JavaScript。每次你点 <code data-page-node-id="k3HUo5dJiHdvGsZcHRy58V">Send</code>，响应回来之后，Postman 会自动把这段代码跑一遍。</p>
+
+  <div class="flow" style="grid-template-columns:repeat(4,1fr)" data-page-node-id="c4Ms0iCeKG4dU0VVl8oQy9">
+    <div class="step first" data-page-node-id="56Jlquc28iUspU1F4FFC9N"><b data-page-node-id="GTW2gRMpz4kN43DIldDYav">① 点 Send</b><em data-page-node-id="Ayuf2aPDWp22rkbS1mhHFf">请求发出去</em></div>
+    <div class="step" data-page-node-id="2EAZvxH6lHwb1RHDzekuaz"><b data-page-node-id="PbgPJcknDmqcqAWm7VGBFB">② 服务器返回</b><em data-page-node-id="rN2akBPe67P4nygG5xRD1g">响应到手</em></div>
+    <div class="step" data-page-node-id="B0o3vbtBMUQwcngHSEg8Zd"><b data-page-node-id="zLJCMsHviaDxuMu2lCqASg">③ 跑脚本</b><em data-page-node-id="9UIP3Uffi2EKxnz29AyH7Q">After response 执行</em></div>
+    <div class="step" data-page-node-id="AhFuDBW2sEvBtuvZ5eNLTV"><b data-page-node-id="YsBzW4eKPRnbxS0H3LPzv9">④ 出结果</b><em data-page-node-id="IPmKTvEi9lYhyMmuK2pDrt">Test Results 打勾或打叉</em></div>
+  </div>
+
+  <div class="note" data-page-node-id="Z93Ea6SewiP7X3slFvRuUw">
+    <p data-page-node-id="NEMt5ixFM7jERmtWYwvysX"><b data-page-node-id="AmnEhdC1zBFGVjIkVAbO5y">为什么叫 After response 而不是 Tests？</b></p>
+    <p data-page-node-id="56znc1eBt34Y5AEu5GMWYz">因为它是按<b data-page-node-id="KK11dQmPCmwScwGksFnI6u">执行时机</b>命名的，不是按功能。<code data-page-node-id="R78rd7z0DbpEVKgTas4Lmj">Before request</code> 是请求发出<b data-page-node-id="bIXfsHaQSnd7P7EXnkccuM">之前</b>跑（用来准备数据），<code data-page-node-id="QwfNqmJd0Q2rfsWriEIoHv">After response</code> 是响应回来<b data-page-node-id="y0yAovAhlRqhOf3FnZcQ5l">之后</b>跑（用来验证结果）。</p>
+    <p data-page-node-id="AVw7Ebq8QtPgKQ5aThTYbE">只有响应到手了，你才拿得到状态码、响应时间、响应体 —— 所以断言只能写在 After response 里。</p>
+  </div>
+
+  <p data-page-node-id="jQue8sQBXuADUwjzXq2z6w"><b data-page-node-id="fxYdn5u4qalGiPo2emzE0l">这一页上有三样东西</b>：</p>
+  <table class="tbl" data-page-node-id="PJ1sf8kcGRSRIkuSKU31Yk">
+    <tr data-page-node-id="NevxlE8lQiPeBFExAD9OqX"><th data-page-node-id="pRQ9QiiEB6Hp1zpY67OV3M">位置</th><th data-page-node-id="5OIyAuw2uhGZssLQElEsj5">是什么</th><th data-page-node-id="2B7sCupj82yE6uJ6B0GDQK">你怎么用</th></tr>
+    <tr data-page-node-id="ogTvntGAAZw5gvTTkEo7i2"><td data-page-node-id="3okbIzlm1eDV7T5eU9vKHN">中间大代码框</td><td data-page-node-id="v3YENxw4oj0yT7fyIjgwpP">你写脚本的地方</td><td data-page-node-id="OTmrAyQanHu5zQKP0gNPIo">手打，或从右边点进来</td></tr>
+    <tr data-page-node-id="qiXTtkys2I4TvKqgqDoJld"><td data-page-node-id="8Orh31R4qnbmZKOgFz1PNO">右侧 Snippets 列表</td><td data-page-node-id="Io1jn0MRQiTYC5Dxjiq4pl">现成的代码片段</td><td data-page-node-id="nFYEmRuCCgKyPu7YOTdrx9"><b data-page-node-id="ON0nHQRRH4ebUEyCPrDjO2">点一下自动插到光标处</b></td></tr>
+    <tr data-page-node-id="5uOF2bTKk8MtcKw3Ldt6Hi"><td data-page-node-id="0NrTbqJFo1NWfF4sg4Kbh6">请求区左下角 Console</td><td data-page-node-id="6Pq1l9gMEWzdDxtHXooN0F">脚本的调试窗口</td><td data-page-node-id="uCbTriP3RQGa676lHKE9AE">看 <code data-page-node-id="WtdudpN1NYVrP1T2o5GJ1T">console.log</code> 的输出</td></tr>
+  </table>
+
+  <p data-page-node-id="F4F72a7e4tXdoRU699gwAY">另外，请求区最底下有一行灰字 <code data-page-node-id="rz5mXhGHbrkFdXkfwjxi5h">+ Add post-response tests</code> —— 那是<b data-page-node-id="851zx1M99AJI4XyrodvauW">快捷入口</b>，点一下直接跳到这一页并起个头。视频里那句 <code data-page-node-id="s3wuWyceBl4Yu0U9UBRI5K">Fix status code assertion</code> 提示，现在改叫这个了。</p>
+
+  <div class="warn note" data-page-node-id="3aCdircTDYyCHkzKZ1vqHv">
+    <p data-page-node-id="hX5FqHBwhS7o04jrjM18Sz"><b data-page-node-id="AwGw0g6gwXdhpd1XZAwAm3">一个必须建立的认识</b>：断言不是"再发一次请求"，它只是在<b data-page-node-id="yK6C5CRC0hDC27Rl4KvWSa">已经拿到的响应</b>上做判断。所以改断言之后必须重新 <code data-page-node-id="pnCEHOPM9cajkBDi5pCGmS">Send</code>，它才会重新跑。</p>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2" data-page-node-id="DqXB2Iu2VFyZGjTd7ewDZu">
+  <h2 data-page-node-id="2TzUG3417siPzSuw4wUpAw"><span class="n" data-page-node-id="bYJLCl3w9oJ7vva7VACUgQ">2</span>先跑通第一条断言</h2>
+  <p class="sub" data-page-node-id="SUdzJPE5Yhydqx6plk8P3E">五分钟，从 0 到看到绿勾</p>
+
+  <p data-page-node-id="5E4wf8mtB3hlNTSROEfvcP">按顺序做：</p>
+  <ol data-page-node-id="j5D6QvutCrv0O36iDygdT0">
+    <li data-page-node-id="ss4ccOCLr2lq5NwvtxRVIi">地址栏填 <code data-page-node-id="XvLn2bnYxsaD7wsEBxY1mX">https://jsonplaceholder.typicode.com/posts/1</code>，方法选 <code data-page-node-id="tjn0Liasa5kVjCX7DwVa84">GET</code></li>
+    <li data-page-node-id="cugFZm38EGgcAimR0Dupzu">点标签行里的 <code data-page-node-id="mfsvlBKrxDpG8xgRqDvDD4">Scripts</code></li>
+    <li data-page-node-id="Sggks9wWl8ninArmQlS1cF">点左边那一列里的 <code data-page-node-id="QFMMyLsbMj5eJvTvhBlp5n">After response</code></li>
+    <li data-page-node-id="FVHJPON7NeoPrtfxALglqW">把下面这段贴进代码框</li>
+  </ol>
+
+  <pre class="code" data-page-node-id="f7pWclcH9CqD31zXib0mur"><span class="cm" data-page-node-id="2wtAnMvtNfDdx4vc0EJCjt">// 最简单的断言：只验证状态码</span>
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});</pre>
+
+  <p data-page-node-id="cCdpOFJ1ZAyxVKYMHehyXh">5. 按 <code data-page-node-id="nz8KwYGc7aMZfUk2SkuD1n">Ctrl+S</code> 保存（不保存也能跑，但下次打开就没了）</p>
+  <p data-page-node-id="MUedvJTUZxvsVrMiWWMBYU">6. 点 <code data-page-node-id="3PazjVUDT1Rgxx5RMjUP3B">Send</code></p>
+  <p data-page-node-id="idrqCFeJ4sU0OHr1av2Yyp">7. 看响应区那一排，多出 <code data-page-node-id="qgFgD0ZKmjDzUZwlvOsCrk">Test Results</code>，显示 <span class="pass" data-page-node-id="1LVJStW10yQPZcpZh7jd3R">1/1</span></p>
+
+  <div class="ok note" data-page-node-id="7d0CpcDtEYm6jgJvA7Ackv">
+    <p data-page-node-id="UsYukVe6pBGdDmHivBk49C"><b data-page-node-id="YAobTK4Jjudn9qBwW3G8Rh">看到 1/1 就算跑通了。</b>展开 <code data-page-node-id="p3HoffnGvY4CkEDkxnRGVX">Test Results</code>，能看到那条断言的名字和绿勾。</p>
+  </div>
+
+  <h3 data-page-node-id="mWmtouK8lvDRFtEVGZPFT8">关键一步：故意让它失败</h3>
+
+  <p data-page-node-id="Qd509fBv1ry8ZkplK0YUB9">把 <code data-page-node-id="W3uj0J7g35GdLk3RmN6b1U">200</code> 改成 <code data-page-node-id="63rdonAqUpzgtdQmbXC4ZS">201</code>，再 <code data-page-node-id="e6syFP8x5V6qQcEUBHcnNg">Send</code>：</p>
+
+  <pre class="code" data-page-node-id="OJcXQxCRuZQAplCQZZY2py">pm.test("状态码是 200", function () {
+    pm.response.to.have.status(201);   <span class="cm" data-page-node-id="yzBEHFdYE97iEkGHeTa2Tm">// 故意写错</span>
+});</pre>
+
+  <p data-page-node-id="LO7Cxr8RmVXX0x1fv3MLCP">你会看到 <code data-page-node-id="AFrfZXUwCpyh205kW7WnJC">Test Results</code> 变成 <span class="fail" data-page-node-id="SiX8evNGOgHBaHPMReaATp">0/1</span>，展开后有红叉，还有一行英文告诉你错在哪：</p>
+
+  <pre class="code" data-page-node-id="GAjkpRtVDIFcl14ZOnTtwh">AssertionError: expected response to have status code 201 but got 200</pre>
+
+  <div class="danger note" data-page-node-id="1ooFzDaWvJvnJ5f1AQqliu">
+    <p data-page-node-id="edzJ8bfL2mS9I6a1d8L044"><b data-page-node-id="NzSTA6NqwL06Q42BHFEfnW">这一步不要跳过。</b></p>
+    <p data-page-node-id="Cs1xC7MlibjGz0W73O12Vd">一个从没见它变红的断言，你没法确定它是真的在工作，还是它根本没跑。</p>
+    <p data-page-node-id="GTQ72pDtrCRnWdnNweFwVh">面试里也会问："你怎么验证你的断言是有效的？" —— 标准答案就是<b data-page-node-id="PF0BRDuFyGcDQYcyqrk9pK">故意构造一个失败的输入，看它会不会红</b>。</p>
+    <p data-page-node-id="IlUWc24biPFrGcTvnYQ9UD">看完记得把 <code data-page-node-id="wJQ8HxaRxAwkGM2YcbcE6K">201</code> 改回 <code data-page-node-id="HHIs7QeSbQ0vwT2EZPAkGu">200</code>。</p>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3" data-page-node-id="om8SmQT3rlmsQPF45DSVX4">
+  <h2 data-page-node-id="lMX5HoG8uIi0CnQdqWwDNH"><span class="n hot" data-page-node-id="x6VsSJSFNzCKyC8teCAMHB">3</span>pm.test 的结构</h2>
+  <p class="sub" data-page-node-id="tmqfyXdAvLfZtx5YxJaqxO">理解了这个结构，后面所有断言都是同一个模子</p>
+
+  <pre class="code" data-page-node-id="My5PeicavguYqhnXKADliO">pm.test("测试的名字（会显示在报告里）", function () {
+    <span class="cm" data-page-node-id="1dolQHFmp2YExnev0BYHjX">// 这里写真正的判断</span>
+});</pre>
+
+  <table class="tbl" data-page-node-id="PBBVBxuLpT44RakmjWfzOX">
+    <tr data-page-node-id="DkX4YG8pC3aTpc1TteXmwv"><th data-page-node-id="BYEFl4FGusYM5EcHQvy4Vx">部分</th><th data-page-node-id="5snJICtikTrGAsb5u4MWUy">是什么</th><th data-page-node-id="nEbv6Vdpi0zArFEgHxhCp0">要注意什么</th></tr>
+    <tr data-page-node-id="9cJsqMLlUWc7PDC64ypMEt"><td data-page-node-id="rgTLUATmh8qz0ggYev9lvH"><code data-page-node-id="Y2rEzCAtGBcAdW124Nv0FX">pm.test</code></td><td data-page-node-id="vdjnbmt28gTshnIokaeC2Z">Postman 提供的函数，用来"登记一条测试"</td><td data-page-node-id="WIYcfOw2Tp0PcwLwfoFvVn">所有断言都必须包在它里面</td></tr>
+    <tr data-page-node-id="yPortFROfLUplFTW8AT381"><td data-page-node-id="oKtbWsEcjeRkYlwD3QzkXY"><code data-page-node-id="e1pi6U44o7i4HkmA4b8ILd">"测试的名字"</code></td><td data-page-node-id="Hsiyj73fQXgdWjBfQ7DbYh">字符串，<b data-page-node-id="b2FFjZGw6zYFqYrHYZUzJL">给人看的</b></td><td data-page-node-id="HnVTOAyf7Addx2mFq5lPod">会出现在 Test Results 和批量报告里，要写清"在验什么"</td></tr>
+    <tr data-page-node-id="fSd6ky0bDu8SHn9Ad5ejM8"><td data-page-node-id="EX1IAk6mKmPGBLOJdGfwH3"><code data-page-node-id="itjIM4AsUaBUtJ22ncU7g0">function () { }</code></td><td data-page-node-id="7Rwe1tbRrssRIY7WpGC6g2">真正做判断的地方</td><td data-page-node-id="qy9JnhdZS4Me5EsWfFARZW">里面才是 <code data-page-node-id="RapEqBxtTewEZGSGU4shr6">pm.expect(...)</code> 这类断言</td></tr>
+  </table>
+
+  <div class="warn note" data-page-node-id="lGO7Bof84jGminmL66RIzN">
+    <p data-page-node-id="6VmIvR6ovedx1mfF9Z2oR2"><b data-page-node-id="AB4ColmHxn76fawFHSrOsL">最容易搞混的一点</b>：<code data-page-node-id="FkRNHBglfJQ659hBMxXZBs">pm.test</code> 本身<b data-page-node-id="mGCbVbi3RphvFM2GJAoELj">不判断任何东西</b>。它只是"开一个盒子"，判断是盒子里面的代码做的。</p>
+    <p data-page-node-id="S2LpTyUasXD5XvLJmzJUOj">所以如果你把代码写成了下面这样，什么都不会发生 —— 因为它没有装进盒子里：</p>
+    <pre class="code" style="margin:10px 0 0" data-page-node-id="uEfjrPFK7dYe3DpVxRVp7D">pm.response.to.have.status(200);   <span class="cm" data-page-node-id="aku39d2sXQfEaYho52mH5Z">// 没有 pm.test 包着，Test Results 里看不到</span></pre>
+  </div>
+
+  <h3 data-page-node-id="EemEZSDCaxeC9a8VtonKSd">为什么每条断言要单独包一个 pm.test？</h3>
+
+  <p data-page-node-id="EczL7qAEVeHUyD2wpiLOkg">假设你写了 5 条检查，全塞进一个 <code data-page-node-id="e0xFElbruFNMEHOCG5Mwbd">pm.test</code> 里，和分成 5 个，差别很大：</p>
+
+  <table class="tbl" data-page-node-id="kwtTjZFKWIS4x0hEj1Ywtx">
+    <tr data-page-node-id="M4wbDlMkdXNbDjmu7AMhuv"><th data-page-node-id="uKj7FK2iP4ofBcV7lK9Nmo">坏例：全塞一个</th><th data-page-node-id="lutOv6WqBtcepKYQ9A8brg">好例：分成 5 个</th></tr>
+    <tr data-page-node-id="LndyXkb6B4gezvtwSChIkY">
+      <td data-page-node-id="pwFBg7ViBNmQyxTilndZWZ">
+        <pre class="code" style="margin:0" data-page-node-id="drPW4HDcjqA8bxwaGnkpk5">pm.test("检查", function () {
+    pm.expect(b.id).to.eql(1);
+    pm.expect(b.userId).to.eql(1);
+    pm.expect(b.title).to.be.a("string");
+    pm.expect(b.body).to.be.a("string");
+    pm.response.to.have.status(200);
+});</pre>
+      </td>
+      <td data-page-node-id="FUsw6OpD2KHcFF6EJrjA3z">
+        <pre class="code" style="margin:0" data-page-node-id="uWxOtWndfhF10mYB2OXyai">pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+pm.test("id 是 1", function () {
+    pm.expect(b.id).to.eql(1);
+});
+<span class="cm" data-page-node-id="bO0ICzQ0jn8eCmSMY1tWNP">// ……其余同理</span></pre>
+      </td>
+    </tr>
+    <tr data-page-node-id="5UU3ZvaPuxzKXnMdyAsfis">
+      <td data-page-node-id="fKcGzDVKkSc796bAEIsZYN">第 1 条一挂，<b data-page-node-id="dkMwB1CbZCzN3Hyak76RSa">后面 4 条根本不跑</b>。报告只显示"检查失败"，你只知道"有问题"，不知道是<b data-page-node-id="SNhZO4prwPVsQj7V4Aaluu">哪一个</b>字段错。</td>
+      <td data-page-node-id="PYovnKdLX5YUibFUIWfYn0">5 条<b data-page-node-id="1NzhgwD5Puoy8NWDvsArxE">全部跑完</b>，报告显示 <code data-page-node-id="mV3iJglZ1XwPBFrtBKsCzZ">3/5</code>，点开就知道是哪 2 条红的。</td>
+    </tr>
+  </table>
+
+  <div class="note" data-page-node-id="4rmC0DhOG7gpl1xiDOZm8W">
+    <p data-page-node-id="cymPVVZZ49LaWisXJbZgo2"><b data-page-node-id="mrtImyKRopWgaH2DeRB00G">记住这句话</b>：<b data-page-node-id="yvVf1v2gtxrP6uESRAYo0W">一条断言 = 一个 pm.test。</b> 名字写清楚"在验什么"，不要写"检查1""检查2"。</p>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4" data-page-node-id="BGBhqT2B56sInmVSexok9W">
+  <h2 data-page-node-id="HIKEHPQazSbqAUKZDDkElA"><span class="n" data-page-node-id="PKx1HPWPYktUJfetf816mN">4</span>能断言什么：全景表</h2>
+  <p class="sub" data-page-node-id="cSF0MNJv2fuphOsb2hGtfd">左边是"你想验证的事"，右边是照抄就能用的写法</p>
+
+  <table class="tbl" data-page-node-id="Wb4BsmRAz6QKhQzacpznui">
+    <tr data-page-node-id="g2906BwbCeYEXCkHNvicCS"><th data-page-node-id="KTslO5AYEE5GB73IFvJ9i9">想验证</th><th data-page-node-id="yLOHlcPjHzOddofuUaff4M">写法</th></tr>
+    <tr data-page-node-id="Ha0y8cUsyc9kfxLuHYZwkd"><td data-page-node-id="Dps1FPlaN2X7TwcvKxgwUD">状态码</td><td data-page-node-id="0PeSDZYxWvqcucxGFzZu6J"><code data-page-node-id="QEixG6yH6dVoTUGGvxm2sz">pm.response.to.have.status(200)</code></td></tr>
+    <tr data-page-node-id="SrNaM1BxALSpE04uVC9mDj"><td data-page-node-id="x33XbHpOOZkgUxCgQ08wts">状态码是几个之一</td><td data-page-node-id="GkuyRXIQVJsPTln3gXufYb"><code data-page-node-id="ed9FrbTp3zKKxo8tPikdEm">pm.expect(pm.response.code).to.be.oneOf([200, 201])</code></td></tr>
+    <tr data-page-node-id="gXmwfgTUK6x3g0vbAh3gVv"><td data-page-node-id="Rpy3gOJWyN7ptBFa78qYib">响应时间（毫秒）</td><td data-page-node-id="lovayuZ7aAgqkWg3h2bBQB"><code data-page-node-id="quleEpXf3fmHll5NkEx9MN">pm.expect(pm.response.responseTime).to.be.below(2000)</code></td></tr>
+    <tr data-page-node-id="yZxHATWiI2dALyI7DWWBxH"><td data-page-node-id="30l9Qp8CHlrPKMONPhCAoF">响应大小（字节）</td><td data-page-node-id="uvfBBFnufDD12sHrT7EfCw"><code data-page-node-id="cggfCzbLSEwNFWJZzX0k67">pm.expect(pm.response.responseSize).to.be.below(102400)</code></td></tr>
+    <tr data-page-node-id="D7LLvWvJNWf1sn9rEt9rfk"><td data-page-node-id="oY9W8ee4deuvQZ4D8aSvwu">某个响应头存在</td><td data-page-node-id="HIJIj2jo8QUmgDtmpXVPzx"><code data-page-node-id="xVZXJjo2e9FigFflDHjs7v">pm.response.to.have.header("Content-Type")</code></td></tr>
+    <tr data-page-node-id="RE4L11DcV3uRllosB9Ynlg"><td data-page-node-id="g27V83zbi938GBIZoSHv13">响应头内容</td><td data-page-node-id="0FBbzsDigQICdzNGGEJGua"><code data-page-node-id="gHHRJTXvAsGuXi80X2vLCI">pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json")</code></td></tr>
+    <tr data-page-node-id="zHMztUtNwYpoY7UepVqnCJ"><td data-page-node-id="IugHuxAlvuns2ydnE9t7R9">返回是合法 JSON</td><td data-page-node-id="gut1IJhXRWbMAfL5jZlKZm"><code data-page-node-id="ePisy3z1i5LFhCPvj7x7EF">pm.response.to.be.json</code></td></tr>
+    <tr data-page-node-id="75rgSWtNrQl8aopnM6eSOk"><td data-page-node-id="KRMWUDv9l5vSYTx5oJSwBi">取响应体（解析成对象）</td><td data-page-node-id="WigMHdlrx4DPks098wlf7N"><code data-page-node-id="AJ1a88oFIMdD2CXjvNeoPL">const b = pm.response.json()</code></td></tr>
+    <tr data-page-node-id="VpSgBWvjtc3fLK2KWzuq53"><td data-page-node-id="JKvmMbbEn0MtLgUraSLjy0">字段等于某个值</td><td data-page-node-id="XMYQWP684E89AXnx4k140u"><code data-page-node-id="32Gsp8CVWdC7WGhivE63Rj">pm.expect(b.id).to.eql(1)</code></td></tr>
+    <tr data-page-node-id="APN8AXPXkxPJnxVOdn5lfE"><td data-page-node-id="ssrqZdHLiqOZO6DMFfFwcj">字段是数字类型</td><td data-page-node-id="DmcbGhCYnoypSnMKIzioRe"><code data-page-node-id="uGESURKWqEEa3WfNma8hy9">pm.expect(b.id).to.be.a("number")</code></td></tr>
+    <tr data-page-node-id="EC2HuTMsqXc0KCvbvAQr80"><td data-page-node-id="6xMO8WmCquCAmfVi9NbyRn">字段是字符串类型</td><td data-page-node-id="eZJ8vmJyHdnDJUIaxZiPIH"><code data-page-node-id="nHpX7oCjYdc0Gd6WlUiRRu">pm.expect(b.title).to.be.a("string")</code></td></tr>
+    <tr data-page-node-id="MH6X3X3NlM6tpAIZJNhqoH"><td data-page-node-id="p2H5yCbRfaSmDYdTO6yED8">对象里有某个字段</td><td data-page-node-id="nCTvLA0Ppd9DrHInNXuEej"><code data-page-node-id="aiXLZeGF8yIlEUeYGZAStz">pm.expect(b).to.have.property("userId")</code></td></tr>
+    <tr data-page-node-id="YTScFumdcysS1G91XGQjLa"><td data-page-node-id="MjIEyFhpHC2yoFHTPDpbCT">数组长度正好 10</td><td data-page-node-id="XmeNe6vxG4Bp3NHYXqtX0J"><code data-page-node-id="90F7SAGusGgVqFJfSr0De0">pm.expect(arr).to.have.lengthOf(10)</code></td></tr>
+    <tr data-page-node-id="GSg5naPYhlrChL9VpLZRFa"><td data-page-node-id="55mRPs9bz0Br5HOHknICVG">数组不为空</td><td data-page-node-id="ybJWAS1eX0AG05NOITaDBB"><code data-page-node-id="51HeRGLRw0rsEy13Kg0sh1">pm.expect(arr.length).to.be.above(0)</code></td></tr>
+    <tr data-page-node-id="kXXa5V0MCXB3u7Tt0W7NsS"><td data-page-node-id="wqA6DrFFQoB62WQ9tqftSz">字符串包含某段文字</td><td data-page-node-id="B0F2TErUuLMRp6buYlUnDO"><code data-page-node-id="BZDHCj3rPClOMGODHHEkwa">pm.expect(b.title).to.include("sunt")</code></td></tr>
+  </table>
+
+  <h3 data-page-node-id="ZFo6gxBkHhQVltRUq0AWZz">三类断言，重要性递增</h3>
+
+  <div class="chain" data-page-node-id="Cbvtr4zC4v7NMErVT9nerQ">
+    <span class="st" data-page-node-id="ddcVHVg2eSuFNk4F0TqlIR">协议断言</span><span class="ar" data-page-node-id="Y1RTyq2R9vuTcD8B6PRT8K">→</span>
+    <span class="st blue" data-page-node-id="B9CC458rXNTOwfZ3SA6qCs">结构断言</span><span class="ar" data-page-node-id="NiEFXQZ5USTh8PnJHCGSTB">→</span>
+    <span class="st amber" data-page-node-id="eIssQQSSzhdw2RSSZ2l5Dq">业务断言（最值钱）</span>
+  </div>
+
+  <table class="tbl" data-page-node-id="h6sjH2SWUuGEXy0hvNbRJV">
+    <tr data-page-node-id="MbuSwoxdnA56tZH5GpFAgF"><th data-page-node-id="Rjy7HjJUuvx3HH2dOFMbrd">层次</th><th data-page-node-id="5k94C9vIIh2M8SrQvAvwEP">验证什么</th><th data-page-node-id="7oJHdwZatg3GHGaAjUE9Nl">例子</th></tr>
+    <tr data-page-node-id="6WhIGdQMIn0NKICNa7tTvx"><td data-page-node-id="fOgmJR0AWvZYB34yS3l0mg">协议断言</td><td data-page-node-id="FgESC0HeTHBnauJNQxuPX2">请求通不通</td><td data-page-node-id="tesNqGLGXQzHQoCB9MJfjQ">状态码 200、响应时间 &lt; 2s</td></tr>
+    <tr data-page-node-id="40qlrH8MloFQbgwMBeJucT"><td data-page-node-id="djR8Rx0kATOStdFmENFTgA">结构断言</td><td data-page-node-id="mcBfN1UsouOyDUitna8PzD">返回的格式对不对</td><td data-page-node-id="5ZQGAal2rs8c8tSgB3DCZi">是数组、长度 10、字段类型是 number</td></tr>
+    <tr data-page-node-id="Ti0DYDFg3fgDc5FQXrwChC"><td data-page-node-id="vWtZbPcpm2o4s90urH8NiR"><b data-page-node-id="N6Tx8xRfAjwVSAx2PjEtt7">业务断言</b></td><td data-page-node-id="gcVFuqXEu0GhX5bYPCVIQ3"><b data-page-node-id="WwoLPq5pBCNVqY5M7ogn9O">数据本身对不对</b></td><td data-page-node-id="wv8d97BCgt9z1csyt9pWg3"><b data-page-node-id="GLbtLdcgHVOE2T3Q3IYyaR">每条数据的 userId 都等于 1</b></td></tr>
+  </table>
+
+  <div class="danger note" data-page-node-id="QmAC3lHA46pFYWomcxHnHv">
+    <p data-page-node-id="Bywwe2BMPcNnt4jSFfVDcZ"><b data-page-node-id="eTw95QZHZmkPTxrgMJDZN3">为什么业务断言最值钱 —— 一个真实例子：</b></p>
+    <p data-page-node-id="c6DswsmgR41fOMkuFZvCor">你请求 <code data-page-node-id="ciyMZhX0RJ5iauhLgukFPg">/posts?userId=1</code>，想查"用户 1 的帖子"。假设过滤条件失效了，接口返回了 10 条<b data-page-node-id="iATpI5BCVvG96yjiDzGNZz">别人的</b>帖子。此时：</p>
+    <p data-page-node-id="e9xbrcMVYk1DOLohrm3RJ8">状态码 <span class="pass" data-page-node-id="b5BBBRN5Ftzz49T4uEF7c3">200 ✅</span>　条数 <span class="pass" data-page-node-id="3wDxxV64YGeityqRqlnpu1">10 条 ✅</span>　字段 <span class="pass" data-page-node-id="ju9ycpS9JK33VOWRnjPQu9">齐全 ✅</span></p>
+    <p data-page-node-id="Ax0GCFbDRwhTAMFkqevJkO"><b data-page-node-id="TEIckNlqBKYOHVOs4PDZrY">前两类断言全部通过，接口却是错的。</b>只有"每条数据的 userId 都等于 1"这条业务断言能抓住它。</p>
+    <p data-page-node-id="nGF9z2I938GqHynGEM2W4w">这就是面试里能把你和别人区分开的那句话：<b data-page-node-id="wP7kUWHh9FvXLSFbowdMSN">技术断言验证接口通不通，业务断言验证业务对不对。</b></p>
+  </div>
+
+  <p data-page-node-id="sFSLOEMbfLWMjrBz4AAcmD">这个免费 API 还给了个现成的反面教材：请求 <code data-page-node-id="0H0KkCydXnEk8rY3hlVQRq">/posts?userId=abc</code>（传字母给一个应该是整数的参数），它<b data-page-node-id="SOR2a5gzTSDpvdE9UA2MP1">不报 400，返回 200 + 空数组</b>。</p>
+  <p data-page-node-id="gbbWa7ZwQXa2LAV4v06hvi">如果你只写"状态码是 200"，这条用例会显示<b data-page-node-id="ZhGONMJdIQ3wYOeLEqFME7">通过</b>，而真相是这个接口<b data-page-node-id="tdjawz75V5Sb7YuudCyMae">根本没做参数类型校验</b>。这就是"200 不等于通过"。</p>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5" data-page-node-id="feVScxakL0xHuFy6D04E2R">
+  <h2 data-page-node-id="KwvZ21EEQQCvK9zheXxekA"><span class="n" data-page-node-id="gzyR0DCKZjRkaeFGM0xWeP">5</span>pm.expect 速查</h2>
+  <p class="sub" data-page-node-id="PT5p42YPK7azaS5rZst5pN">语法就一句话：expect(实际值).to.某某(期望值)</p>
+
+  <p data-page-node-id="zBouAQnKjbEimsLIjYsDvn">Postman 的 <code data-page-node-id="5t1P9QWzrfssfJqoPs27Op">pm.expect</code> 用的是 <b data-page-node-id="k3x8XFgZ7aw28ng8wzHoFE">Chai</b> 这个断言库。它的语法设计成接近英文句子：</p>
+
+  <pre class="code" data-page-node-id="5V2OAWXwwb2MspEWpnkcUl">pm.expect(pm.response.responseTime).to.be.below(2000);
+<span class="cm" data-page-node-id="ya5utJM7pDZaFFO8K74sCp">// 读作：期望 响应时间 是 小于 2000</span></pre>
+
+  <table class="tbl" data-page-node-id="6YT6uE8enMtfVefbJCBuA6">
+    <tr data-page-node-id="fqEKonxgltBjwAEVdqg0dP"><th data-page-node-id="ob9gQdlkRuVcY1LugBex0S">写法</th><th data-page-node-id="wjCnTUywVHZXBpt5OYSQfw">意思</th><th data-page-node-id="u0dKhgfBRcFIARwXSPRsxK">例子</th></tr>
+    <tr data-page-node-id="Uezm9EswE7D3nAZVuIozau"><td data-page-node-id="AVOy9zJd7bahwqMljBAASZ"><code data-page-node-id="QDCbOJBHPXjAhO3kVYHXpR">.to.eql(x)</code></td><td data-page-node-id="zfWCB6k2TSaoXc7VNdfi1V">等于（对象、数组也能比）</td><td data-page-node-id="8rExaWFxvVxCHC3EiTkl0p"><code data-page-node-id="ImqtkbuV6dKdOQls4vshB7">.to.eql(1)</code></td></tr>
+    <tr data-page-node-id="Y3KLu3s4sgUZy6OieSNxLt"><td data-page-node-id="Z6qZU52p20GHrHwQnzQnXb"><code data-page-node-id="0mryEioLteAtlLnlAaDypR">.to.equal(x)</code></td><td data-page-node-id="FUhT48koehjLEFeZR2ydBy">严格等于（比类型）</td><td data-page-node-id="VRfBSrdhDYNy5LdcdU8HFM"><code data-page-node-id="q4BfLkN0gexnABXntBdcTs">.to.equal("abc")</code></td></tr>
+    <tr data-page-node-id="cFvhFOciNYL4G6X6WuEe0t"><td data-page-node-id="ol1QfF5XBjrBzAJoNUqSH5"><code data-page-node-id="L08aHTtDqf8xGn5aDlKzUZ">.to.be.above(n)</code></td><td data-page-node-id="Hmi6pADoTeGyW5ofFQfpQH">大于</td><td data-page-node-id="w3IrER9HwNESiI0R6Ync8j"><code data-page-node-id="1CZQcxnONoAecCWkbALbtI">.to.be.above(0)</code></td></tr>
+    <tr data-page-node-id="IvbHYEHZZL0Z039hsju5Eh"><td data-page-node-id="TCEFQN834J9WPTJlFoBAXL"><code data-page-node-id="5eLebqxBzXeF4pHcLaXD3Z">.to.be.below(n)</code></td><td data-page-node-id="Xlx7w1FGNckGFBxhWJDqRy">小于</td><td data-page-node-id="WJDOii0hUJA7ugPgtOjxr8"><code data-page-node-id="8hzQmRUJgROu1IDdlbnJ4F">.to.be.below(2000)</code></td></tr>
+    <tr data-page-node-id="HymdaJyZU6HoPQFCJf1a6w"><td data-page-node-id="RSCihUEeFXA5Tyy6HFZlt2"><code data-page-node-id="JzkNc9N4XYMVOM3b9skaIa">.to.be.at.least(n)</code></td><td data-page-node-id="jCpWn3yVi3w8XAYVfEabS3">大于等于</td><td data-page-node-id="Z3sRWuliQqwIOTdk6DwYKx"><code data-page-node-id="W8cM9xjSeMkJgRZriBV5bM">.to.be.at.least(1)</code></td></tr>
+    <tr data-page-node-id="C3yPg7IxT1HK64CN4GJsqJ"><td data-page-node-id="6Dq2TzG9A655Sm9efHkUfv"><code data-page-node-id="VtbirlaSPznpPG6Dm3tPFN">.to.be.a("number")</code></td><td data-page-node-id="vnmRA8uvEncByaSuXxtHym">是某种类型</td><td data-page-node-id="zW64I5ituI1ZchYkIoRA3V">number / string / array / object / boolean</td></tr>
+    <tr data-page-node-id="ZOFqe8t0Xr0E9Ul09s6FAx"><td data-page-node-id="2yySnRN9ma4AVo4HFqm5HM"><code data-page-node-id="uBCPj5T7JIQ3ePLSBXOxPo">.to.include(x)</code></td><td data-page-node-id="2JrGxbGQx4ZBzEyyGpYI7c">包含</td><td data-page-node-id="6IO78oRTujpZfYT8LlKoCf">字符串含某段、数组含某元素</td></tr>
+    <tr data-page-node-id="gE5nJDWVTQttrCqMHsDOHb"><td data-page-node-id="saToga3ZLXUTVXQ8uCNqaQ"><code data-page-node-id="cWJhEbebHZbEP0EZ3fMOej">.to.have.property("k")</code></td><td data-page-node-id="B97WL8juGhbcH62lVHQUwt">有某个字段</td><td data-page-node-id="TU3zJFz5ekyIuz6t8gxWbc"><code data-page-node-id="OU2xVFjsD9JQs1zBqisboB">.to.have.property("title")</code></td></tr>
+    <tr data-page-node-id="oc0ETmjE7DgHuzWpbMpm9K"><td data-page-node-id="5wqKyFhhJsj4JkvnowuMLx"><code data-page-node-id="UE9Al1iqxDpO9o9BVKG5A5">.to.have.lengthOf(n)</code></td><td data-page-node-id="BIjNnEBAjYKs8qkjfNu64F">长度是 n</td><td data-page-node-id="RJ8UAzNMnP72bnb6e1Pems"><code data-page-node-id="OmSP5IdAdZaHSI0F2SE6ip">.to.have.lengthOf(10)</code></td></tr>
+    <tr data-page-node-id="pF3yRkKZC7hRjFJDuzvAeP"><td data-page-node-id="mvu14uw6Q6OpHrvnE35Xyh"><code data-page-node-id="YVreWdhogwkNsiHpcoZ0BO">.to.be.true</code></td><td data-page-node-id="m9jEdeTChiag2GhXKoj9J8">为真</td><td data-page-node-id="vCB97B05sQuN1vB6S1HE0R">直接跟，不用括号</td></tr>
+    <tr data-page-node-id="O5vgASKPwmA9MTAP7OYjyt"><td data-page-node-id="EkB2GrLjVbM8FIrN0ZS4ka"><code data-page-node-id="w2C1C3Pja4Wh0Ze40982Go">.to.be.oneOf([...])</code></td><td data-page-node-id="7MdsQz2edqaHs8HEL2Fd5I">是其中之一</td><td data-page-node-id="efZjX9crl1RBUdZ0HqI1ar"><code data-page-node-id="xkIVqkJmOAo1DRSWWGyfYK">.to.be.oneOf([200, 201])</code></td></tr>
+    <tr data-page-node-id="D0RzV0M61CQYFk0NAmcSpQ"><td data-page-node-id="44cR5qOIKkjBxVOfSie8h5"><code data-page-node-id="mCCOOQBsAPE86LmKeR5mSB">.to.not.eql(x)</code></td><td data-page-node-id="EaVXav5M7OAECBsj3yj2a4">不等于（取反）</td><td data-page-node-id="7FI4Ije7tis9uzNtW2mjRn"><code data-page-node-id="RhTmnK18FDmU0mLpPGtMi8">.to.not.eql(0)</code></td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="Dn6TFdW3avAH0y11HqCARz">
+    <p data-page-node-id="vG7JOJPveXzK0oDEKkDhye"><b data-page-node-id="RFM6GSbEWzKYgvGEzWhr2A">记忆法</b>：<code data-page-node-id="DH0VJWDSM29HFKfuv5wLxX">.to.</code> 后面就是一句英文小句子。把 <code data-page-node-id="CBE6svTSyBRudG7hFf1by5">pm.expect(这里)</code> 里的东西当主语，读一遍就知道对不对。</p>
+    <p data-page-node-id="AXy3YLuAVeHsliWdj8RRPw">不用背全表。写的时候看着这张表抄，写十几次就自然记住了。</p>
+  </div>
+
+  <h3 data-page-node-id="JqAF0FfZzBJEdxa9hjHSdI">pm.expect 还可以加一句"失败说明"</h3>
+
+  <pre class="code" data-page-node-id="FoOV6VvMSPdRqTvrIYSLsl">pm.expect(item.userId, "第 " + (index + 1) + " 条的 userId").to.eql(1);</pre>
+
+  <p data-page-node-id="CU6nHH3VUMll5o9ENJAmNm">第二个参数是<b data-page-node-id="7EvWGZKsfBEFSdqwZmFGct">失败时显示的文字</b>。在循环里特别好用 —— 100 条数据里有一条错了，它会直接告诉你<b data-page-node-id="p4E89Jq39VvKKTcxc1S9cZ">是第几条</b>，而不是只丢给你一句"expected 5 to equal 1"。</p>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="c6" data-page-node-id="UNnlayG38tgvQXQkKZHyT6">
+  <h2 data-page-node-id="PtZtnkfm2eVCGSeoSmpIp9"><span class="n hot" data-page-node-id="majrxc9LtsmkYFYGjYHGzi">6</span>完整脚本：5 条断言</h2>
+  <p class="sub" data-page-node-id="v1pMpD0peTIsPMiZvmnQwE">照抄进 After response，直接就能跑</p>
+
+  <p data-page-node-id="NV5fIeHLpQa7ryqhFl0wfs"><b data-page-node-id="SkckqpzMQLE1KoOeK0XiOA">请求</b>：<code data-page-node-id="MEpY9ICR3CJPq0nP1wtgyb">GET https://jsonplaceholder.typicode.com/posts?userId=1</code></p>
+  <p data-page-node-id="kLRC18EK4D3MFme61RJWvF"><b data-page-node-id="UBOQWQGjYhA04oVLgG7kWS">接口真实行为</b>（已实测）：返回 <b data-page-node-id="ubsBaNQ1AbmxV0wvbb4Xx6">200</b>，一个<b data-page-node-id="xhK3xF1mfLEWyYxIx2SRAd">长度 10</b> 的数组，每条数据的 <code data-page-node-id="RI5o7UZWql0LeJ8IaVbDl3">userId</code> 都等于 <b data-page-node-id="cD0p6zjVZ8F4m5p71bZahQ">1</b>，<code data-page-node-id="FNWMcqdbwiIEl5voiJkCWa">id</code> 从 1 到 10。</p>
+
+  <pre class="code" data-page-node-id="FJ2ii4JWowWRyZbT0UmD1H"><span class="cm" data-page-node-id="UEqpbY81exstzsAE9CVU7C">// 先解析响应体，存成变量，后面反复用</span>
+const body = pm.response.json();
+
+<span class="cm" data-page-node-id="mRs9NcqumAMdiB91iIsPRF">// ① 协议断言：状态码是 200</span>
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+<span class="cm" data-page-node-id="kKtWacQkATQoXiEJ8ZL6qa">// ② 协议断言：响应时间小于 2 秒</span>
+pm.test("响应时间小于 2000ms", function () {
+    pm.expect(pm.response.responseTime).to.be.below(2000);
+});
+
+<span class="cm" data-page-node-id="R26mDZF6U60Etu2D14tlwS">// ③ 结构断言：返回的是数组，且正好 10 条</span>
+pm.test("返回 10 条数据", function () {
+    pm.expect(body).to.be.an("array");
+    pm.expect(body).to.have.lengthOf(10);
+});
+
+<span class="cm" data-page-node-id="MmedD8Dw4tx9QrepDizZdE">// ④ 业务断言：每一条的 userId 都必须是 1  ← 最重要的一条</span>
+pm.test("每条数据的 userId 都是 1", function () {
+    body.forEach(function (item, index) {
+        pm.expect(item.userId, "第 " + (index + 1) + " 条的 userId").to.eql(1);
+    });
+});
+
+<span class="cm" data-page-node-id="gr21VnA3UlFGMtxPSvvVE9">// ⑤ 结构断言：字段齐全，且类型正确</span>
+pm.test("字段齐全且类型正确", function () {
+    body.forEach(function (item) {
+        pm.expect(item).to.have.property("id");
+        pm.expect(item).to.have.property("title");
+        pm.expect(item).to.have.property("body");
+        pm.expect(item.id).to.be.a("number");
+        pm.expect(item.title).to.be.a("string");
+    });
+});</pre>
+
+  <p data-page-node-id="dc0qtaId3AzB6cjKUnTfoy">点 <code data-page-node-id="RDNax4KGnP41wI4DpGRNLb">Send</code>，预期看到 <span class="pass" data-page-node-id="bi6ONhPpIFuZhF6s1m0los">5/5</span>。</p>
+
+  <div class="note" data-page-node-id="qPI28KTMVc5g7gO0aYmP7z">
+    <p data-page-node-id="RrQwdQ8FWiOd5cSCsdA32e"><b data-page-node-id="mB5hvDJHAj8y4ok3oHLgu9">为什么第 ④ 条要写成循环？</b></p>
+    <p data-page-node-id="bADkAGo7nvaWTK0dAsH7Fq">因为 <code data-page-node-id="uyfwe9kty64YCuKAkeX6b1">pm.expect(body.userId)</code> 是错的 —— <code data-page-node-id="X7u7Zn8yEg2hgrC24v0iB5">body</code> 是个数组，本身没有 <code data-page-node-id="3EaMFwWTkzTYOqs0bdgGn6">userId</code> 这个字段。你必须<b data-page-node-id="7xOwJZlu25GmjAhl38cueB">逐条拿出来看</b>：<code data-page-node-id="fdYMiSe8itSCWE1geKKN5V">body.forEach(function (item) { ... })</code>。</p>
+    <p data-page-node-id="y09DEq1UnZ34E6WGhATcMO">这是初学者最常踩的一个坑：<b data-page-node-id="cK6JNquxGSO0das0gN7ENU">响应是数组时，断言要写在循环里。</b></p>
+  </div>
+
+  <div class="ok note" data-page-node-id="M8j1fUk6sz3NQQ8mwM3dez">
+    <p data-page-node-id="RHgzxkV8CoakbpR69F21po"><b data-page-node-id="aTuxhD8gRiapGQ33r1PW9d">再练一次"让它红"</b>：把第 ③ 条的 <code data-page-node-id="U18UPo8y2WheM0qafYv4UJ">lengthOf(10)</code> 改成 <code data-page-node-id="bv2wX5J6HHmbe6MYA6VZgv">lengthOf(5)</code>，Send，看它变红。</p>
+    <p data-page-node-id="e1SGx3ETw68mmSrZzAgudi">再把第 ④ 条的 <code data-page-node-id="p3wTGmDfGizV00pAtnFcQE">to.eql(1)</code> 改成 <code data-page-node-id="4GdA1ruFmJzvZg5jBFO4jz">to.eql(2)</code>，Send —— 这次你会看到<b data-page-node-id="zYuz5W0FVsa96MTYtZw5Dg">失败信息里带着"第 1 条的 userId"</b>，这正是那句自定义说明在起作用。</p>
+  </div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="c7" data-page-node-id="QE1uWhqxgxz2GREhw46ctK">
+  <h2 data-page-node-id="M1piHuKISeQ4h7CvgAPGPH"><span class="n" data-page-node-id="D7KRxFMTH6wnIUJIHOhNXU">7</span>怎么看结果 + Console 调试</h2>
+  <p class="sub" data-page-node-id="OrksugtUc6fKjyFgozb8dS">断言失败之后，正确的第一步是看哪里</p>
+
+  <p data-page-node-id="SCJfUQN0pUvAQL1VvbxlyR">响应区那一排会多出一个 <code data-page-node-id="iFRewbs5ekdTNrDo7ABMtM">Test Results</code> 标签页，上面的数字是 <b data-page-node-id="nEVAAnHCZcjaOL3bTtEZq8">通过数 / 总数</b>：</p>
+
+  <table class="tbl" data-page-node-id="AHRPeTjAqog2uXLuFDlrPw">
+    <tr data-page-node-id="rl9YCymEpH3Z4g779R7s4Y"><th data-page-node-id="MSI85ziKUje5cEU5y2EEKJ">显示</th><th data-page-node-id="KZ22AUP0dG4PxiWGLs09pi">含义</th></tr>
+    <tr data-page-node-id="9HZjpIXujEuu92fwHmAEWd"><td data-page-node-id="Y7kPyE2KkGxz4ulPRsRU1Z"><span class="pass" data-page-node-id="ACzxRQ3Jf0xRYKx6NzIEJz">5/5</span></td><td data-page-node-id="KfMIBriwGqfscQmBojuIGd">5 条全过</td></tr>
+    <tr data-page-node-id="ZJORLoZTeQGlZ8hFL8Ar1C"><td data-page-node-id="bzp3RcMgCDeWpW9NhLJkLA"><span class="fail" data-page-node-id="S5ccrM7hDfnSUrQTRHKReI">3/5</span></td><td data-page-node-id="EUcqBgRBlyEKhEIHLuuEgX">过了 3 条，2 条挂了</td></tr>
+    <tr data-page-node-id="5XpqLsxbJQiCQxchPOVrWp"><td data-page-node-id="Xqoe0YOdDrE0MxhqtWP4xt">根本没有这个标签页</td><td data-page-node-id="DOHPveb5wWw2faXw2hG6Cu">脚本里<b data-page-node-id="t71QI0tV848KRbMLQFuaYr">一条 pm.test 都没跑</b> —— 要么没写，要么写在了 pm.test 外面，要么语法报错</td></tr>
+  </table>
+
+  <p data-page-node-id="5CFfuaPMNjLFkWDW0DoKiQ">点开 <code data-page-node-id="5Zpf9qVHqVFVS42VmDPG3p">Test Results</code>，每条断言一行：绿勾 = 过，红叉 = 挂。红的那条展开，会看到三样东西：</p>
+
+  <ol data-page-node-id="kiwtzpo9xwbjW5dA8su7q0">
+    <li data-page-node-id="wMrOVNZ4FcLFxeQyfaWJPK"><b data-page-node-id="nOdvHNSbc1FZPH9uB9NW5w">失败原因</b>：<code data-page-node-id="4mLo85QDi0k8R6YpCFqWR9">AssertionError: expected 201 to equal 200</code></li>
+    <li data-page-node-id="OUWoleNnltYSPrVNDjXFyO"><b data-page-node-id="hOVElw5mK0021TyIpQ5Svr">是哪一行</b>：直接指出代码位置</li>
+    <li data-page-node-id="YdvrIbItfBiNooIawrncAc"><b data-page-node-id="f83vopSPF1uyFiLzI9U9rx">你写的那句失败说明</b>（如果加了第二个参数）</li>
+  </ol>
+
+  <h3 data-page-node-id="qWukHtGM0cPeAac2ACEPHG">Console：断言写之前先看一眼实际值</h3>
+
+  <p data-page-node-id="cPfreiQDHrXH0zZqhC0Gid">Postman 左下角有个 <code data-page-node-id="ZbFBMGE3oQrU0MZsZlru70">Console</code> 按钮。脚本里的 <code data-page-node-id="BkudgBQu5WMblWZqIleYsj">console.log()</code> 输出全都在这儿。</p>
+
+  <pre class="code" data-page-node-id="FuiAo7uFoMYla04UMNYKuV">const body = pm.response.json();
+
+console.log("返回条数：", body.length);
+console.log("第一条：", JSON.stringify(body[0]));</pre>
+
+  <p data-page-node-id="bYMLMDN0YfaqaDArQ5CGXD">点 <code data-page-node-id="R174uxIg81ebrlBUfhPwbo">Console</code> 打开面板 → <code data-page-node-id="M293AOPaizgiBFCa7iIaoX">Send</code> → 就能看到输出。</p>
+
+  <div class="note" data-page-node-id="xHsIfhzMrclNQh2h56mjRB">
+    <p data-page-node-id="jPOliFcBCeE2w0ixjVFtuw"><b data-page-node-id="KLsaXWGduLuVyMLnRilrHS">为什么这个很重要？</b></p>
+    <p data-page-node-id="W6dCmZ3X6oY4bBUm2ypzyk">写断言时你经常不知道实际值到底是 <code data-page-node-id="1ndM4TuwlT1Ie5apKOoxiU">1</code> 还是 <code data-page-node-id="NdAAwUSjvowxBdSwltdWqu">"1"</code>、是数组还是对象。硬猜然后反复试，很慢。</p>
+    <p data-page-node-id="7OfCfT975VyNEipybLLXCR">正确做法是<b data-page-node-id="2wo4FHWjmUrJXZ2VyBmnVn">先 log 出来看一眼，再写断言</b>。</p>
+    <p data-page-node-id="u0noTesrKTi1FZfSDGWWMd">面试点：问到"断言失败了你怎么排查"，答案里应该有 <b data-page-node-id="3hu5dkpiHDbOvbaSYGHAT2">"看 Postman Console 里打印的实际响应值，和接口文档对照"</b>。</p>
+  </div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="c8" data-page-node-id="sSupPgDwcT0rGKxIEmoLeR">
+  <h2 data-page-node-id="MHKCCYkcSiwnOuGHPmTZK8"><span class="n" data-page-node-id="SyALlnq5BUoFRInPwCM0hX">8</span>Snippets 与批量跑</h2>
+  <p class="sub" data-page-node-id="GwktyVoXTZDnoHNUYycXGB">一个是"不用背语法"，一个是"断言的真正价值"</p>
+
+  <h3 data-page-node-id="fkymUPHWn04vTVuoOZTLyj">Snippets：点一下，代码自动出现</h3>
+
+  <p data-page-node-id="hIh84gx21yvxfx1xL0zYtI">After response 页面右侧那一列，是 Postman 准备好的<b data-page-node-id="D4K4Bir6RlRDQ13c8VwlXN">常用代码片段</b>。点一下，它就自动插到你的光标位置。</p>
+
+  <table class="tbl" data-page-node-id="AQBuCnglh3n8Hqa7Kc2LR8">
+    <tr data-page-node-id="jCPoFnghrbjHJBbjHuUb8K"><th data-page-node-id="OGeOW0ETCLH3cWb47jBp1I">Snippet 名字</th><th data-page-node-id="VqBGm6pyAL1qnzNTkkuvbx">插入什么</th></tr>
+    <tr data-page-node-id="eWsf0CTNHHwu4wXQX6JHQn"><td data-page-node-id="R8ZAJOKEwysg8zrACqNjhM">Status code: Code is 200</td><td data-page-node-id="QKL4S0SgpvwiQFUw2lXNeJ">状态码等于 200 的断言骨架</td></tr>
+    <tr data-page-node-id="Ny4uO4v7TbaLEq4hherQoh"><td data-page-node-id="eWSUaJnH9zHcLC0RpVLsU7">Status code: Successful POST request</td><td data-page-node-id="OetVGrahLsJkvnl6LULcPd">状态码是 201 或 202</td></tr>
+    <tr data-page-node-id="YHJE3CumWu8xJxRQ0UqcZR"><td data-page-node-id="8sKLmYUPwW5TpdbL1SudHk">Response body: JSON value check</td><td data-page-node-id="4Kidvg3eULJOSzhTqPp7n6">取响应体里某个字段做检查</td></tr>
+    <tr data-page-node-id="0OFSFmeinu9X2k90nOILUw"><td data-page-node-id="EIJp4IRQFyZIBBkBIS10MX">Response body: Contains string</td><td data-page-node-id="xwLZMFUqKFm2k71mDUGhfA">响应体包含某段文字</td></tr>
+    <tr data-page-node-id="kPrqVzZ11HDYOVrwlQ91H2"><td data-page-node-id="aX8AWTsPRErLiHLcGO2chz">Response time is less than 200ms</td><td data-page-node-id="YaITpU2eqiaDlfivA4hB40">响应时间断言</td></tr>
+  </table>
+
+  <p data-page-node-id="efYjis5Klo00OTb0Xb7StG">用法：<b data-page-node-id="HyFs8MFn8SZ7Kzy0Dw0Qv0">先点 Snippet 生成骨架，再把里面的值改成你想要的</b>。比自己从零打快，也不容易记错语法。</p>
+
+  <h3 data-page-node-id="U3zen6eWIn80wwp4BG0Dc9">Collection Runner：批量跑</h3>
+
+  <p data-page-node-id="mV5Fw2lqYASHxwyRTI97CQ">你不可能每次都手动点一遍 <code data-page-node-id="QsGtTr6HB6X5nCxTlNiCGa">Send</code>。真正干活时是这样跑的：</p>
+
+  <div class="flow" data-page-node-id="1rHueLMxR6UmzmFGFNmxMZ">
+    <div class="step first" data-page-node-id="RG4zILImMthCywRZBH8OtY"><b data-page-node-id="SPxdMQuWFXjZDd4HpphXTW">① 存进集合</b><em data-page-node-id="o3BXpKHNMMDJHAdm5laFNA">请求命名成用例名</em></div>
+    <div class="step" data-page-node-id="wTyjuiZe5w2vmv7ZtCJoIP"><b data-page-node-id="OIM0zQenxZxCP9RLwxLCOA">② 打开 Runner</b><em data-page-node-id="TMSEp2ERkHGeADzCKccktA">集合上右键 Run collection</em></div>
+    <div class="step" data-page-node-id="3YuvoX1DkLUTjVsGtn3UZw"><b data-page-node-id="4zyENWCO7r4w751X5DFENZ">③ 选请求</b><em data-page-node-id="Owz7tY7oo63TEJ670uH4Hs">勾上要跑的</em></div>
+    <div class="step" data-page-node-id="2Gqf3I2xdmNql4B990HoQO"><b data-page-node-id="yVZ3hx9Cp5oNFVGraExuC3">④ 点 Run</b><em data-page-node-id="ADXzAkMitMVr3I6DJF5cXm">一键全跑</em></div>
+    <div class="step" data-page-node-id="zQwty9U8YQdSc2AwRWymiH"><b data-page-node-id="Y3MZZCuMdxS6Wr6jbOhFSK">⑤ 看汇总</b><em data-page-node-id="Tghx1q8v83UtDiA32MKei9">通过/失败/耗时</em></div>
+  </div>
+
+  <p data-page-node-id="DWpKvZJYgnEbjqF2Jm0aFP">跑完会给你一份汇总：总共跑了多少条请求、多少条断言通过、多少条失败，失败的是哪些。</p>
+
+  <div class="ok note" data-page-node-id="9aISgGGZ7REF85pPGBBxij">
+    <p data-page-node-id="HwjxBV0hSg9JXvEHAZI7Od"><b data-page-node-id="87IcQMxlARdMH6gArUioEU">这才是断言的真正价值。</b></p>
+    <p data-page-node-id="hVPZGSMkEhOmlzBHtwr29g">100 条请求一键跑完，你不可能一条条用眼睛看。有了断言，机器在几秒内告诉你"哪几条挂了、挂在哪一句"。</p>
+    <p data-page-node-id="cr5gondlN3EAKruQ0Xx0mQ"><b data-page-node-id="v8XYs3HupI3zCYVIFfBbVq">面试里"你怎么做接口回归测试"的标准答案，就是这一段。</b></p>
+  </div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section id="c9" data-page-node-id="Ws5H42SjLwVlsCVZ47BM7a">
+  <h2 data-page-node-id="qcXGMtCjzbV7t8sG97wvhy"><span class="n" data-page-node-id="rdDGRQp5hmv3ltGAonI5dF">9</span>九个常见的坑</h2>
+  <p class="sub" data-page-node-id="lT1HVnlz49NvuzcqUq1rX9">都是会真实撞上的，撞上回来看这张表</p>
+
+  <table class="tbl" data-page-node-id="cEQlpYtfAWuODg6WECSXHH">
+    <tr data-page-node-id="S044coV80uWHkBTgfDjtlY"><th data-page-node-id="dgfWpdDTWtYHLXdplWWqP7">坑</th><th data-page-node-id="spHQUB9PUNfDsgvkW5gCpN">你会看到什么</th><th data-page-node-id="V41blcaPmpsjRjBfzm6B6p">怎么解</th></tr>
+    <tr data-page-node-id="dz2VTQzp570WBA9Oi4M5AS">
+      <td data-page-node-id="d4Or9agPAKo9TD40tQz9yb">数字和字符串不分</td>
+      <td data-page-node-id="C5fg5JqdZxrVc5rRvRsIXG"><code data-page-node-id="D52M6efeiS4p9QREd4xNfx">expected '1' to equal 1</code></td>
+      <td data-page-node-id="IVOqnIELzADpbRO76EgJvH">先 <code data-page-node-id="IfTzdB40f0FyKh3wZJheQG">console.log</code> 看实际类型。<code data-page-node-id="VByXap8HPQI2DF1DmPzEVi">1</code>（数字）和 <code data-page-node-id="SwZdCPQC8gxoBkMTacS4EH">"1"</code>（字符串）在断言里不是一回事</td>
+    </tr>
+    <tr data-page-node-id="cIVgHEf5wyU9eoeBU2cIrh">
+      <td data-page-node-id="9ClgvnqmRFNpaJ5PLA0bZ9">断言没包进 pm.test</td>
+      <td data-page-node-id="HQjLxde8ej4794PCCaxOPD">Test Results 没动静 / 不出现</td>
+      <td data-page-node-id="rGkRbJm5jFcqKT5Unz66aa">所有断言必须写在 <code data-page-node-id="PkyoVdrItXWr2bIul7yZ12">pm.test("名字", function(){ ... })</code> 里面</td>
+    </tr>
+    <tr data-page-node-id="0Q55EqkjeOdfGZ6Ma6Upsm">
+      <td data-page-node-id="jiyhtV4XfpvlNjH9rtpWwY">对数组直接取字段</td>
+      <td data-page-node-id="gI0aDfS6oC6ZZUTXANfiOw"><code data-page-node-id="UX4sNjgAGdtjHy5gwEpO3U">Cannot read properties of undefined</code></td>
+      <td data-page-node-id="gBIGMCYwSkyieOQtiCGdao">响应是数组时要 <code data-page-node-id="qDozhb9KFVWpdrw9oNUiE1">forEach</code> 逐条判断</td>
+    </tr>
+    <tr data-page-node-id="OjZyk5CJfZyI2MMHEGpsuj">
+      <td data-page-node-id="gqaILDnik2hficeH1s0O7F">响应不是 JSON 却调 json()</td>
+      <td data-page-node-id="yeq6FGJLNWMAmybqO8dvts"><code data-page-node-id="uxwinw5hRlBva24gjJjt0m">Unexpected token</code></td>
+      <td data-page-node-id="nYjEwtn1LugKuKdlg74HOt">先加 <code data-page-node-id="UOc33PGnBmf5aXfnOyMR6H">pm.response.to.be.json</code> 单独验一条，或改用 <code data-page-node-id="pwUZ4oyIAwjFaGrGkBSEth">pm.response.text()</code></td>
+    </tr>
+    <tr data-page-node-id="PK93K26cKmz912IdZO0EdJ">
+      <td data-page-node-id="RgUkBg6gm3crW6RO4ElZpU">只断言状态码</td>
+      <td data-page-node-id="UKcyiTrsGQsY5zcVzOdmIV">全绿，但数据是错的</td>
+      <td data-page-node-id="qalKQpkBYXchstfdJlYVyU">补业务断言：字段值、条数、类型</td>
+    </tr>
+    <tr data-page-node-id="2GTctm8afeeolO47Qto812">
+      <td data-page-node-id="sK6DL3KX2fG07JjGZvbw7Q">断言名字没意义</td>
+      <td data-page-node-id="xJYB5vJ9u2ryBNurCuqKfi">报告里全是"检查1""检查2"</td>
+      <td data-page-node-id="DXMXD5DA0WWETpEGxBHMmM">名字写清"在验什么"，报告才看得懂</td>
+    </tr>
+    <tr data-page-node-id="Rp1ikWKiuVn6mHVaVaZ4gK">
+      <td data-page-node-id="HbI8WHNxSXQgk2gUMfHM4o">把测试数据写死在脚本里</td>
+      <td data-page-node-id="j7ocI85CvCyQWWy5wRLG82">换个环境整套挂掉</td>
+      <td data-page-node-id="wvtLU8JrLDMzFNbGGpDH6F">用环境变量 <code data-page-node-id="O7GG3nrp354ADPqGy88p3s">pm.environment.get("...")</code> 代替硬编码</td>
+    </tr>
+    <tr data-page-node-id="ZyobETgJFt8igIW66EPnbv">
+      <td data-page-node-id="2FiOcOlFFXCeNC9UM0H4In">脚本改完没保存</td>
+      <td data-page-node-id="X9MyHH9Vnwx7Nc8si36YRo">下次打开是空的</td>
+      <td data-page-node-id="FyqWONLOrglf8DhKviV7Al"><code data-page-node-id="LB6Ow5m4NwWOERvLpY0hdA">Ctrl+S</code> 保存，标签上有个小圆点提示未保存</td>
+    </tr>
+    <tr data-page-node-id="I4x4weh2FSdCLmlHDooXPw">
+      <td data-page-node-id="T2OWYD3IeUjY3qoxvWeUKe">响应时间阈值写太紧</td>
+      <td data-page-node-id="ovCCkmiowcKYZLyhibcjFw">偶尔红一次，重跑又绿</td>
+      <td data-page-node-id="7YtDoyCKhB5IkM0VrKfrfe">阈值给宽容一点（比如 2000ms），不然网络抖动就会误报</td>
+    </tr>
+  </table>
+
+  <div class="warn note" data-page-node-id="7utAwQThCJ9v27wbvAfNvr">
+    <p data-page-node-id="emSH1NbWxwxfG6dI6zBUs6"><b data-page-node-id="wjwjYKDHB0DwxnJl861vFx">最后一条多说一句</b>：<b data-page-node-id="9yhb614AaYkhU5r71gkvi7">偶发失败比稳定失败更麻烦</b>，因为它会让你怀疑自己。</p>
+    <p data-page-node-id="YoBSRtO3zfMwZIi7yhPXcu">真实工作里，性能类断言（响应时间）的阈值一般会留出很大余量，或者根本不放在功能测试里跑。面试时能说出这一点，是加分项。</p>
+  </div>
+</section>
+
+<!-- ================= 10 ================= -->
+<section id="c10" data-page-node-id="IpeX6KHaPBQIjoTMsY0Sj4">
+  <h2 data-page-node-id="YjRWTCg7YrIp6CgFUWCOk5"><span class="n" data-page-node-id="tRfpjjQUR8f1uBPstw1G7Y">10</span>本讲的自测题</h2>
+  <p class="sub" data-page-node-id="x4DHkFZqXvTv28L7K7VAIr">先自己开口答，再展开对答案</p>
+
+  <div class="qa" data-page-node-id="dumB9zHyude4f10untmdhq">
+    <p class="q" data-page-node-id="cgyevV1pj271xIEB3tJebB">Q1　视频教程里那个 <code data-page-node-id="fGx6jXXMSsYC4f0uUOeVPI">Tests</code> 标签，在你这个版本里叫什么？在哪一步点开？</p>
+    <p class="a" data-page-node-id="vpa8JMhvditBnrkEieOr9U">叫 <b data-page-node-id="zKYB1RqBc4DEye4yKlnqaA">Scripts</b>，点开后左边那一列里的 <b data-page-node-id="GWdX6fdRIOmHpjwrRbmTxn">After response</b>。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="BXjHCwA72JGLK6kFlEzObL">
+    <p class="q" data-page-node-id="GW7zKNhg6yqaVTnud6IBbO">Q2　为什么建议每条断言单独包一个 <code data-page-node-id="hMkEbLpfYClQ7Cu5NQXxPD">pm.test</code>，而不是全写在一个里面？</p>
+    <p class="a" data-page-node-id="hVhpkfNwJzTcTFFGr0SDoZ">一个 <code data-page-node-id="qSpYEJqjI1C8R6TYtRw4cQ">pm.test</code> 里<b data-page-node-id="SKQYfFH6WeiDjuXAvdistb">第一条挂了，后面的就不跑了</b>，你只知道"有问题"，不知道是哪一个字段错。分开写则全部跑完，报告里能精确定位。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="cLXWl7XX3B4byq9fdDfsm3">
+    <p class="q" data-page-node-id="AVow7djtUVvPn3UFTqy7VT">Q3　一个接口返回 200，但返回的数据是错的。哪一类断言能抓住它？为什么只写状态码断言的用例会"通过"？</p>
+    <p class="a" data-page-node-id="jiI8xlGzTTg8JnUq0rOFO7">只有<b data-page-node-id="TgXLCfrCptXEFuAZBiEeCT">业务断言</b>能抓住。状态码 200 只说明"服务器处理成功了"，不代表数据正确。请求 <code data-page-node-id="busKLoiyvymsTWfzNSeaBu">/posts?userId=abc</code> 返回 200 + 空数组，就是"200 不等于通过"的真实例子。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="nnYMqAEGTzQtg8sGFRJHvO">
+    <p class="q" data-page-node-id="wTmjjO9XLy7j6PsyzeLKR6">Q4　响应体是一个数组，你想验证"每一条的 userId 都等于 1"，脚本该怎么写？</p>
+    <p class="a" data-page-node-id="iSDZcYVIYSAVZch3qMDwO8">用 <code data-page-node-id="iryAFZBCPsO5AjeGbXrjsS">body.forEach(function (item) { pm.expect(item.userId).to.eql(1); })</code> 逐条判断。直接写 <code data-page-node-id="a8QWA3yEQwmBT6a3wfllIW">body.userId</code> 会报 <code data-page-node-id="gXUiI3dBhiGzN4jH3jhBQ5">undefined</code>，因为数组本身没有这个字段。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="r0JOWmakJlQmGoW2VvbduC">
+    <p class="q" data-page-node-id="gn24Mqo4LmuDXNniLku29Z">Q5　你新写了一条断言，跑出来是绿的。怎么确认它真的在工作？</p>
+    <p class="a" data-page-node-id="Suqtvoo2Vsf0AXDXOG6zAt"><b data-page-node-id="oE9qL5n5ywKExS2rHiBsAn">故意把期望值改错，重跑，看它会不会变红。</b>一个从没见过失败的断言，你没法确定它在跑。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="HpWBoweXZoWGmktfay1I9o">
+    <p class="q" data-page-node-id="sATtZMbgeOunlPKTzQ8vsk">Q6　断言失败了，你的排查顺序是什么？</p>
+    <p class="a" data-page-node-id="l2nDxs7QEMDPBpBuGRiEls">① 看 <code data-page-node-id="7E8DzZIaSKGWhO36IpLjM8">Test Results</code> 里的失败原因和行号 → ② 用 <code data-page-node-id="L0sVb24cy4rq1d3nVfiGrE">console.log</code> 把实际值打到 <b data-page-node-id="mgJXTIivyiABWWVcjF8aVB">Postman Console</b> 看 → ③ 和接口文档对照，判断是断言写错了还是接口真有问题。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="uaovxEgkpaSodqDeGhMsW9">
+    <p class="q" data-page-node-id="O3seT8juI7BD8tWF8JRr0S">Q7　<code data-page-node-id="5yEmt4FR1NwAk8IuxYnbc5">pm.expect(item.userId, "第 " + index + " 条").to.eql(1)</code> 里第二个参数是干什么的？</p>
+    <p class="a" data-page-node-id="731IpQepahPFptdNodV4NC">失败时显示的说明文字。在循环断言里用它，能直接告诉你是<b data-page-node-id="j6Rsz8ZpuwBDGfgCjwCpRR">第几条数据</b>出了问题。</p>
+  </div>
+
+  <div class="qa" data-page-node-id="N0LUpZOVQooA9a2UVfu4KA">
+    <p class="q" data-page-node-id="R4HOzBFM2BpjKfuffp9Bm7">Q8　面试问"你怎么做接口回归测试"，怎么答？</p>
+    <p class="a" data-page-node-id="kMpnvMkplbMhDhBnqzZZHb">把用例存进 <b data-page-node-id="yFqNqf7w2LRbIFHkXV0DSF">Collection</b>，每条接口下写断言，然后用 <b data-page-node-id="39qX6wG1yvj1eu3yznzeMD">Collection Runner</b> 批量执行，看汇总报告里哪些请求、哪些断言失败。<b data-page-node-id="G3OGtrlUAuEECHF2kxACby">重点说"断言替人做判断"这个分工。</b></p>
+  </div>
+
+  <details data-page-node-id="L6lw5xyVQMugwad8fMqDJj">
+    <summary data-page-node-id="SMgyDa3UFqPF9QQfaZ5u15">给你自己的评分标准</summary>
+    <p data-page-node-id="OTP4rv8K5A5lvmU3yNzbDV"><b data-page-node-id="k2ZqLm8OOCiNnAZz6veJK4">8 题里答对 6 题以上</b>：这一讲过了，可以直接进下一讲。</p>
+    <p data-page-node-id="lBbRq2w4vKoeZz4wrINX3D"><b data-page-node-id="154ugRzgYF993C4ynBTsly">答对 4～5 题</b>：回去把第 4、6 节重看一遍，重点是"三类断言"和那个循环写法。</p>
+    <p data-page-node-id="yxO9XSP4FIp4OUrYCDIJk3"><b data-page-node-id="xC9gWyznoCFXrOoU2sY8DJ">答对 3 题以下</b>：别往下一讲走。先去 Postman 里把那 5 条断言真的敲一遍、跑一遍、故意弄红一遍，再回来答。<b data-page-node-id="qE0ANvHbTzMHkR5E6SzPqf">这一块是接口测试的核心，值得多花时间。</b></p>
+  </details>
+</section>
+
+<div class="foot" data-page-node-id="EbFKPH1WGTDHxqOtBL6hUE">
+  配套文件放在 <code data-page-node-id="mgnpKWrMfzcdW23bWCeWq5">api-test/</code> 目录下，与 <code data-page-node-id="BJC6bU9DnQtcqifjGrSarH">db-practice/</code>、<code data-page-node-id="rxHbVNXn2g5lkOLaXyNAlI">jira/</code> 同一套版式。<br data-page-node-id="f7jbFTQ4HNWgIL0hi019cT">
+  本文档基于用户本机 Postman 实际界面撰写，接口行为均经真实请求验证，练习对象为公开 API <code data-page-node-id="y3UfRd96NthSyd18S50q2H">JSONPlaceholder</code>。
+</div>
+
+</div>
+</body>
+</html>

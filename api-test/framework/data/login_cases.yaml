@@ -1,0 +1,54 @@
+# =============================================================
+# 登录接口 · 测试数据
+# 新增 / 修改用例，只改这个文件，testcases 里的代码一个字都不用动。
+# =============================================================
+#
+# 字段说明：
+#   id            用例名（会显示在测试报告里）
+#   account       账号。写 ~ 表示「这个字段根本不传」
+#   password      密码。写 ~ 表示「这个字段根本不传」
+#   expect_status 期望的 HTTP 状态码
+#   expect_code   期望的响应体里的业务码（code 字段）
+#
+# 下面这些期望值不是我编的，是实测出来的：
+#   正常登录         -> 200 + code 0     + message「登录成功」
+#   密码错误         -> 401 + code 40102 + message「账号或密码错误」
+#   缺 password      -> 422 + code 422   + message「参数校验失败」
+#   账号密码空字符串  -> 422 + code 422
+#
+# ★ 一个只有实测才知道的细节：
+#   登录字段叫 account，但它填的是【邮箱】，不是【昵称】。
+#   注册接口要的是 nickname + password + email；
+#   而拿 nickname 去登录会返回 40102「账号或密码错误」——只有邮箱能登进去。
+#   这就是接口测试存在的意义：文档没写清楚的地方，实测说了算。
+#
+# 这个账号是专门为自动化注册的测试账号，不是你日常在用的账号。
+
+test_account:
+  account: "pytest_demo@example.com"
+  password: "Test123456"
+
+cases:
+  - id: 正常_正确账号密码
+    account: "pytest_demo@example.com"
+    password: "Test123456"
+    expect_status: 200
+    expect_code: 0
+
+  - id: 异常_密码错误
+    account: "pytest_demo@example.com"
+    password: "wrong-password-123"
+    expect_status: 401
+    expect_code: 40102
+
+  - id: 异常_缺少password字段
+    account: "pytest_demo@example.com"
+    password: ~
+    expect_status: 422
+    expect_code: 422
+
+  - id: 异常_账号密码为空
+    account: ""
+    password: ""
+    expect_status: 422
+    expect_code: 422

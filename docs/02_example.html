@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="7IpiCa2fxs9ABXQXcw1T8K">
+<head data-page-node-id="jvNpLkBXYV5GTx7VOkdgHE">
+<meta charset="UTF-8" data-page-node-id="DTA84Ylq4dggAALJLYmTUZ">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="KK6MpvvICmVtCF3botLF5u">
+<title>接口测试实战案例 · 一条接口的完整测试过程</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0 0 10px;color:var(--text-2);font-size:14.5px;max-width:680px}
+.header p:last-child{margin-bottom:0}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+h2 .n.hot{background:var(--amber)}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code{font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;}
+b,strong{font-weight:600}
+
+pre.code{
+  background:#f6f8fa;border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;margin:0 0 16px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#0a3069;
+}
+pre.code .cm{color:#6e7781}
+pre.code .st{color:#0a7d4e}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top;line-height:1.6}
+table.tbl th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px;white-space:nowrap}
+table.tbl td{color:var(--text-2)}
+table.tbl td:first-child{color:var(--text)}
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:4px 0 22px}
+.flow .step{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:10px;padding:12px 12px 11px}
+.flow .step.first{border-color:var(--amber-line);background:var(--amber-bg)}
+.flow .step b{display:block;font-size:13.5px;margin-bottom:2px}
+.flow .step.first b{color:#5c3708}
+.flow .step em{display:block;font-style:normal;font-size:12px;color:var(--text-2);line-height:1.5}
+
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}
+.chain .st{
+  font-size:13px;padding:5px 12px;border-radius:7px;
+  background:#f0f2f5;border:1px solid var(--line);color:var(--text);white-space:nowrap;
+}
+.chain .st.blue{background:var(--blue-bg);border-color:var(--blue-line);color:#123a63}
+.chain .st.amber{background:var(--amber-bg);border-color:var(--amber-line);color:#5c3708}
+.chain .st.green{background:var(--green-bg);border-color:var(--green-line);color:#2c5309}
+.chain .st.red{background:var(--red-bg);border-color:var(--red-line);color:#7c2020}
+.chain .ar{color:var(--text-3);font-size:13px}
+
+.qa{border:1px solid var(--line);border-radius:10px;padding:15px 18px;margin:0 0 12px;background:#fbfcfd}
+.qa .q{font-weight:600;font-size:14px;margin:0 0 7px}
+.qa .a{font-size:13.5px;color:var(--text-2);margin:0}
+.qa .a b{color:var(--text)}
+
+details{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s;}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+
+.foot{text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+  .flow{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body data-page-node-id="SxvjQNUh7TI4BlNlEra1KA">
+<div class="wrap" data-page-node-id="OgbWqGzy54IESIMkFACmlP">
+
+<div class="header" data-page-node-id="gm6Du3AFznfBvCTFwNzLbW">
+  <div class="kicker" data-page-node-id="baUw46NSniwbNbk4IWG7jW">接口测试 · 完整实战案例</div>
+  <h1 data-page-node-id="KO1OapI597DYAhDoM7y1Vj">一条接口，做一次真正的测试</h1>
+  <p data-page-node-id="VeQE1GAMUkGcK5q2SLmFs1">前面讲了概念，这份文件把<b data-page-node-id="eiGa20piiZzDHmiYfpMBHc">一次完整的接口测试</b>从头到尾走一遍。被测对象是公开练习 API <code data-page-node-id="LHibbgPXFSFlX9mIaf8ZzG">JSONPlaceholder</code>，不需要注册、不需要账号，你照着做就能跑通。</p>
+  <p data-page-node-id="TqxO2F9qA6EKVNDU3l4DiW">下面每一条「预期结果」都是<b data-page-node-id="LkBtsP1YbpT2EId47AJfrT">真实请求验证过的</b>，不是猜的。你会看到它每一个参数、每一种取值实际返回什么。</p>
+</div>
+
+<div class="toc" data-page-node-id="LmpSIuzRluMNE3BUn6E5F0">
+  <h3 data-page-node-id="iXupTOhBhVJGPZleIqnROK">这次测试的五个步骤</h3>
+  <ol data-page-node-id="cTvn7UPDuPqO0toyJz4H8h">
+    <li data-page-node-id="ZO1Q9cByKVD1O5r577F2jb"><a href="#c1" data-page-node-id="j4CYL57eRPstvXkSInZGxN"><span class="n" data-page-node-id="qGX6ZaytXcqQ4NkdtSUNFl">1</span>先读接口文档</a></li>
+    <li data-page-node-id="7vYHgIjDg4j8kRyIC3hnRV"><a href="#c2" data-page-node-id="EZXld39ddF4V84VkJAqvPD"><span class="n" data-page-node-id="B7sLs9av4mGKwPzMqrrdWn">2</span>设计用例（10 条）</a></li>
+    <li data-page-node-id="PYByGIIo8pQ0t7JzjnrhvG"><a href="#c3" data-page-node-id="XZBoHF3dM2dDzDDzz7rCHx"><span class="n" data-page-node-id="qd3aYJ8eJwsRNpO1wxpcBZ">3</span>逐条执行，记录结果</a></li>
+    <li data-page-node-id="0uvnr7IkG6e8FmKOpcHvNN"><a href="#c4" data-page-node-id="qxzRtcjbskRUGsikJMiktA"><span class="n" data-page-node-id="dtlDvCPIhtlKGRNnSq1cyw">4</span>写断言，让机器判定</a></li>
+    <li data-page-node-id="lsNJF3fnM1sN4AnblNCT93"><a href="#c5" data-page-node-id="7hPeCFwqlBCFeSU5aC8Aap"><span class="n" data-page-node-id="TO8Vk8cF3r9jNBcrCSt7iO">5</span>批量跑 + 出结论</a></li>
+  </ol>
+</div>
+
+<!-- ================= 1 ================= -->
+<section id="c1" data-page-node-id="kViIX7PpRy230BxuJB2AEG">
+  <h2 data-page-node-id="YEV1O6zIIRgDfH6OEjm7OX"><span class="n" data-page-node-id="8A1wpDM7lfwkQQ8wrQdaQW">1</span>先读接口文档</h2>
+  <p class="sub" data-page-node-id="76eFb3adCLLkbIO0wlWxWT">不读文档就开始点，是接口测试最常见的坏习惯。</p>
+
+  <p data-page-node-id="sR5a6cpQv586KtE0OySdnB">真实工作里，你拿到的是一份接口文档（Swagger、Wiki、或者 Word）。这里我把它简化成一份，内容跟真实的等价：</p>
+
+  <table class="tbl" data-page-node-id="P4AaCnK4iMwlBE99gMPnEz">
+    <tr data-page-node-id="KMdpqgafDE5LhYQ0cfKMok"><th data-page-node-id="k5rDPVxdL76rzDtFiw4qFs">项目</th><th data-page-node-id="fcujgabhemiYNHUPqtABov">内容</th></tr>
+    <tr data-page-node-id="VaCOGQjN7dWhQsdd9Hz4bx"><td data-page-node-id="HBZc9QZw4vLEZfDo5djcWv">接口名称</td><td data-page-node-id="A4yw1hIHF5HUpBuC9A6X5V">查询帖子列表</td></tr>
+    <tr data-page-node-id="r3syf57KT2bsX4K5RUGrGx"><td data-page-node-id="8Jb7bgpSd1ri1G7Z1TpiVr">请求方法</td><td data-page-node-id="uNHNBt8za0QIBFy6EMiCs1"><code data-page-node-id="q5jJFExfigEt1CVUg1dMuw">GET</code></td></tr>
+    <tr data-page-node-id="3n5ADWHSETCnWHqNivqB95"><td data-page-node-id="6Ay0iHucNhmOOazSivwVMJ">请求地址</td><td data-page-node-id="rj6g1Goi2x7CjtmQ0T7faW"><code data-page-node-id="ASB45mPNXKLFe8GClY7HSq">https://jsonplaceholder.typicode.com/posts</code></td></tr>
+    <tr data-page-node-id="N5agRkB083ohOH1UNWdWuk"><td data-page-node-id="sEhSN2jrBNlyAaf1lVC6LE">请求参数</td><td data-page-node-id="s8RqCwVwn95ZjtHCwkk5OX"><code data-page-node-id="CNlXRiRo00P5LzMroHCSQX">userId</code>：查询参数（query），可选，整数。按用户 ID 过滤帖子</td></tr>
+    <tr data-page-node-id="nyXLMduU2GC0PnoHA2e7l3"><td data-page-node-id="GNupel8hpX8JYffVDscJ3c">成功返回</td><td data-page-node-id="7OAB0fc4LsUxUOQAtz11Lg"><code data-page-node-id="hofJhv8JrL498lx22fNrNw">200</code>，JSON 数组，每个元素含 <code data-page-node-id="3185XGKYKDe0HGQBEHjWSs">userId</code> / <code data-page-node-id="REKjWSWK5UrpKXWnCJUQTL">id</code> / <code data-page-node-id="UVl4ql7DL2qaoNj1Rn6ifP">title</code> / <code data-page-node-id="QJvGtGVkq2HwNH1s9Q4KmB">body</code></td></tr>
+    <tr data-page-node-id="Rx2FHRkw5aSHRPPqk376l3"><td data-page-node-id="jOelHPiZq21ubRFVZamaYb">失败返回</td><td data-page-node-id="Ae2BMAitperBYVWAhAjMTJ"><code data-page-node-id="NdOEX3pi58pXyRkjXHESj3">404</code>，路径不存在</td></tr>
+  </table>
+
+  <div class="warn note" data-page-node-id="WEPGfo6YkvDczDAsw1sNql">
+    <p data-page-node-id="DgenLPbiGvMisxmSdmDJRB"><b data-page-node-id="7Ipa2fuACG9blPRC2RdXiH">注意这份文档少了什么。</b>它没说——</p>
+    <p data-page-node-id="1YROJGNES8SzhF1SvL962q">① <code data-page-node-id="WeWJduVir5JQhJuLmj0q77">userId</code> 传非数字（比如 <code data-page-node-id="7Wf3KfzDGaEaGdFmujN4pn">abc</code>）会怎么样？<br data-page-node-id="g3ICgB7EOMjoQycoVdUHPF">
+    ② 传一个不存在的用户 ID 会怎么样？<br data-page-node-id="3eMvdkk5pz5HH9A2SSTkAr">
+    ③ 传负数、传 0 会怎么样？<br data-page-node-id="ERTxKbF1lBJ3UnRnP8clT8">
+    ④ 不传 <code data-page-node-id="yH62J3nbYj7CodEdfaPpNe">userId</code> 时返回什么？</p>
+    <p data-page-node-id="XGg2AcwBVbckBf9L3BM1xJ"><b data-page-node-id="FCcx8BEDf7W1JOhftR4tkl">这四点文档没写，就是你要去问开发、或者自己测出来确认的地方。</b>真实工作里这一步叫"接口文档评审"——在开发动手前把歧义问清楚，比测出来再打回去改便宜得多。</p>
+  </div>
+
+  <div class="note" data-page-node-id="waVpGpn20KUBnXDXkDMyEk">
+    <p data-page-node-id="q9dWVpc2FDY4RU1R7Q5k0X"><b data-page-node-id="rjwdtChOyhOw2kEalIEWdG">关键认知：</b>接口文档只告诉你"接口应该什么样"。<b data-page-node-id="oHzhDPk1RAjeG3CGs9wvyA">测试的任务是验证"它实际是不是这样"。</b>文档没写清的部分，就是这次测试的风险点，也是你能在评审会上体现价值的地方。</p>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="c2" data-page-node-id="R6TVGob7dn6DRF4eZikhIt">
+  <h2 data-page-node-id="J4v95AOGbQVHYk8WwRl9OH"><span class="n" data-page-node-id="OF3o5QzFjh48JMcduJ4LHL">2</span>设计用例：10 条，覆盖六个维度</h2>
+  <p class="sub" data-page-node-id="EaBXC5sxFGEbd9OGHhVXXi">不用打开 Postman，先在纸上把要测什么想清楚。</p>
+
+  <p data-page-node-id="UDYmUIU3KbBWWMaA0sPkDa">拿到一条接口，按这六类去思考，基本不会漏。下面这张表就是这次测试的全部用例：</p>
+
+  <table class="tbl" data-page-node-id="lk2GUv0mdyJC9VWVlZmsXJ">
+    <tr data-page-node-id="M53Np88CWUOXUAyAPQ34Hd"><th data-page-node-id="03DdtFXtBNwXgRxVidXJCV">#</th><th data-page-node-id="3SiTdQQrXuX6HlQZZIxki6">类别</th><th data-page-node-id="8GMNS1TyF9oY8Mb2AoUAMS">用例说明</th><th data-page-node-id="42rAbOw9wkGWwVEviAQErt">请求</th><th data-page-node-id="HN9iApWVtgEcybP0pDYhFY">预期结果</th></tr>
+    <tr data-page-node-id="5DUIjDAGXgRjHMcdBATIBV"><td data-page-node-id="VYSFZWrVWCaty67iksBLpM">1</td><td data-page-node-id="uoZO9yW1MGM8sFl3iQpdDy">正常流</td><td data-page-node-id="aQVljTjpTEKbKEAPXem2Jr">不传参数，查全部帖子</td><td data-page-node-id="q8aV9FCmrF79u62l2Efl66"><code data-page-node-id="zeJVpraXislEZhbCXofOT2">GET /posts</code></td><td data-page-node-id="cPummTzWEAhtxuGF8R2Umy">200，100 条</td></tr>
+    <tr data-page-node-id="eVCKcmuJEBhczcNQbgkJVd"><td data-page-node-id="TCae8UF5S8zxkINSmdWYVJ">2</td><td data-page-node-id="9MZoxpWsyVNnHZvcCmNz4F"><b data-page-node-id="e7hM0OuiSW4R5Zcu7kskYg">正常流</b></td><td data-page-node-id="HwC55SpsfM1M6EmUUinWEL"><b data-page-node-id="0uKNx9gvLRYfp0WYQ0gG8E">按用户过滤，查 userId=1 的帖子</b></td><td data-page-node-id="O5mo0zCeq4CGzs2rHi1Erf"><code data-page-node-id="pGDy2JfOfSt5YIQ1AUKDRT">GET /posts?userId=1</code></td><td data-page-node-id="MlbQHErBXrFZYAITFVFiFC">200，10 条，每条 userId 都是 1</td></tr>
+    <tr data-page-node-id="2ZzopQDeKCqOjoEG8ZWMnQ"><td data-page-node-id="DSID8tTZA52p6x6sf2WZ37">3</td><td data-page-node-id="4Je5bHwGwwO06DuCqIGBCn">边界值</td><td data-page-node-id="rsgBrqKnJJrKhmZSK9iXDY">最小有效用户</td><td data-page-node-id="f0CMYBAfttnItURNPdZjz0"><code data-page-node-id="XIZkMBMCjlj3HfjlAFxu9A">GET /posts?userId=1</code></td><td data-page-node-id="Eb6hdi6gZpA0NEPrcNrFsE">200，10 条</td></tr>
+    <tr data-page-node-id="UmBO9CT7TYUy5Q0mgNi14t"><td data-page-node-id="Mt9R7mZO24Jh9xoypM4McI">4</td><td data-page-node-id="YLV1gSKfdEBF1c3nNcECee">边界值</td><td data-page-node-id="C9ugQhh9r5zs6jFQOf5bmS">最大有效用户</td><td data-page-node-id="LmFSq89oebviKFJwY9Liym"><code data-page-node-id="Hh2tkLOqdjkFnadBceoFjM">GET /posts?userId=10</code></td><td data-page-node-id="9xk8rtpXUr5dIgTTpbsBXc">200，10 条</td></tr>
+    <tr data-page-node-id="JF8tXnvIFeZblnhnx5tWn1"><td data-page-node-id="t3yiyPyG2FhI9m1Nj52mkD">5</td><td data-page-node-id="IP4DiKz9vXzQ8LOWAB6gJ8">边界值</td><td data-page-node-id="JkwVJRFFdHCoZz4OsXcAis">越界：超出最大用户</td><td data-page-node-id="5QkxfTTVoDkSX829pnBXcL"><code data-page-node-id="9nZLgwUppykk68HoxEd5fz">GET /posts?userId=11</code></td><td data-page-node-id="cR8Rb0RyM5nP5pSCEEHLKH">200，0 条（空数组）</td></tr>
+    <tr data-page-node-id="D718dI2RU14CTFsM2ocL4G"><td data-page-node-id="kZi7GwrNwuGLWPWQveUGvG">6</td><td data-page-node-id="OnFsGr4aFk5QK3SiCtMnrp">参数异常</td><td data-page-node-id="ERjL3xxuuE63o4TAOIbtmu">类型错误：传非数字</td><td data-page-node-id="HuuQsEItElkOLlLf4QopDB"><code data-page-node-id="BGzB1YDP5NQAfhY9bDybXf">GET /posts?userId=abc</code></td><td data-page-node-id="VmuYJrC07lNPHWmGPDuz9F"><b data-page-node-id="cfrmcn1GdB6cv29y3wFvBi">？待验证</b></td></tr>
+    <tr data-page-node-id="0i9pMhH13WURQwjzKi9oNz"><td data-page-node-id="25jLfU0gSnL3JmShawuESY">7</td><td data-page-node-id="9V7R3GRB3lh7TJmC8f6WLH">参数异常</td><td data-page-node-id="0GboXumLTcU63WKwcjp7lr">传负数</td><td data-page-node-id="caCuJa3R9QAMWSNBq05Qj6"><code data-page-node-id="bxw1sJzbEqF6m5kQoqxmRB">GET /posts?userId=-1</code></td><td data-page-node-id="K3C1UauPRGAgGGsulRsoJf"><b data-page-node-id="iI9saokP1CjkbSFBKZC8qf">？待验证</b></td></tr>
+    <tr data-page-node-id="fYgL4HS3QZb2h2JLZCBjYd"><td data-page-node-id="H9uMyhDuBKMhueNWnHc3YC">8</td><td data-page-node-id="TywvjW1MXkjO3z72SG3YRK">参数异常</td><td data-page-node-id="ZKl3CKJoiOyEtVx0IrBoGr">传空值</td><td data-page-node-id="uYJr1hAamXKtKuQmzREWMc"><code data-page-node-id="lcC5JjRkXCCvGBI0mjo4J8">GET /posts?userId=</code></td><td data-page-node-id="AQsiO3RpH2Kv2eaJXcsKRe"><b data-page-node-id="qjESmIigWDeLcHbwecZDLQ">？待验证</b></td></tr>
+    <tr data-page-node-id="lhVUeadp2M0I05eAt5V9yi"><td data-page-node-id="hk7gEy1iq8iGK2E6SxXQiY">9</td><td data-page-node-id="HoTvbHsPWWPnTRyDGoP5EB">业务异常</td><td data-page-node-id="5u7WHRrtKOdnxQE0gLp2jY">用户不存在</td><td data-page-node-id="YVRc4BFhlkEVgsAOAnJKav"><code data-page-node-id="REQNZAMhgg4tHiLE6AsMFg">GET /posts?userId=999</code></td><td data-page-node-id="EmFNIY6T3JVlbyko8fEFdl"><b data-page-node-id="RcQTjNC5cXF7ZBPu2EA9oD">？待验证</b></td></tr>
+    <tr data-page-node-id="OgkDG1Pub6BCTGz2hvEGaZ"><td data-page-node-id="YpohhFOA65LIqI8wtGPZjJ">10</td><td data-page-node-id="wRduRBNF8KdGL46axjN4hX">路径异常</td><td data-page-node-id="Q6eGuSlicQYsHOUPSJwWD2">路径拼写错误</td><td data-page-node-id="4dqlmzZzRB1xXP7jwbyw6R"><code data-page-node-id="7QF96YV0wBm48gMUSb2ziN">GET /postss</code></td><td data-page-node-id="V99Fgxjsg5vE8kSxD54r0u">404</td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="ECf2R51H6PWPqB3PNUeu6O">
+    <p data-page-node-id="bSOwSc1VGv1QlrXExagR9l"><b data-page-node-id="twBJFfHkb1Ei6QMCNxR26P">第 2 条是主用例。</b>它是这个接口最典型的用法——"查某个用户发了哪些帖子"。后面写断言、跑回归，都以它为主。</p>
+    <p data-page-node-id="3KYBsrP1xHFFQIVHzBG6Yc"><b data-page-node-id="mxikyEt2qSYUmRdK9HXuwg">第 6–9 条的预期结果我留了空白，因为这次就是要现场测出来。</b>这就是真实测试的样子：你不可能事先知道所有答案，你要去试。</p>
+  </div>
+
+  <div class="chain" data-page-node-id="V35HLDEvFntkzuMnHCv4tZ">
+    <span class="st blue" data-page-node-id="9BIkxEtFjhtJ27opeHVeP0">① 正常流</span>
+    <span class="st blue" data-page-node-id="Q4MDzt3e9pZ3aHA4uFambX">② 参数校验</span>
+    <span class="st amber" data-page-node-id="Ou0YPyWA0F17tDpglaqWG2">③ 边界值</span>
+    <span class="st amber" data-page-node-id="sRHRYH8SVWgiOFIUrqLHvj">④ 业务规则</span>
+    <span class="st red" data-page-node-id="iKjjEmbsYeEJrftdAgGFKV">⑤ 权限鉴权</span>
+    <span class="st red" data-page-node-id="7AAOo5uJtlGKhBvBECg4pf">⑥ 异常与幂等</span>
+    <span class="ar" data-page-node-id="L9NKAZ9w73YHe341F9jBsT">← 这次的接口不带鉴权，所以第 ⑤ 类跳过</span>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="c3" data-page-node-id="1TGS3La95KBiUjZzycZtuA">
+  <h2 data-page-node-id="rLUy5yC2pLXCzzrxd7D52k"><span class="n hot" data-page-node-id="Hf8nSNBy0rFiOkEKYsC8Mt">3</span>逐条执行：真实结果出来了</h2>
+  <p class="sub" data-page-node-id="HMvEXw3cInSmAXpQEgKJO5">这一节是整份文件的核心。看第 6–9 条实际返回了什么。</p>
+
+  <h3 data-page-node-id="UWcsG8oxFnHByz6nNKFpQ1">3.1 先说怎么在 Postman 里做</h3>
+  <p data-page-node-id="B3jahhztaJDfCWkrHGQmcJ">每一条用例，就是一次独立的请求。做法：</p>
+  <ol data-page-node-id="ynAo0lfxzmV4dUIfAnSGmA">
+    <li data-page-node-id="WUEsmFyzyRfHqhgXsrC3je">地址栏填上面的 URL，方法保持 <code data-page-node-id="AYDtTVw5mm6FT7Jjee7cJD">GET</code>，点 <b data-page-node-id="PSnN7MubJ7qa9N9jeTIHoN">Send</b></li>
+    <li data-page-node-id="KO60j5ugrkOyhlL00PEVyW">看状态码和响应体，跟我下面记录的结果对比</li>
+    <li data-page-node-id="1du5W3dHkD0tZluArojXmq">每测完一条，<b data-page-node-id="CCDNrrwiNdMcAHUJ1LCJMu">点地址栏右边的 <code data-page-node-id="nHqN8VEYritVtlchN3VoKZ">Save</code> 保存下来</b>，命名成用例名（如"查userId=1的帖子"）</li>
+  </ol>
+  <p data-page-node-id="odyRHUcLYsjjCQBzu6bEir">暂时都保存进你那个 <code data-page-node-id="uQ2RKIP6YKwebBTEqAuQ2B">My Collection</code> 里就行。10 条都存下来之后，你就有了一个真正的"接口用例集"。</p>
+
+  <h3 data-page-node-id="DvymXJlfVgb4RoA9RC8L1V">3.2 执行结果（真实记录）</h3>
+  <table class="tbl" data-page-node-id="u1u2DnKgnGtXLDVm1JqpQn">
+    <tr data-page-node-id="z1hM9tAwtZHsmIUwXGhJ0R"><th data-page-node-id="a2FtXjHXvZWaXM9ESfmI75">#</th><th data-page-node-id="eGAh1p0MvCzXIDzmBFEgQ3">请求</th><th data-page-node-id="0MBnAVlVPsUvxZMtJt3DTf">实际状态码</th><th data-page-node-id="99Bp0zv5xscUUpFpsZhsHT">实际返回</th><th data-page-node-id="JHhaMtMcbRnFF8Pm9qVcVM">结论</th></tr>
+    <tr data-page-node-id="4sjpiFx9sOBtFI0uAfJehE"><td data-page-node-id="q85XE4GRtZhAcu5yhCcMJz">1</td><td data-page-node-id="yu0uheGrVLRttEprklLYAS"><code data-page-node-id="l0zTbjZ2nrbqgsaPRABI6y">/posts</code></td><td data-page-node-id="8vIdkKG1jYnZyXadiAjHfs"><span class="pass" data-page-node-id="yDLF3fElrURnKk6mfxyEnC">200</span></td><td data-page-node-id="HJqXJ10LHKy574QXJC3MPA">数组，100 条</td><td class="pass" data-page-node-id="Y0f6xeuDozfqyK1mY20ic9">符合</td></tr>
+    <tr data-page-node-id="oXvmAGv4BBgBNcD0TXeUMy"><td data-page-node-id="2BThGIk710ORfn7XTN6e0l">2</td><td data-page-node-id="FUn3byz9v75K5uosqt7a0h"><code data-page-node-id="Fys0HpqSaOn04kl0KCMj7a">/posts?userId=1</code></td><td data-page-node-id="2qj3yws0ZutqDcYP2HS0pN"><span class="pass" data-page-node-id="gmRBRn4UWL0bhw0pZO7WX8">200</span></td><td data-page-node-id="osTLLbdFFVdaeKzAc9yPcF">数组，10 条，id 为 1–10</td><td class="pass" data-page-node-id="zf3MEitznYFi1STXEE3iHN">符合</td></tr>
+    <tr data-page-node-id="4lADrHx2wTGqGnYTGeoyDN"><td data-page-node-id="FY0nxhKEWJ8VTUlDFmx4nh">3</td><td data-page-node-id="XQ8slm5GvPWNOwMdFq6f8I"><code data-page-node-id="TdLSp04xxA6W0gGcczP6wk">/posts?userId=1</code></td><td data-page-node-id="uAAC6u7r8z6c69CAL9Y8C5"><span class="pass" data-page-node-id="HnBNKVhtSkYrwjcoQ2iFU9">200</span></td><td data-page-node-id="XAYqbb0m5gWGgOXvbKkoaB">数组，10 条</td><td class="pass" data-page-node-id="ZNRJH4XYpcJBewzqb2I0Ih">符合</td></tr>
+    <tr data-page-node-id="uliWeZm0FX0BNpvCsp39Ha"><td data-page-node-id="h7ZYfEMkyfTy9L32jB8Nco">4</td><td data-page-node-id="CH1Y7AxdUC08M6sN4jg7nH"><code data-page-node-id="u5Jz6tmrcmp8DbZtdtoFz6">/posts?userId=10</code></td><td data-page-node-id="ijbNMk0muInW18EO4eLqAT"><span class="pass" data-page-node-id="0sM8XPHv0y2dy88olXj089">200</span></td><td data-page-node-id="bndBIr5tbIloZjFYUDkcfc">数组，10 条</td><td class="pass" data-page-node-id="li0IHBQFncxqkCww0JQXyA">符合</td></tr>
+    <tr data-page-node-id="Z0MX7vCbphfWqg0F2w0a0d"><td data-page-node-id="gXPAV51Ez7AOrt3h1FnNgz">5</td><td data-page-node-id="CvW2m4eRiNE5VWgIB3ZqHD"><code data-page-node-id="O3EaAGNHoFaXR6guxnB2eH">/posts?userId=11</code></td><td data-page-node-id="3s7Vev98XKFi7Vh9IADVeZ"><span class="pass" data-page-node-id="zCwUZsEvFNPGTR6W1DAbGy">200</span></td><td data-page-node-id="2EvHOqYYnBZcpvFYgn4gDJ"><code data-page-node-id="oMm58Om3tEYnoEdzpZDTgf">[]</code> 空数组</td><td class="pass" data-page-node-id="KQQpj727KKp0nHVHfMdBWY">符合</td></tr>
+    <tr data-page-node-id="LNqnoGPft8T03CbFWEi5ch"><td data-page-node-id="iFwkjbRsrSuXl13i5qpWeP">6</td><td data-page-node-id="VJfjhle60ROQXOUg73Jy0K"><code data-page-node-id="FwC7EomDc4wc21L8x4wAza">/posts?userId=abc</code></td><td class="fail" data-page-node-id="hX23rSClqFGmc81BTNoCDA">200</td><td data-page-node-id="nBGqfjdglXqyDeY9pCLDaC"><code data-page-node-id="xX3uD7kkqgDiTJzFLgPbHe">[]</code> 空数组</td><td class="fail" data-page-node-id="xXCBOBrJCqNclbvPz9Xmux"><b data-page-node-id="VAlX32x6EDUrJX2zikWwqm">存疑</b></td></tr>
+    <tr data-page-node-id="lRkpR8sBQXhcdlfkVvxO4W"><td data-page-node-id="m1Ap6mOKZ1EJCzdXwTWte6">7</td><td data-page-node-id="shEy4rD6Okzj9DBeSudvr7"><code data-page-node-id="ABH1nzhX6wCanIKMaGZjom">/posts?userId=-1</code></td><td class="fail" data-page-node-id="TUOyHaR6uA7wulnWdamn2Y">200</td><td data-page-node-id="0pkxNMlujClaRh3Md92y0L"><code data-page-node-id="hqL6de0gFpy7B1dsMZtxns">[]</code> 空数组</td><td class="fail" data-page-node-id="v4DBZQ9ikqqPjdRxxz0VFv"><b data-page-node-id="A9zpK2GeorJFnxzPdTleL0">存疑</b></td></tr>
+    <tr data-page-node-id="jAeCfXwAGGaLIMUvBEMwrD"><td data-page-node-id="bqEZPL9ej3wzDG20vyyEDV">8</td><td data-page-node-id="caPaCAbn3gYUEBw9ByGluL"><code data-page-node-id="wBxsU4zc79PhbJyjCCEGOP">/posts?userId=</code></td><td class="fail" data-page-node-id="bBQDekuj6cM1K6r5yTIhXa">200</td><td data-page-node-id="omaVmDKtHuDpaKGfG7Di1z"><code data-page-node-id="VyhGB1xurWwx4DxmkWXhgm">[]</code> 空数组</td><td class="fail" data-page-node-id="gWSAHIH2AKVhoct7m0hHxs"><b data-page-node-id="a7oBkk0ErQFtsTR5IEA3iB">存疑</b></td></tr>
+    <tr data-page-node-id="gbfNbymTRFVEBOKDN70Zue"><td data-page-node-id="4TNnVK8ps6vD4azmGd2NNg">9</td><td data-page-node-id="iSBha2bRxsan8WDNultcGA"><code data-page-node-id="5rKwCJ2CCbdLG38zc9mPl4">/posts?userId=999</code></td><td class="pass" data-page-node-id="YNhysAIas2wBGah7iONN8m">200</td><td data-page-node-id="smNR0FZysjmiIbethYk8xx"><code data-page-node-id="wKx5dot2iL1QgSbTqHURgz">[]</code> 空数组</td><td class="pass" data-page-node-id="QCaWJQj1f55uiI94X3vqJW">符合</td></tr>
+    <tr data-page-node-id="XaZaiYnPcHq6LkMhq5Mska"><td data-page-node-id="jHO2S17heZH9l58BJkZoWT">10</td><td data-page-node-id="IOJbzMUuHYPW6nOpXqg9iD"><code data-page-node-id="95Weda1hXKmCnfFEgfvAGF">/postss</code></td><td class="pass" data-page-node-id="EB5EAErYu39VrQVz1RGGB6">404</td><td data-page-node-id="mhBt6qeruV6ESxOADmn5vF">—</td><td class="pass" data-page-node-id="gmjCfG23ASFvvJ4KmzPqEW">符合</td></tr>
+  </table>
+
+  <h3 data-page-node-id="ML0qpvusgw8gjU8Chbx2EV">3.3 最重要的发现：第 6、7、8 条</h3>
+
+  <p data-page-node-id="hq06xnOnOHr0euhngnA4y8"><b data-page-node-id="qz6HDqUg3sxKFet8tY2lNR">看第 6 条。</b>你传了一个字母 <code data-page-node-id="gi04HYJtekqIVBlvBfDbu2">abc</code> 给一个"应该是整数"的参数，接口返回的是——</p>
+
+  <pre class="code" data-page-node-id="BW1l04wkwkIaz9sMohPVUP">状态码：<span class="st" data-page-node-id="eF2rcBAKnmNH9aKtSLTj2X">200 OK</span>
+响应体：[]</pre>
+
+  <p data-page-node-id="McaeSitJYLH8339bTcLFkl"><b data-page-node-id="BJ82QAbRB1PP9nKF4Dv5V8">没有报错。没有 400。没有告诉我"参数格式不对"。</b>它就像什么都没发生一样，还我一个空数组。</p>
+
+  <p data-page-node-id="F91DSM779vf9bl6aCHCYTY">第 7 条（负数 <code data-page-node-id="E32PcTZlyQBQv59cJy3Bfn">-1</code>）、第 8 条（空值）一模一样，全是 <code data-page-node-id="dKTK3CgNbTVcMvMaKrfJD5">200</code> + <code data-page-node-id="sduZplVilKVthkXaZZ37bi">[]</code>。</p>
+
+  <div class="danger note" data-page-node-id="9Tmly2MEAAW1ZHDzUpzFQb">
+    <p data-page-node-id="LAG07nW38iK3dEYosZnZTP"><b data-page-node-id="ZQqSWwX2g2YxhA17doUlSc">这就是为什么"看状态码判断通过"是错的。</b></p>
+    <p data-page-node-id="yndIlfZtTnUW1dOIbpIVuB">如果你只看状态码，这 8 条用例<b data-page-node-id="v7nVWwwTMPaGNsDMaLPqG6">全是 200，全部"通过"</b>——你会得出"这个接口没问题"的结论。</p>
+    <p data-page-node-id="B4wZC4i2zuDwBFmXlLUvCG">但实际上，它<b data-page-node-id="30Wu3gFIKZODuYnJUjm7G1">根本没做参数校验</b>。用户传了 <code data-page-node-id="2ktuELqx78QnFtXwQsW46Q">abc</code>，它不去检查这个值合不合法，而是直接拿去查询，查不到就返回空数组，全程 200。</p>
+    <p data-page-node-id="YF1luqPAaQaFMDJAQILUHu"><b data-page-node-id="gk1oi8Gxzulcgr4Y6g3WQH">状态码 200 掩盖了一个真实存在的缺陷。</b></p>
+  </div>
+
+  <h3 data-page-node-id="OuPrGSI5U7phHNE9AusPGY">3.4 那这到底算不算 Bug？</h3>
+  <p data-page-node-id="Ru47PaYVIQbjy5hGoiXpRa">这是个好问题，答案能体现你的测试思维：</p>
+  <table class="tbl" data-page-node-id="B5wFTvm0nxqQBJ4EAUEby1">
+    <tr data-page-node-id="EgdW8Gcqnkk1H8sGNYqJ5t"><th data-page-node-id="KIZysyJMGx8KwdTSEhkWNG">判断依据</th><th data-page-node-id="knoMZpvW3C8bAtk4CFgABv">结论</th></tr>
+    <tr data-page-node-id="0iXZgWvUxYABPsvNzirE9e"><td data-page-node-id="HE4T1QXdDBkRV0TIS1DJvj">如果接口文档写了"<code data-page-node-id="uFPEHH8zX7I7edKTyrBfLl">userId</code> 必须是整数，非整数返回 400"</td><td data-page-node-id="F8FMBTQXTH3CAaRDJZJjTt"><b data-page-node-id="YyEGmc1OJKEGkNI00Yr3e1">是 Bug</b>。实际结果（200）≠ 期望结果（400）</td></tr>
+    <tr data-page-node-id="cgBpHutHbaju9AEvkcudNG"><td data-page-node-id="xqsGzRE89Diz1EL46B7Fo7">如果文档只写了"<code data-page-node-id="vsD5HE0xmieDBmVXmS9EUw">userId</code> 可选，整数"，<b data-page-node-id="i46umzTragMpAauZ5ViMDX">没写非法值怎么处理</b></td><td data-page-node-id="tYBC6LojO5bJUmViVyu2UP"><b data-page-node-id="5GZSNck5IQuDFqaXihWIHO">文档缺失</b>。要去问产品/开发，明确期望行为。这是"待确认"，不是直接判 Bug</td></tr>
+    <tr data-page-node-id="yl6gKS9BGheXLGW2UMQFPz"><td data-page-node-id="GVTNHCLTQStGbB0KCUiTvm">如果这是内部接口，调用方一定是前端，前端保证只传整数</td><td data-page-node-id="BLlIXeeKXgs5lRabBFEDxu">可能是<b data-page-node-id="CuvwftegSjjUq5cU5OEFsn">设计如此</b>，风险等级低。但仍建议补校验，防止有人绕过前端直接调</td></tr>
+  </table>
+
+  <div class="note" data-page-node-id="CvhF3znbN51roYlaLk0W6O">
+    <p data-page-node-id="BZjdbkDduYvk45dUe68Cnb"><b data-page-node-id="iL8eCFhmwS5JLYuGUc5vf7">面试可以直接用这段：</b>"判断一个问题是 Bug 还是设计如此，<b data-page-node-id="pR9fywyjaaUIvY6NgnW3ET">不能凭感觉，要看依据</b>。我的判断顺序是——先查接口文档有没有明确约定；文档没写就问产品确认期望行为；确认了期望、实际又不符，才是缺陷。<b data-page-node-id="CSVQiToPmRWyZkk5lLFFlF">如果文档缺失，我会先把这个当成风险点提出来，而不是直接开单</b>——因为开一张没依据的 Bug 单，会被开发打回来，还损害自己的信誉。"</p>
+    <p data-page-node-id="VrO3Ea9ZOvnV4EoNE0lJs1">这段话的杀伤力在于：它证明了一个人有"缺陷判定的依据意识"，而不只是"看到不对劲就喊 Bug"。</p>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="c4" data-page-node-id="AEoBLCbhof0t5af6jaymHV">
+  <h2 data-page-node-id="xDjsGQ48d68LP6S3nfhT0T"><span class="n" data-page-node-id="S4Hu0iih8RCBVhygDDnpxE">4</span>写断言：让机器替你判断</h2>
+  <p class="sub" data-page-node-id="oPAelUNLA4CIhMs9wsT7PA">前面 10 条你是用眼睛看的。现在教机器怎么看。</p>
+
+  <h3 data-page-node-id="xmSSIC6itvn9fGH0MvsOnP">4.1 先看主用例：第 2 条</h3>
+  <p data-page-node-id="kEXFUbUEJkJztYjn2TSBfZ">打开你保存的「查 userId=1 的帖子」这条请求，点 <code data-page-node-id="LMx4SQYeHTCaxRHz3cO8jM">Tests</code> 标签页，把下面整段贴进去，然后 Send。</p>
+
+  <pre class="code" data-page-node-id="0P0docFKfyteSdhkXDPbBy"><span class="cm" data-page-node-id="Eugwn7d2VDh1wQTtbdNQMR">// 先把响应体解析成能点属性出来的对象</span>
+var jsonData = pm.response.json();
+
+<span class="cm" data-page-node-id="4weB81qSWeWGmFU5UGKkVG">// ① 状态码断言</span>
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+<span class="cm" data-page-node-id="sKwMEHAdQO2sPGxZT2aQlp">// ② 返回条数断言</span>
+pm.test("返回 10 条数据", function () {
+    pm.expect(jsonData.length).to.eql(10);
+});
+
+<span class="cm" data-page-node-id="TK2un2XC6tdVBYceKAYIoy">// ③ 业务断言：每一条的 userId 都必须是 1</span>
+pm.test("每条数据的 userId 都是 1", function () {
+    jsonData.forEach(function (item) {
+        pm.expect(item.userId).to.eql(1);
+    });
+});
+
+<span class="cm" data-page-node-id="oFr7LchFnQ96NMYQr5pyZK">// ④ 结构断言：字段都得在</span>
+pm.test("每条数据都包含 id / title / body 字段", function () {
+    jsonData.forEach(function (item) {
+        pm.expect(item).to.have.property("id");
+        pm.expect(item).to.have.property("title");
+        pm.expect(item).to.have.property("body");
+    });
+});
+
+<span class="cm" data-page-node-id="qZit8o0xgixszk3gurYh3t">// ⑤ 响应时间断言</span>
+pm.test("响应时间小于 2 秒", function () {
+    pm.expect(pm.response.responseTime).to.be.below(2000);
+});</pre>
+
+  <p data-page-node-id="4aOH5NVIjDdMAZUPwlcalf">Send 之后，切到 <b data-page-node-id="PTkwL1T4vnm6CSATvElpEy">Test Results</b> 标签页，你会看到 5 行绿色结果。</p>
+
+  <div class="note" data-page-node-id="2BAvOBuDgCqHVCGwEiERF1">
+    <p data-page-node-id="4jiaeC8D7GTMpy0awI59ew"><b data-page-node-id="kW80ievMqSfn6KNu14XWDf">现在逐行解释这 5 条断言，为什么是这 5 条：</b></p>
+    <p data-page-node-id="HDDoWXFDaZaim5G6LsSyw6"><b data-page-node-id="qAfRoU7LylUpNjyMZkoRJH">① 状态码</b> —— 最基础的一层，验证 HTTP 通信正常。但单独它一个远远不够。</p>
+    <p data-page-node-id="KEAbBVTititB9l8JaOD98P"><b data-page-node-id="dJF80dxzEUMDfgdj6AwWmK">② 条数</b> —— 验证返回的数据量对不对。userId=1 应该有 10 条，如果返回 8 条或 100 条，说明过滤逻辑坏了。</p>
+    <p data-page-node-id="vrkKM7hWREU66g5FijulQy"><b data-page-node-id="alB7E0h2v4N2M1omP7C1Yb">③ 业务断言（最关键）</b> —— 验证<b data-page-node-id="KiLDWubgNCkEoERz96lscA">过滤条件真的生效了</b>。这一条很多人会漏。</p>
+    <p data-page-node-id="Kn8XzJhKzymtZAOoM2vFim"><b data-page-node-id="d7DjGCxCLilAdmIMKLC9T4">④ 结构断言</b> —— 验证字段完整性。前端要用的字段如果没返回，页面就会崩。</p>
+    <p data-page-node-id="VOXJpGMI74gdQ6yAu9B5Ct"><b data-page-node-id="DCeYaqWyGnvAPa16z6mJpa">⑤ 响应时间</b> —— 验证性能没有明显劣化。</p>
+  </div>
+
+  <div class="warn note" data-page-node-id="xp5aCig3CVflcgVadJnmd6">
+    <p data-page-node-id="10oDeOjPjW1f2DC9YkGfZK"><b data-page-node-id="fhxEgBIQfAoL7QBZvhckbe">第 ③ 条为什么最关键，举个反例你就懂了：</b></p>
+    <p data-page-node-id="byBpqRbbRNjJm1tqUsnAKU">假设接口有个 bug，过滤条件没生效，直接返回了全库 10 条数据（只不过恰好 id 是 100–109）。那么——</p>
+    <p data-page-node-id="oXmosYvjp0rTPtKnOXTBhP">状态码是 200 ✅；条数正好也是 10 条 ✅；字段也齐全 ✅。</p>
+    <p data-page-node-id="qJkCkr5hfS7mdcUHpkFgym"><b data-page-node-id="IPbzw68qVcvaUguLGE2gxL">前两条断言全过了，但这个接口是错的</b>——它返回的压根不是 userId=1 的帖子。</p>
+    <p data-page-node-id="ZQOvRNaCvwSV7piLDrFu5x">只有第 ③ 条断言 <code data-page-node-id="v4eqI64mJQE4xDeo77O4lM">每条数据的 userId 都是 1</code> 能抓住这个 bug。<b data-page-node-id="BKYVGBn00BsG2WQyBL1OQY">这就是"技术断言"和"业务断言"的区别：前者验证接口通不通，后者验证业务对不对。</b></p>
+  </div>
+
+  <h3 data-page-node-id="tzkBIUp0iv0f4oGmkfE8JC">4.2 再看第 9 条：空数组的断言怎么写</h3>
+  <p data-page-node-id="wk57qwuOmAoIcWT6zDTxHY">「查 userId=999」这条，预期就是返回空数组。所以断言要反着写：</p>
+
+  <pre class="code" data-page-node-id="1LFuf1MtUEAFI2xqGAOBSG">var jsonData = pm.response.json();
+
+pm.test("状态码是 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("返回空数组，长度是 0", function () {
+    pm.expect(jsonData.length).to.eql(0);
+});</pre>
+
+  <div class="danger note" data-page-node-id="BX3BgM9wJknlOB5DCIdADu">
+    <p data-page-node-id="JwTvWaQ0yPqROXbzLMHKXy"><b data-page-node-id="q2uYixOtnD4uaI7xNILjTl">这里有一个很重要的认知，别搞混：</b></p>
+    <p data-page-node-id="RPAPJUM9dzt3mwsBjJ8u8H">这条用例<b data-page-node-id="7sk4kEeG0j8m5FFWWdPpDc">会亮绿勾、显示"通过"</b>。但这不代表"这个接口很棒"——它代表的是<b data-page-node-id="LSFm7zCv16ULiqYWeV6Qbr">"接口的实际行为和预期一致"</b>。</p>
+    <p data-page-node-id="bTURK4joUSFrDAt7jl5FBF">「查一个不存在的用户，返回空数组」是合理的预期，所以它通过。</p>
+    <p data-page-node-id="GslNjuwtxAt9gZPMEYqz09">而第 6 条「传 abc」，<b data-page-node-id="KtKUsHuG8wJNXriNrLhs1B">如果文档约定应该报 400，那它就该是失败的</b>——但因为我们还没确认期望，暂时只能记录现象。</p>
+    <p data-page-node-id="mMJ95g1wf16AfqUIDPBCLP"><b data-page-node-id="MK6k1fL8iIJuAfqf0Dza9c">所以说：断言测的是"符不符合预期"，不是"好不好"。</b>预期从哪来？从接口文档、从需求、从产品确认里来。这就是为什么第 1 步读文档那么重要。</p>
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="c5" data-page-node-id="aFRnOFF5aXpNA1P0zur8HQ">
+  <h2 data-page-node-id="q5sBmKcYcuj9JZBBBQnm65"><span class="n" data-page-node-id="QDLFOC03ER5prc7LcGsqM6">5</span>批量跑，然后出结论</h2>
+  <p class="sub" data-page-node-id="PBDEIhR5pmdYU3oqGcZ36X">手工点 10 次能验证接口，但验证不了"每次发版都还好好的"。</p>
+
+  <h3 data-page-node-id="x0sUAE5TcPxsiiJ071uUwp">5.1 批量执行</h3>
+  <p data-page-node-id="ufpVoIMZk0FyAK0txGwKQ1">你刚才把 10 条请求都保存进了 Collection。现在：</p>
+  <ol data-page-node-id="dn6jda4d780jMqIN6Q7UpH">
+    <li data-page-node-id="LVBc153uWUKtB2YdMxL4gV">左侧 <code data-page-node-id="D9PtQa4IzKZo8Yo2yQe0cB">My Collection</code> 上点 <b data-page-node-id="7QZuCBM3nrklcBS8kKmmjL"><code data-page-node-id="FfvjoMmPbNg6Ffrnv0sZB7">...</code> → Run collection</b>（或者选中集合后点 <b data-page-node-id="93B5wL2C4u6VlSzPGC9LNm">Run</b>）</li>
+    <li data-page-node-id="RFfBuqWGDlJeOUpuuh2Jwy">会打开 Runner 页面，里面列出这 10 条请求</li>
+    <li data-page-node-id="e7H21W4dyqkHoGBgmEzON1">直接点 <b data-page-node-id="suDJPP9snQj3o0Lt4mxWPy">Run</b>，看着它一条条自动跑</li>
+    <li data-page-node-id="olzCkYF3tYM8iQyD4DjfCX">跑完给出一张结果表：<b data-page-node-id="ru353PEgxQoXYtlE7ZxZ8g">多少通过、多少失败</b></li>
+  </ol>
+
+  <div class="note" data-page-node-id="mZELcD5Pvx1PeokIzjCAwT">
+    <p data-page-node-id="nM8xJpwdSWENWsjRlQNmAy"><b data-page-node-id="eCXia4uvxxzhlawcNKxSXd">注意：只有写了断言的请求，Runner 才能判定它通过还是失败。</b>没写断言的请求会显示"没有测试"，Runner 不知道该判它什么。</p>
+    <p data-page-node-id="iRgCEnH7iVOaH6bUDso4qG">所以第 4 步的断言不是"高级功能"，它是<b data-page-node-id="kubFG7SA0m5xF9NQcJ1RzW">批量执行的前提</b>。这也是为什么面试官特别爱问断言——它直接区分了"会调接口"和"会做接口测试"。</p>
+  </div>
+
+  <h3 data-page-node-id="IJDemI3LSMogIhFr9EuJWy">5.2 这次测试的产出：一份测试记录</h3>
+  <p data-page-node-id="kIQKpQ1H4IP4ZjrSj8PpU5"><b data-page-node-id="C2D1R8UdFnVf2NbPnrp7cQ">这才是"做了一次测试"的真正成果。</b>不是点了 10 次 Send，而是留下这么一份东西：</p>
+
+  <table class="tbl" data-page-node-id="aViSAHhKG4ta6ZULQtgDg0">
+    <tr data-page-node-id="BRVa550WJ1qBdZfXVHvVnF"><th data-page-node-id="eUVPAkkTq3FuPIyGybDVwu">项目</th><th data-page-node-id="IoDkGS91TbrujxD1cAhuia">内容</th></tr>
+    <tr data-page-node-id="bGonUlY8IWmOt83LDDp4KE"><td data-page-node-id="cpEit8WYoPMcjdwWXSXjq4">被测接口</td><td data-page-node-id="GCcrHMdqzIeVODiUrTlosF"><code data-page-node-id="PFieJnXBodB7mDf7n26zDT">GET /posts</code>（查询帖子列表）</td></tr>
+    <tr data-page-node-id="eZxTYkDWyHosPmb45zjJVA"><td data-page-node-id="lbz8hnq2p1fEpMdQSEC5pC">用例数</td><td data-page-node-id="zP3vYXXm1soAGpEJe0NNPJ">10 条，覆盖正常流、边界值、参数异常、业务异常、路径异常</td></tr>
+    <tr data-page-node-id="GbwtLpPekVAnAUUiXsE8QR"><td data-page-node-id="gqkATwaETuJ23V4CsFIvHM">执行结果</td><td data-page-node-id="lIgQSrBznR0dGDQlChA9f0">10 条执行完毕；8 条符合预期，3 条待确认（第 6/7/8 条）</td></tr>
+    <tr data-page-node-id="oS06iIYjsLotkeIkHOtW7e"><td data-page-node-id="2RExCiOEaKXhFTFG6ZjsY1">发现的问题</td><td data-page-node-id="gOA4iihjAuhaNqdXByX58C"><b data-page-node-id="tnAJytEaAEuEyG7HigCDtK">接口对 <code data-page-node-id="NHHiBLiPtjCA7qS3Tq5tj4">userId</code> 参数无类型校验</b>：传入非数字 <code data-page-node-id="Fny26OqoaCCysmnUElenrC">abc</code>、负数 <code data-page-node-id="88AVGOCDqoLHwFbxE4FaqZ">-1</code>、空值，均返回 200 + 空数组，而非参数错误提示</td></tr>
+    <tr data-page-node-id="hxIDyB7UkgihISJiQ9cHZC"><td data-page-node-id="eM024lTuVy2n14YErW0KRE">风险等级</td><td data-page-node-id="rWngWAK1OSFNn8OMli7Aow">中。当前前端会保证传整数，直接影响小；但接口对外开放或无前端保护时，可能产生难以排查的"查不到数据"问题</td></tr>
+    <tr data-page-node-id="7xqVNjyyGmXyDXGUITXJoP"><td data-page-node-id="NyDd1gTmbQDcc7UQQvgGo1">待办</td><td data-page-node-id="VVTaeKGTqY4Y56WyqXNMBW">与开发确认 <code data-page-node-id="bHK3UHAmKZfWDrTUZsfm4e">userId</code> 非法值的期望行为；确认后在文档中补充约定</td></tr>
+  </table>
+
+  <div class="ok note" data-page-node-id="Geqh2sBqmiutgInb5WSDxK">
+    <p data-page-node-id="1aNrPFVlAdk6RIzjnzhOWY"><b data-page-node-id="1hce6Rz4FkTwFfF0N2DaPz">把上面这张表看懂——它就是你的第一份"接口测试报告"。</b>面试时被问"你怎么做接口测试"，你完全可以说：</p>
+    <p data-page-node-id="40BeRN1qjjGpGka7KMjw7T">"我做过一个完整的练习：拿一条查询接口，设计了 10 条用例覆盖正常流、边界值、参数异常和业务异常。<b data-page-node-id="VKQN36L3LQP8WMeeuTPGcb">执行中发现它对参数类型没有校验，传非数字也返回 200 空数组。</b>我判断这属于文档缺失而非明确缺陷，所以先记录为风险点，同时给主用例写了 5 条断言——状态码、返回条数、业务字段值、字段结构、响应时间——用 Collection Runner 做批量回归。"</p>
+    <p data-page-node-id="QupZHbLHJQo0gk9krPkICN"><b data-page-node-id="YULuBZyD1lQ0LjYXtpW3wV">这段话里每一个细节都是真的，而且每一句都在展示你的水平。</b>它比背十道面试题有用得多。</p>
+  </div>
+
+  <h3 data-page-node-id="owxc1M2EjnqfvgHqafS8ST">5.3 如果还想再深一步</h3>
+  <p data-page-node-id="KfxAr2JHxij6LP7G1QwA9U">下面三件事做完，你这个案例就彻底完整了：</p>
+  <table class="tbl" data-page-node-id="X8pgbDpWBQw92F5aZEjHEb">
+    <tr data-page-node-id="1b0JCxdR9Yfpr0qZhUeDq1"><th data-page-node-id="r18GGLV3W6SyZK8uxEmWQa">动作</th><th data-page-node-id="nGwJcsGl3UPfNer6foa4pJ">怎么做</th><th data-page-node-id="Hr3gybLFENUvUeIMmdv31S">学到什么</th></tr>
+    <tr data-page-node-id="SyDAEejC9M1ENOHo201vtL"><td data-page-node-id="rLI774ePU2736ExFnCsL3V">把 baseUrl 抽成变量</td><td data-page-node-id="8Fm8RFHF7SiD19VD1N59xB">建一个 Environment，定义 <code data-page-node-id="PWBukMIiE8MXIU3SWC79Ua">baseUrl</code>，把 10 条请求的地址换成 <code data-page-node-id="1X5mWKVYHy9CoMH2XxAB0z">{{baseUrl}}/posts</code></td><td data-page-node-id="85FWQ3cUfFagg51krEm7ei">环境变量怎么用，为什么它是回归的前提</td></tr>
+    <tr data-page-node-id="ENba39U0leJD7lvT2rVn9c"><td data-page-node-id="ZdbXNPEbYpkcWzu9NcVk5s">给第 5 条也加断言</td><td data-page-node-id="EGVTG2HOTmND6mMVyBZfqd">越界 userId=11，断言"状态码 200 且返回空数组"</td><td data-page-node-id="h8AwdasTvEZkAlZOonXxai">异常场景的断言怎么设计</td></tr>
+    <tr data-page-node-id="5yOwKakqgPIHc4SPlz3M7t"><td data-page-node-id="tq9SvBkmoEUroMGN4RX8BX">故意弄坏一条断言</td><td data-page-node-id="vEU385ug7IWOxSadcOSJJI">把"返回 10 条"改成"返回 5 条"，重新 Send 和 Run</td><td data-page-node-id="kW2DnKe9jFrGnIcGpQxI1L"><b data-page-node-id="qR4e3ki0b2CsDtEkx0H6gh">亲眼看到断言失败长什么样</b>，学会区分"用例失败"和"接口坏了"</td></tr>
+  </table>
+
+  <div class="warn note" data-page-node-id="vEVSiGT0shfapV7bLjp7sj">
+    <p data-page-node-id="Yk0cv2o1VaMY1jcly3d9Yd"><b data-page-node-id="coQG9Eyc02u0VPBWDECegK">最后一条特别重要。</b>很多人写的断言永远是绿的，因为他们没验证过断言能不能变红。<b data-page-node-id="HkFW92F3w7aSJfef0ABbkf">一个不会失败的断言，等于没有断言。</b></p>
+  </div>
+
+  <h3 data-page-node-id="aaWT68Hl7gXaOSnCDE6kDA">5.4 自测题</h3>
+  <details data-page-node-id="0yqyHr1XQpULTozuTalMEo">
+    <summary data-page-node-id="Owcsk2yuuZmU7S6X23RS9w">写下你对这 5 题的答案，再展开对照</summary>
+    <div class="qa" data-page-node-id="MCqlo9RH5eAPLo211Bgsqs">
+      <p class="q" data-page-node-id="t30SMR98RpiwD5qu6saD9e">Q1：为什么只看状态码 200 不能判断接口测试通过？用这次案例举一个具体例子。</p>
+      <p class="a" data-page-node-id="BFgtjbxMkzXc9xoCunvwZ0">要点：用第 6 条举例——传 <code data-page-node-id="uxTsKRSV9WgahAfaeHk3MH">userId=abc</code>，接口返回 <b data-page-node-id="o9kDjPnxxhlNdv6K2q2TTC">200 + 空数组</b>，状态码完全正常，但实际是参数校验缺失。<b data-page-node-id="ZMO27lwsGV2i7aun4aDTqK">再补一个更有说服力的</b>：如果过滤逻辑失效返回了错误的数据，状态码照样是 200，只有业务断言能抓住。</p>
+    </div>
+    <div class="qa" data-page-node-id="ES71vc5BGcMFkczuZX7f1T">
+      <p class="q" data-page-node-id="VpGX3xUmLY7XhOSCBCESA5">Q2：什么是"业务断言"？它和"技术断言"有什么区别？</p>
+      <p class="a" data-page-node-id="tV4p19vXiDpFguV6MmAggs">要点：技术断言验证接口通不通（状态码、响应时间、字段存在）；<b data-page-node-id="e7m1tdVqmIx3sjRfJMAKD1">业务断言验证业务对不对</b>（如"每条数据的 userId 都是 1"）。举例说明：如果过滤条件失效但恰好返回 10 条数据，技术断言全过，只有业务断言能发现。</p>
+    </div>
+    <div class="qa" data-page-node-id="aFiqtqAhLtDyJa4EF9F9gM">
+      <p class="q" data-page-node-id="Zc6CBXzq9U1X924bSKRExU">Q3：测出"传 abc 返回 200 空数组"，你会直接开 Bug 单吗？</p>
+      <p class="a" data-page-node-id="jHInQY9rjJJwUdGrDaisCt">要点：<b data-page-node-id="yE1E0uEJnCKZ9NUgAUYHa8">不会直接开。</b>先查接口文档有没有约定非法值的处理方式；没写就去问产品/开发确认期望行为；确认了期望又不符，才是缺陷。<b data-page-node-id="EtCEV5h3lfJOcFeGDKGa67">没依据的单子会被打回来。</b></p>
+    </div>
+    <div class="qa" data-page-node-id="QlSIiAROmkuqe0jcEG7Zwx">
+      <p class="q" data-page-node-id="XdmnJIO8wWAbOEeYZaoJ3o">Q4：断言都亮绿勾，是不是说明接口没问题？</p>
+      <p class="a" data-page-node-id="ah5FahmACr8jDweDU82Oti">要点：不是。绿勾只说明<b data-page-node-id="ZUuqDVV4UceKQiFeb2W2Qe">"实际结果符合预期"</b>。如果预期本身写错了（比如把错误的期望值写进断言），接口有问题也照样亮绿。<b data-page-node-id="LERm6YB7OOHo08Mdulzm8C">断言测的是符不符合预期，不是好不好。</b></p>
+    </div>
+    <div class="qa" data-page-node-id="liWecOPog3y2n6RE8Q83mU">
+      <p class="q" data-page-node-id="s2CVpzOnh3BOyQqsMiPRqu">Q5：为什么没有断言的接口用例，批量执行结果没有意义？</p>
+      <p class="a" data-page-node-id="8x6JXi1yoU3BWfqIfpmypM">要点：Runner 没有判定依据，只能显示"没有测试"，无法给出通过/失败统计。<b data-page-node-id="vh1AS9G4gEHIE4IGcvqhJn">断言的本质是把你心里的"验收标准"翻译成机器能判断的语句</b>——没有它，批量跑 100 条你还是要一条条肉眼看，等于没自动化。</p>
+    </div>
+  </details>
+</section>
+
+<div class="foot" data-page-node-id="qfGchuiXVbmzMVAq8A0Tm2">
+  配套文件放在 <code data-page-node-id="mfyGwZh4fazTuE6Y9fLUJQ">api-test/</code> 目录下，与 <code data-page-node-id="Vs8Lq9Hv3JSoZM0P2mlusj">db-practice/</code>、<code data-page-node-id="6uUltJHXeJEyoj0oPhHOqG">jira/</code> 同一套版式。<br data-page-node-id="d1f7ILRxHAsNBmlKI4eS9V">
+  本案例的所有返回结果均经真实请求验证，练习对象为公开 API <code data-page-node-id="Qct6WirlMfMWSmIqDFrV0i">JSONPlaceholder</code>。
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pytest + requests 第一讲 · 把 Postman 的用例变成代码</title>
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2328;
+  --text-2:#57606a;
+  --text-3:#8b949e;
+  --line:#e1e4e8;
+  --blue:#185fa5;
+  --blue-bg:#eef5fc;
+  --blue-line:#b5d4f4;
+  --amber:#854f0b;
+  --amber-bg:#fdf6e8;
+  --amber-line:#f0d9a8;
+  --red:#a32d2d;
+  --red-bg:#fdeeee;
+  --red-line:#f0c2c2;
+  --green:#3b6d11;
+  --green-bg:#f0f6e8;
+  --green-line:#c8dda3;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px}
+
+.header{margin-bottom:36px}
+.header .kicker{
+  display:inline-block;font-size:12px;letter-spacing:.08em;
+  color:var(--blue);background:var(--blue-bg);
+  border:1px solid var(--blue-line);border-radius:999px;
+  padding:3px 12px;margin-bottom:14px;
+}
+.header h1{font-size:28px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.header p{margin:0;color:var(--text-2);font-size:14.5px;max-width:640px}
+
+.toc{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px 24px;margin-bottom:32px;
+}
+.toc h3{font-size:13px;font-weight:600;color:var(--text-3);margin:0 0 14px;letter-spacing:.05em}
+.toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:32px}
+.toc li{margin-bottom:7px;break-inside:avoid}
+.toc a{color:var(--text-2);text-decoration:none;font-size:14px;display:flex;gap:9px}
+.toc a:hover{color:var(--blue)}
+.toc .n{
+  flex:0 0 auto;width:20px;height:20px;line-height:20px;text-align:center;
+  background:var(--bg);border-radius:5px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);margin-top:2px;
+}
+
+section{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px;
+}
+h2{font-size:20px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+h2 .n{
+  flex:0 0 auto;width:26px;height:26px;line-height:26px;text-align:center;
+  background:var(--blue);color:#fff;border-radius:7px;font-size:13px;font-family:var(--mono);
+}
+.sub{color:var(--text-3);font-size:13.5px;margin:0 0 22px;padding-left:37px}
+h3{font-size:15.5px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+h3:first-of-type{margin-top:8px}
+p{margin:0 0 14px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+code.inline{
+  font-family:var(--mono);font-size:13px;background:#f0f2f5;
+  padding:2px 6px;border-radius:4px;color:#0a3069;
+}
+b,strong{font-weight:600}
+
+pre{
+  margin:0 0 16px;background:#f8f9fb;border:1px solid var(--line);
+  border-radius:9px;padding:15px 18px;overflow-x:auto;
+}
+pre code{font-family:var(--mono);font-size:13px;line-height:1.68;background:none;padding:0}
+.code-label{
+  font-size:11.5px;color:var(--text-3);font-family:var(--mono);
+  margin:0 0 6px;letter-spacing:.03em;
+}
+
+.note{
+  border-left:3px solid var(--blue-line);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:13px 17px;margin:0 0 16px;font-size:14px;color:#123a63;
+}
+.warn{border-left-color:var(--amber-line);background:var(--amber-bg);color:#5c3708}
+.danger{border-left-color:var(--red-line);background:var(--red-bg);color:#7c2020}
+.ok{border-left-color:var(--green-line);background:var(--green-bg);color:#2c5309}
+.note b{font-weight:600}
+.note p:last-child{margin-bottom:0}
+
+.result{margin:0 0 16px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.result .rh{
+  background:#f8f9fb;padding:7px 15px;font-size:11.5px;color:var(--text-3);
+  font-family:var(--mono);border-bottom:1px solid var(--line);
+}
+.result table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.result th,.result td{padding:6px 15px;text-align:left;border-bottom:1px solid #eef0f3}
+.result th{background:#fbfcfd;font-weight:500;color:var(--text-2);font-size:11.5px}
+.result tr:last-child td{border-bottom:none}
+.result td{color:var(--text-2)}
+.result .null{color:#b0b6bd;font-style:italic}
+.pass{color:var(--green);font-weight:600}
+
+.map{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+.map th,.map td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.map th{background:#f8f9fb;font-weight:600;color:var(--text-2);font-size:12.5px}
+.map td:first-child{color:var(--text-2)}
+.map code{font-family:var(--mono);font-size:12px;color:#0a3069}
+.map tr:last-child td{border-bottom:none}
+
+.ex{
+  border:1px solid var(--blue-line);background:#fbfdff;
+  border-radius:10px;padding:20px 22px;margin:24px 0 0;
+}
+.ex-h{
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+  font-size:13.5px;font-weight:600;color:var(--blue);
+}
+.ex-h::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:0 0 auto;
+}
+.ex ol{margin:0;padding-left:24px}
+.ex > ol > li{margin-bottom:11px}
+details{margin-top:16px;border-top:1px dashed var(--blue-line);padding-top:13px}
+summary{
+  cursor:pointer;font-size:13px;color:var(--blue);font-weight:500;
+  list-style:none;display:flex;align-items:center;gap:7px;user-select:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{
+  content:"";width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s;
+}
+details[open] summary::before{transform:rotate(90deg)}
+details[open] summary{margin-bottom:12px}
+details pre{margin-bottom:12px}
+.hint{font-size:13px;color:var(--text-3);margin:0 0 10px}
+.ans-li{font-weight:600;font-size:13px;color:var(--text-2);margin:14px 0 5px}
+
+.foot{
+  text-align:center;color:var(--text-3);font-size:13px;
+  margin-top:40px;padding-top:24px;border-top:1px solid var(--line);
+}
+@media(max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .toc ol{columns:1}
+  section{padding:22px 18px}
+  .header h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <span class="kicker">接口自动化 · 第一讲</span>
+    <h1>把你 Postman 里的 8 条用例，用代码跑一遍</h1>
+    <p>这一讲不引入任何新概念。你 Postman 里已经会的东西——发请求、断言、CSV 数据驱动、批量迭代——原样用代码再实现一次。做完你会看到那 8 条用例的完整结果。</p>
+  </div>
+
+  <div class="toc">
+    <h3>本讲目录</h3>
+    <ol>
+      <li><a href="#s1"><span class="n">1</span>这一讲的结果</a></li>
+      <li><a href="#s2"><span class="n">2</span>代码和 Postman 是一回事</a></li>
+      <li><a href="#s3"><span class="n">3</span>目录里的三个文件</a></li>
+      <li><a href="#s4"><span class="n">4</span>逐行看测试代码</a></li>
+      <li><a href="#s5"><span class="n">5</span>自己跑一遍</a></li>
+      <li><a href="#s6"><span class="n">6</span>自测题（口述优先）</a></li>
+      <li><a href="#s7"><span class="n">7</span>面试怎么讲这一块</a></li>
+    </ol>
+  </div>
+
+  <!-- ========== 1 ========== -->
+  <section id="s1">
+    <h2><span class="n">1</span>这一讲的结果</h2>
+    <p class="sub">先看东西，再讲道理</p>
+
+    <p>你 Postman 里的 <code class="inline">posts_datadriven</code>，那 8 条从 CSV 读数据的用例，Collection Runner 点了没反应，你从没看到过它们的完整结果。用代码跑，结果是这样的：</p>
+
+    <div class="result">
+      <div class="rh">运行结果 · 你的机器实测</div>
+      <table>
+        <tr><th>用例名</th><th>结果</th></tr>
+        <tr><td>正常_有数据</td><td class="pass">PASSED</td></tr>
+        <tr><td>正常_第二条</td><td class="pass">PASSED</td></tr>
+        <tr><td>边界_最大值</td><td class="pass">PASSED</td></tr>
+        <tr><td>越界_无数据</td><td class="pass">PASSED</td></tr>
+        <tr><td>边界_零</td><td class="pass">PASSED</td></tr>
+        <tr><td>异常_负数</td><td class="pass">PASSED</td></tr>
+        <tr><td>异常_不存在</td><td class="pass">PASSED</td></tr>
+        <tr><td>异常_非数字</td><td class="pass">PASSED</td></tr>
+        <tr><td colspan="2" style="color:#8b949e">8 passed in 11.91s</td></tr>
+      </table>
+    </div>
+
+    <p>8 条全绿，总耗时 11.9 秒。</p>
+
+    <div class="note ok">
+      <p><b>顺便验证了一件事：</b>你 CSV 里写的期望值（status=200，条数 10 或 0）是<b>对的</b>。我另跑了一次原始接口做实测，8 个 userId 的真实返回和你写的期望值完全一致。所以这 8 条不是「因为断言太松所以通过」，是真的符合预期。</p>
+    </div>
+
+    <h3>你现在机器上的环境</h3>
+    <div class="result">
+      <div class="rh">已确认可用</div>
+      <table>
+        <tr><th>组件</th><th>版本 / 状态</th></tr>
+        <tr><td>Python</td><td>3.13.0（命令 <code>python</code>、<code>py</code> 都能用）</td></tr>
+        <tr><td>pip</td><td>24.2</td></tr>
+        <tr><td>pytest</td><td>9.1.1（本讲刚装）</td></tr>
+        <tr><td>requests</td><td>2.34.2（本讲刚装）</td></tr>
+        <tr><td>selenium</td><td>4.48.0（你之前自己装的，还没用上）</td></tr>
+      </table>
+    </div>
+
+    <div class="note">
+      <p>环境这一步一次做完了，不用你再配任何东西。后面每一讲都是直接写代码、直接跑。</p>
+    </div>
+  </section>
+
+  <!-- ========== 2 ========== -->
+  <section id="s2">
+    <h2><span class="n">2</span>代码和 Postman 是一回事</h2>
+    <p class="sub">不是换工具，是把「点」变成「写」</p>
+
+    <p>你可能会觉得「学 pytest」是进入一个全新领域。其实你在 Postman 里已经把这四个动作全做过了，代码只是换一种写法：</p>
+
+    <table class="map">
+      <tr>
+        <th style="width:34%">你在 Postman 里做的</th>
+        <th>代码里对应的</th>
+      </tr>
+      <tr>
+        <td>填 URL、选 GET、点 Send</td>
+        <td><code>requests.get(BASE_URL, params={"userId": user_id})</code></td>
+      </tr>
+      <tr>
+        <td>URL 里的 <code>{{userId}}</code> 环境变量</td>
+        <td><code>params</code> 字典里的一个值</td>
+      </tr>
+      <tr>
+        <td>Tests 里写 <code>pm.response.to.have.status(200)</code></td>
+        <td><code>assert resp.status_code == 200</code></td>
+      </tr>
+      <tr>
+        <td>Tests 里写 <code>pm.expect(jsonData.length).to.eql(10)</code></td>
+        <td><code>assert len(resp.json()) == 10</code></td>
+      </tr>
+      <tr>
+        <td>导入一份 CSV 当测试数据</td>
+        <td><code>csv.DictReader</code> 一行行读进来</td>
+      </tr>
+      <tr>
+        <td>Collection Runner 按行迭代 8 次</td>
+        <td><code>@pytest.mark.parametrize</code></td>
+      </tr>
+      <tr>
+        <td>报告里每条用例显示的名字</td>
+        <td><code>pytest.param(..., id="用例名")</code></td>
+      </tr>
+    </table>
+
+    <p><b>四个动作一一对应，没有第五个。</b>你写这一段代码的时候，心里可以一直念着「这行就是我在 Postman 里点的那个东西」。</p>
+
+    <h3>那为什么还要学代码？</h3>
+    <ul>
+      <li><b>能进版本库、能被人 review。</b>Postman 的 Collection 是个 json 文件，改动看不清楚；代码改了哪一行，diff 里一目了然。团队协作时这是刚需。</li>
+      <li><b>能和 CI 流水线接起来。</b>代码可以被「提交时自动跑一遍」，Postman 的 Runner 做不到。</li>
+      <li><b>能表达复杂逻辑。</b>要加密签名、要连数据库核对、要处理多层嵌套的响应，用鼠标点不出来，写代码几行就完了。</li>
+      <li><b>招聘要求里明写。</b>「pytest + requests」几乎是接口自动化岗位的默认组合，比「会用 Postman」高一个档。</li>
+    </ul>
+
+    <div class="note warn">
+      <p><b>但不要说 Postman 没用。</b>它擅长的是「接口还没定型时的探索和调试」——手工改参数、看响应、快速试。代码擅长的是「定型之后的批量回归」。面试时被问「你用 Postman 还是写代码」，正确答案是「两个都用，看阶段」，不是二选一。</p>
+    </div>
+  </section>
+
+  <!-- ========== 3 ========== -->
+  <section id="s3">
+    <h2><span class="n">3</span>目录里的三个文件</h2>
+    <p class="sub">D:\selenium\api-test\pytest\</p>
+
+    <table class="map">
+      <tr>
+        <th style="width:30%">文件</th>
+        <th>它是干什么的</th>
+      </tr>
+      <tr>
+        <td><code>posts_by_user.csv</code></td>
+        <td>测试数据。就是你 Postman 里用的那一份，内容一模一样，也放在同一个目录方便代码读取。</td>
+      </tr>
+      <tr>
+        <td><code>test_posts_by_user.py</code></td>
+        <td>测试代码。读 CSV → 发请求 → 断言。整个文件只有 <b>1 个测试函数</b>，但它会跑出 8 条用例。</td>
+      </tr>
+      <tr>
+        <td><code>pytest.ini</code></td>
+        <td>pytest 的配置文件。目前只干一件事：让报告里的中文用例名正常显示，不要变成 <code>\u6b63\u5e38</code> 这种乱码。</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <p><b>为什么文件名必须有 <code>test_</code> 前缀？</b>这不是格式要求，是 pytest 的<b>约定</b>：它默认只收集文件名匹配 <code>test_*.py</code> 或 <code>*_test.py</code> 的文件，只把名字以 <code>test</code> 开头的<b>函数</b>当成用例。</p>
+      <p>所以你写了个普通脚本想跑，pytest 理都不理你——不是坏了，是你没按约定命名。</p>
+    </div>
+  </section>
+
+  <!-- ========== 4 ========== -->
+  <section id="s4">
+    <h2><span class="n">4</span>逐行看测试代码</h2>
+    <p class="sub">test_posts_by_user.py</p>
+
+    <p class="code-label">— 开头：导入和常量 —</p>
+<pre><code>import csv
+import pathlib
+
+import pytest
+import requests
+
+BASE_URL = "https://jsonplaceholder.typicode.com/posts"
+
+CSV_FILE = pathlib.Path(__file__).with_name("posts_by_user.csv")</code></pre>
+
+    <ul>
+      <li><code class="inline">csv</code> —— 读 CSV 文件，Python 自带，不用装。</li>
+      <li><code class="inline">pathlib</code> —— 处理文件路径。</li>
+      <li><code class="inline">pytest</code> —— 提供 <code class="inline">@pytest.mark.parametrize</code> 这个「装饰器」。</li>
+      <li><code class="inline">requests</code> —— 负责发 HTTP 请求，就是代码版的 Postman。</li>
+    </ul>
+
+    <div class="note">
+      <p><b><code>__file__</code> 是什么？</b>它就是「当前这个 py 文件自己的路径」。<code>with_name("posts_by_user.csv")</code> 意味着「换成同一个目录下的这个名字」。</p>
+      <p>好处：不管你从哪个目录敲 pytest 命令，它都能找到那份 CSV。如果你写成 <code>"posts_by_user.csv"</code>（相对路径），那就必须站在这个目录里运行，换个地方就报「文件找不到」——这是新手最常见的坑之一。</p>
+    </div>
+
+    <p class="code-label">— 读 CSV：把每一行变成一条用例的参数 —</p>
+<pre><code>def load_cases():
+    cases = []
+    with open(CSV_FILE, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            cases.append(
+                pytest.param(
+                    row["userId"],
+                    int(row["expectedStatus"]),
+                    int(row["expectedCount"]),
+                    id=row["caseName"],
+                )
+            )
+    return cases</code></pre>
+
+    <p>这段就是 <b>Postman 的「导入 CSV」+「Runner 迭代」</b>。逐点解释：</p>
+
+    <ul>
+      <li><code class="inline">csv.DictReader(f)</code> —— 把 CSV 按<b>表头</b>读成字典。表头是 <code class="inline">caseName,userId,expectedStatus,expectedCount</code>，于是每一行变成 <code class="inline">{"caseName": "正常_有数据", "userId": "1", ...}</code>。这样你就能用 <code class="inline">row["userId"]</code> 取值，不用记「第几列」。</li>
+      <li><code class="inline">int(...)</code> —— <b>必须转，这是个坑。</b>CSV 里读出来的东西<b>全都是字符串</b>。<code class="inline">expectedStatus</code> 读出来是 <code class="inline">"200"</code> 而不是 <code class="inline">200</code>。而 <code class="inline">"200" == 200</code> 在 Python 里是 <b>False</b>，断言会全红。所以这里转成整数。</li>
+      <li><code class="inline">id=row["caseName"]</code> —— 报告里显示的用例名。不加这个，用例名会变成参数值拼起来的 <code class="inline">userId1-200-10</code> 之类，8 条看着一模一样，失败了你不知道哪条挂了。</li>
+    </ul>
+
+    <p class="code-label">— 测试函数：一个函数，8 条用例 —</p>
+<pre><code>@pytest.mark.parametrize("user_id, expected_status, expected_count", load_cases())
+def test_posts_by_user(user_id, expected_status, expected_count):
+    resp = requests.get(BASE_URL, params={"userId": user_id}, timeout=10)
+
+    assert resp.status_code == expected_status
+
+    assert len(resp.json()) == expected_count</code></pre>
+
+    <p>这几行的意思：<b>把 <code class="inline">load_cases()</code> 返回的 8 组参数，轮流喂给下面这个函数，跑 8 次。</b>每次跑，三个参数的值都不一样。</p>
+
+    <p>拆开看：</p>
+    <ul>
+      <li><code class="inline">@pytest.mark.parametrize(...)</code> —— 上面那行带 <code class="inline">@</code> 的叫<b>装饰器</b>，作用是「修饰」下面那个函数。这里的作用是：这个函数不要只跑一次，而是按我给的数据跑 8 次。这就是 Postman Runner 的迭代。</li>
+      <li>第一个参数是字符串 <code class="inline">"user_id, expected_status, expected_count"</code>，三个名字用逗号隔开，<b>名字随你取</b>，但必须和函数括号里的参数名一一对应。</li>
+      <li><code class="inline">requests.get(BASE_URL, params={"userId": user_id})</code> —— <code class="inline">params</code> 会自动把字典拼成 URL 后面的查询串，拼出来就是 <code class="inline">.../posts?userId=1</code>，和你 Postman 里那个地址一字不差。<code class="inline">timeout=10</code> 是「超过 10 秒算失败」，好习惯，防止接口卡住时测试无限等。</li>
+      <li><code class="inline">resp.status_code</code> —— 响应状态码，就是 Postman 里那个 <code class="inline">200 OK</code>。</li>
+      <li><code class="inline">resp.json()</code> —— 把响应体解析成 Python 对象。这个接口返回的是数组，所以解析出来是<b>列表</b>，<code class="inline">len()</code> 就能数出条数。</li>
+      <li><code class="inline">assert 条件</code> —— 这是 Python 关键字，意思是「我断言这里必须成立」。成立就继续往下走；不成立就当场抛错，pytest 把这条用例标成 <b>FAILED</b>。<b>这就是 Postman 的 Tests 断言。</b></li>
+    </ul>
+
+    <div class="note ok">
+      <p><b>一个函数 8 条用例，这就是 parametrize 的价值。</b>以后要加 20 条 userId 的测试，你不用复制 20 份代码，只要在 CSV 里加 20 行。代码一个字都不用改。</p>
+    </div>
+
+    <p class="code-label">— pytest.ini：那个名字很长的配置 —</p>
+<pre><code>[pytest]
+disable_test_id_escaping_and_forfeit_all_rights_to_community_support = True</code></pre>
+
+    <p>这个选项名的意思是「禁用测试名转义，<b>并放弃一切向社区求助的权利</b>」——pytest 作者故意起得这么长，因为关掉转义确实有风险：如果你的终端编码不支持中文，输出会真的乱掉。</p>
+
+    <p>本来的行为是：pytest 发现非 ASCII 字符（中文）就把它们转义成 <code class="inline">\u6b63\u5e38</code>，这样在任何古老终端上都不会崩。但你的用例名全是中文，转义之后就没法看了，所以关掉它。前面试过：不关的时候报告长这样——</p>
+
+    <div class="result">
+      <div class="rh">关掉之前</div>
+      <table>
+        <tr><td>test_posts_by_user[\u6b63\u5e38_\u6709\u6570\u636e]</td><td class="pass">PASSED</td></tr>
+      </table>
+    </div>
+
+    <div class="result">
+      <div class="rh">关掉之后</div>
+      <table>
+        <tr><td>test_posts_by_user[正常_有数据]</td><td class="pass">PASSED</td></tr>
+      </table>
+    </div>
+
+    <div class="note warn">
+      <p><b>这个文件必须是纯 ASCII 内容、且不能带 BOM</b>，否则 pytest 解析配置时会直接报错。真实项目里这种事很常见：一个看不见的字节就能让整个测试跑不起来。</p>
+    </div>
+  </section>
+
+  <!-- ========== 5 ========== -->
+  <section id="s5">
+    <h2><span class="n">5</span>自己跑一遍</h2>
+    <p class="sub">打开 PowerShell 或 cmd，敲这一行</p>
+
+    <p class="code-label">— 完整命令（可直接复制）—</p>
+<pre><code>py -m pytest D:\selenium\api-test\pytest -v</code></pre>
+
+    <p>解释一下这三段：</p>
+    <ul>
+      <li><code class="inline">py</code> —— Windows 的 Python 启动器，你机器上可用（已实测）。</li>
+      <li><code class="inline">-m pytest</code> —— 意思是「用 Python 去跑 pytest 这个模块」。<b>比直接敲 <code class="inline">pytest</code> 更稳</b>，因为它保证用的是你装包的那个 Python，不会跑岔到别的版本上。</li>
+      <li><code class="inline">D:\selenium\api-test\pytest</code> —— 告诉 pytest 去哪个目录找用例。给了绝对路径，你就不用先 <code class="inline">cd</code> 过去。</li>
+      <li><code class="inline">-v</code> —— verbose，详细模式，每条用例单独列一行。不加的话只显示一串点，看不出哪条是哪条。</li>
+    </ul>
+
+    <div class="note">
+      <p><b>你会看到什么：</b>先是 <code class="inline">collected 8 items</code>，然后 8 行 <code class="inline">PASSED</code>，最后一行 <code class="inline">8 passed in xx.xxs</code>。</p>
+      <p>如果 <code class="inline">collected 0 items</code>——那说明文件没被收集到，八成是文件名或函数名忘了 <code class="inline">test_</code> 前缀。</p>
+    </div>
+
+    <h3>故意跑一次失败的</h3>
+    <p>把 CSV 里第一行的 <code class="inline">expectedCount</code> 从 <code class="inline">10</code> 改成 <code class="inline">11</code>，存盘，再跑一次。你会看到 pytest 告诉你：</p>
+<pre><code>assert len(resp.json()) == 11
+E   assert 10 == 11
+ +  where 10 = len([...])</code></pre>
+
+    <p>这就是<b>「应该的样子」和「实际的样子」并排摆给你看</b>——你在这个项目里一直用的定位方法，pytest 自动帮你做了。看完记得把 11 改回 10。</p>
+  </section>
+
+  <!-- ========== 6 ========== -->
+  <section id="s6">
+    <h2><span class="n">6</span>自测题（口述优先）</h2>
+    <p class="sub">先自己说一遍，再展开看答案</p>
+
+    <div class="ex">
+      <div class="ex-h">试着不看文档回答</div>
+      <ol>
+        <li>pytest 是怎么知道「哪一行是测试用例」的？</li>
+        <li>你的代码里只有一个 <code class="inline">test_</code> 函数，为什么报告里跑出了 8 条用例？</li>
+        <li>如果删掉 <code class="inline">id=row["caseName"]</code> 这一行，会有什么变化？</li>
+        <li>现在要新增一条用例：「userId=5，期望返回 10 条」，你需要改哪个文件？要改代码吗？</li>
+        <li>CSV 里读出来的 <code class="inline">expectedStatus</code> 为什么要 <code class="inline">int()</code> 一下？不转会怎样？</li>
+        <li>如果第 3 条用例断言失败，第 4 到第 8 条还会继续跑吗？</li>
+      </ol>
+
+      <details>
+        <summary>展开参考答案</summary>
+
+        <p class="ans-li">1. pytest 是怎么知道哪一行是用例的？</p>
+        <p>靠<b>命名约定</b>，不是靠配置。默认规则两条：文件名要匹配 <code class="inline">test_*.py</code>；文件里的<b>函数</b>名要以 <code class="inline">test</code> 开头。两个条件都满足才会被收集成用例。</p>
+        <p>这也解释了为什么你写了个普通脚本 pytest 不跑它——不是没装好，是没按约定命名。</p>
+
+        <p class="ans-li">2. 一个函数为什么跑出 8 条用例？</p>
+        <p>因为 <code class="inline">@pytest.mark.parametrize</code>。它拿到 <code class="inline">load_cases()</code> 返回的 8 组参数，把这一个函数<b>展开成 8 条独立用例</b>分别跑。每组参数跑一次，互不影响。</p>
+        <p>对应到 Postman，就是 Collection Runner 拿着 CSV 迭代 8 次。</p>
+
+        <p class="ans-li">3. 删掉 id 会怎样？</p>
+        <p>用例名会变成参数值的拼接，类似 <code class="inline">test_posts_by_user[1-200-10]</code>。8 条看起来高度相似，一旦失败，报告里很难一眼看出是哪个 userId 挂了。</p>
+        <p>功能上不影响跑，只影响<b>报告可读性</b>。所以这是「该有的习惯」，不是「必须的语法」。</p>
+        <p class="hint">顺带一提：这也解释了为什么你那份 CSV 里要有 <code class="inline">caseName</code> 这一列——它不只是备注，它的作用就是喂给 <code class="inline">id</code>。</p>
+
+        <p class="ans-li">4. 新增一条用例要改哪里？</p>
+        <p><b>只改 CSV，代码一个字都不用动。</b>在末尾加一行：</p>
+        <pre><code>正常_第五条,5,200,10</code></pre>
+        <p>再跑一次，就会变成 9 条用例。这就是<b>数据驱动</b>的核心价值，也是面试里最常被追问的点：数据驱动不是「用 CSV 存数据」，而是<b>新增用例不需要改代码</b>。</p>
+
+        <p class="ans-li">5. 为什么要 int()？</p>
+        <p>因为 <b>CSV 读出来的所有字段都是字符串</b>。<code class="inline">expectedStatus</code> 读出来是 <code class="inline">"200"</code>。</p>
+        <p>而 <code class="inline">"200" == 200</code> 在 Python 里是 <b>False</b>（字符串和整数不相等，且 Python 不会自动转换）。不转就会 8 条全红，而且报错信息是 <code class="inline">assert '200' == 200</code>，一眼看不出问题在哪。</p>
+        <p><b>这条是接口自动化新手的头号坑，记牢。</b></p>
+
+        <p class="ans-li">6. 一条失败，后面的还跑吗？</p>
+        <p><b>会继续跑。</b>pytest 默认「失败不中断」——某条用例抛了断言错误，就把它标记成 FAILED，然后接着跑下一条，最后统一汇总。</p>
+        <p>这正是你想要的行为：一次跑完知道哪些挂了，而不是查到第一个问题就停下。Postman Runner 也是这个逻辑。</p>
+        <p class="hint">反过来说：如果一条用例失败导致后面<b>全部</b>跳过，通常是「前置步骤失败」，那是另一类问题（后面讲 fixture 时会碰）。</p>
+      </details>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h">动手题</div>
+      <ol>
+        <li>按上面第 4 题，在 CSV 加一条 <code class="inline">正常_第五条,5,200,10</code>，跑一遍，确认变成 9 条。</li>
+        <li>再加一条 <code class="inline">异常_超范围,100,200,0</code>，跑一遍。</li>
+        <li>把第一条的 <code class="inline">expectedCount</code> 改成 <code class="inline">11</code>，跑一遍，看清测试失败时 pytest 给你的报错长什么样，然后改回来。</li>
+      </ol>
+      <p class="hint">这三步做完，你就把「数据驱动」和「断言失败怎么读报告」亲手摸了一遍，比看十遍文档有用。</p>
+    </div>
+  </section>
+
+  <!-- ========== 7 ========== -->
+  <section id="s7">
+    <h2><span class="n">7</span>面试怎么讲这一块</h2>
+    <p class="sub">把你的实操说成「做过的事」</p>
+
+    <p>被问到「有没有做过接口自动化」时，不要只说「学过 pytest」，要说出<b>你解决过的具体问题</b>。你这一讲里已经攒下了三个能说的点：</p>
+
+    <p class="ans-li">可以这样说 1 —— 数据驱动</p>
+    <p>「我用 pytest 的 parametrize 做数据驱动，把测试数据放在 CSV 里，一个测试函数覆盖了 8 条用例，包括正常值、边界值（userId=0、10）、异常值（负数、不存在、非数字）。新增用例只改数据文件，不动代码。」</p>
+
+    <p class="ans-li">可以这样说 2 —— 踩过的坑</p>
+    <p>「CSV 读出来的字段全是字符串，期望状态码如果不转成整数，<code class="inline">"200" == 200</code> 会是 False，导致用例全部误报失败。这个坑我踩过。」</p>
+    <p class="hint">这类「踩过坑」的回答比背概念值钱得多，因为它证明你真的跑过。</p>
+
+    <p class="ans-li">可以这样说 3 —— 测试报告可读性</p>
+    <p>「中文用例名在 pytest 里默认会被转义成 \uXXXX，我在 pytest.ini 里关掉了转义，让报告能直接显示中文用例名，方便定位失败。」</p>
+
+    <div class="note">
+      <p><b>下一讲预告：</b>现在你的断言只有「状态码 + 条数」两个。下一讲讲怎么断言响应体的<b>具体内容</b>（某个字段的值、字段是否存在、类型对不对、列表里每一项的校验），以及断言失败了怎么把请求和响应打印出来方便排查。</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    pytest + requests 第一讲 · 生成于 2026-09-28 · 代码与结果均在本机实测
+  </div>
+
+</div>
+</body>
+</html>
